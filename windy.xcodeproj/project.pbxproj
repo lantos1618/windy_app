@@ -1,0 +1,594 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		470C5764295F062E00B0DC3E /* windyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5763295F062E00B0DC3E /* windyApp.swift */; };
+		470C5766295F062E00B0DC3E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5765295F062E00B0DC3E /* ContentView.swift */; };
+		470C5768295F062F00B0DC3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 470C5767295F062F00B0DC3E /* Assets.xcassets */; };
+		470C576B295F062F00B0DC3E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 470C576A295F062F00B0DC3E /* Preview Assets.xcassets */; };
+		470C576D295F062F00B0DC3E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C576C295F062F00B0DC3E /* Persistence.swift */; };
+		470C5770295F062F00B0DC3E /* windy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 470C576E295F062F00B0DC3E /* windy.xcdatamodeld */; };
+		470C577B295F062F00B0DC3E /* windyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C577A295F062F00B0DC3E /* windyTests.swift */; };
+		470C5785295F062F00B0DC3E /* windyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5784295F062F00B0DC3E /* windyUITests.swift */; };
+		470C5787295F062F00B0DC3E /* windyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		470C5777295F062F00B0DC3E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 470C5758295F062E00B0DC3E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 470C575F295F062E00B0DC3E;
+			remoteInfo = windy;
+		};
+		470C5781295F062F00B0DC3E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 470C5758295F062E00B0DC3E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 470C575F295F062E00B0DC3E;
+			remoteInfo = windy;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		470C5760295F062E00B0DC3E /* windy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = windy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		470C5763295F062E00B0DC3E /* windyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyApp.swift; sourceTree = "<group>"; };
+		470C5765295F062E00B0DC3E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		470C5767295F062F00B0DC3E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		470C576A295F062F00B0DC3E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		470C576C295F062F00B0DC3E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		470C576F295F062F00B0DC3E /* windy.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = windy.xcdatamodel; sourceTree = "<group>"; };
+		470C5771295F062F00B0DC3E /* windy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = windy.entitlements; sourceTree = "<group>"; };
+		470C5776295F062F00B0DC3E /* windyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = windyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		470C577A295F062F00B0DC3E /* windyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyTests.swift; sourceTree = "<group>"; };
+		470C5780295F062F00B0DC3E /* windyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = windyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		470C5784295F062F00B0DC3E /* windyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyUITests.swift; sourceTree = "<group>"; };
+		470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		470C575D295F062E00B0DC3E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		470C5773295F062F00B0DC3E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		470C577D295F062F00B0DC3E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		470C5757295F062E00B0DC3E = {
+			isa = PBXGroup;
+			children = (
+				470C5762295F062E00B0DC3E /* windy */,
+				470C5779295F062F00B0DC3E /* windyTests */,
+				470C5783295F062F00B0DC3E /* windyUITests */,
+				470C5761295F062E00B0DC3E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		470C5761295F062E00B0DC3E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				470C5760295F062E00B0DC3E /* windy.app */,
+				470C5776295F062F00B0DC3E /* windyTests.xctest */,
+				470C5780295F062F00B0DC3E /* windyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		470C5762295F062E00B0DC3E /* windy */ = {
+			isa = PBXGroup;
+			children = (
+				470C5763295F062E00B0DC3E /* windyApp.swift */,
+				470C5765295F062E00B0DC3E /* ContentView.swift */,
+				470C5767295F062F00B0DC3E /* Assets.xcassets */,
+				470C576C295F062F00B0DC3E /* Persistence.swift */,
+				470C5771295F062F00B0DC3E /* windy.entitlements */,
+				470C576E295F062F00B0DC3E /* windy.xcdatamodeld */,
+				470C5769295F062F00B0DC3E /* Preview Content */,
+			);
+			path = windy;
+			sourceTree = "<group>";
+		};
+		470C5769295F062F00B0DC3E /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				470C576A295F062F00B0DC3E /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		470C5779295F062F00B0DC3E /* windyTests */ = {
+			isa = PBXGroup;
+			children = (
+				470C577A295F062F00B0DC3E /* windyTests.swift */,
+			);
+			path = windyTests;
+			sourceTree = "<group>";
+		};
+		470C5783295F062F00B0DC3E /* windyUITests */ = {
+			isa = PBXGroup;
+			children = (
+				470C5784295F062F00B0DC3E /* windyUITests.swift */,
+				470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */,
+			);
+			path = windyUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		470C575F295F062E00B0DC3E /* windy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 470C578A295F062F00B0DC3E /* Build configuration list for PBXNativeTarget "windy" */;
+			buildPhases = (
+				470C575C295F062E00B0DC3E /* Sources */,
+				470C575D295F062E00B0DC3E /* Frameworks */,
+				470C575E295F062E00B0DC3E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = windy;
+			productName = windy;
+			productReference = 470C5760295F062E00B0DC3E /* windy.app */;
+			productType = "com.apple.product-type.application";
+		};
+		470C5775295F062F00B0DC3E /* windyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 470C578D295F062F00B0DC3E /* Build configuration list for PBXNativeTarget "windyTests" */;
+			buildPhases = (
+				470C5772295F062F00B0DC3E /* Sources */,
+				470C5773295F062F00B0DC3E /* Frameworks */,
+				470C5774295F062F00B0DC3E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				470C5778295F062F00B0DC3E /* PBXTargetDependency */,
+			);
+			name = windyTests;
+			productName = windyTests;
+			productReference = 470C5776295F062F00B0DC3E /* windyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		470C577F295F062F00B0DC3E /* windyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 470C5790295F062F00B0DC3E /* Build configuration list for PBXNativeTarget "windyUITests" */;
+			buildPhases = (
+				470C577C295F062F00B0DC3E /* Sources */,
+				470C577D295F062F00B0DC3E /* Frameworks */,
+				470C577E295F062F00B0DC3E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				470C5782295F062F00B0DC3E /* PBXTargetDependency */,
+			);
+			name = windyUITests;
+			productName = windyUITests;
+			productReference = 470C5780295F062F00B0DC3E /* windyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		470C5758295F062E00B0DC3E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					470C575F295F062E00B0DC3E = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					470C5775295F062F00B0DC3E = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = 470C575F295F062E00B0DC3E;
+					};
+					470C577F295F062F00B0DC3E = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = 470C575F295F062E00B0DC3E;
+					};
+				};
+			};
+			buildConfigurationList = 470C575B295F062E00B0DC3E /* Build configuration list for PBXProject "windy" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 470C5757295F062E00B0DC3E;
+			productRefGroup = 470C5761295F062E00B0DC3E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				470C575F295F062E00B0DC3E /* windy */,
+				470C5775295F062F00B0DC3E /* windyTests */,
+				470C577F295F062F00B0DC3E /* windyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		470C575E295F062E00B0DC3E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				470C576B295F062F00B0DC3E /* Preview Assets.xcassets in Resources */,
+				470C5768295F062F00B0DC3E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		470C5774295F062F00B0DC3E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		470C577E295F062F00B0DC3E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		470C575C295F062E00B0DC3E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				470C576D295F062F00B0DC3E /* Persistence.swift in Sources */,
+				470C5770295F062F00B0DC3E /* windy.xcdatamodeld in Sources */,
+				470C5766295F062E00B0DC3E /* ContentView.swift in Sources */,
+				470C5764295F062E00B0DC3E /* windyApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		470C5772295F062F00B0DC3E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				470C577B295F062F00B0DC3E /* windyTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		470C577C295F062F00B0DC3E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				470C5787295F062F00B0DC3E /* windyUITestsLaunchTests.swift in Sources */,
+				470C5785295F062F00B0DC3E /* windyUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		470C5778295F062F00B0DC3E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 470C575F295F062E00B0DC3E /* windy */;
+			targetProxy = 470C5777295F062F00B0DC3E /* PBXContainerItemProxy */;
+		};
+		470C5782295F062F00B0DC3E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 470C575F295F062E00B0DC3E /* windy */;
+			targetProxy = 470C5781295F062F00B0DC3E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		470C5788295F062F00B0DC3E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		470C5789295F062F00B0DC3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		470C578B295F062F00B0DC3E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = windy/windy.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"windy/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		470C578C295F062F00B0DC3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = windy/windy.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"windy/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		470C578E295F062F00B0DC3E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/windy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/windy";
+			};
+			name = Debug;
+		};
+		470C578F295F062F00B0DC3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/windy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/windy";
+			};
+			name = Release;
+		};
+		470C5791295F062F00B0DC3E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = windy;
+			};
+			name = Debug;
+		};
+		470C5792295F062F00B0DC3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = windy;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		470C575B295F062E00B0DC3E /* Build configuration list for PBXProject "windy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				470C5788295F062F00B0DC3E /* Debug */,
+				470C5789295F062F00B0DC3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		470C578A295F062F00B0DC3E /* Build configuration list for PBXNativeTarget "windy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				470C578B295F062F00B0DC3E /* Debug */,
+				470C578C295F062F00B0DC3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		470C578D295F062F00B0DC3E /* Build configuration list for PBXNativeTarget "windyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				470C578E295F062F00B0DC3E /* Debug */,
+				470C578F295F062F00B0DC3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		470C5790295F062F00B0DC3E /* Build configuration list for PBXNativeTarget "windyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				470C5791295F062F00B0DC3E /* Debug */,
+				470C5792295F062F00B0DC3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		470C576E295F062F00B0DC3E /* windy.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				470C576F295F062F00B0DC3E /* windy.xcdatamodel */,
+			);
+			currentVersion = 470C576F295F062F00B0DC3E /* windy.xcdatamodel */;
+			path = windy.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 470C5758295F062E00B0DC3E /* Project object */;
+}

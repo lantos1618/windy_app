@@ -50,6 +50,8 @@ enum Collision {
 }
 
 class WindyManager {
+    var collumns = 4.0
+    var rows = 3.0
     func currentWindow()  -> WindyWindow {
         // get the most frontMostApp
         let frontApp = NSWorkspace.shared.frontmostApplication!
@@ -73,7 +75,7 @@ class WindyManager {
 //               let windowNumber =  windowInfo[kCGWindowNumber as String]
     }
     
-    func checkCollision(window: WindyWindow ) -> Collision {
+    func checkCollision(window: WindyWindow ) -> [Collision] {
         // if pointX < 0 + some error
         // if pointY < 0 + some error
         // if pointX + width > screenWidth - some error
@@ -83,64 +85,92 @@ class WindyManager {
         let point = window.getPoint()
         let size = window.getSize()
         let screenSize = NSScreen.main
-        if ( point.x < 0 + (screenSize?.frame.width)! * 0.10 ) {
+        var collisions: [Collision] = []
+        
+        if ( point.x < 0 + (screenSize?.frame.maxX)! * 0.10 ) {
             print("Colission! left")
-            return .Left
+            collisions.append(.Left)
         }
-        if ( point.y < 0 + (screenSize?.frame.height)! * 0.10 ) {
+        if ( point.y < 0 + (screenSize?.frame.maxY)! * 0.10 ) {
             print("Colission! top")
-            return .Top
+            collisions.append(.Top)
         }
-        if ( point.x + size.width > ( screenSize?.frame.width)! - ( screenSize?.frame.width)! * 0.10) {
+        if ( point.x + size.width > ( screenSize?.frame.width)! - ( screenSize?.frame.maxX)! * 0.10) {
             print("Colission! right")
-            return .Right
+            collisions.append(.Right)
         }
-        if ( point.y + size.height > ( screenSize?.frame.height)! - ( screenSize?.frame.height)! * 0.10) {
+        if ( point.y + size.height > ( screenSize?.frame.height)! - ( screenSize?.frame.maxY)! * 0.10) {
             print("Colission! bottom")
-            return .Bottom
+            collisions.append(.Bottom)
         }
-        return .None
+        return collisions
     }
+    
+    func calculateNextSizeX(window: WindyWindow) -> CGFloat {
+        // we want to avoid having a state for each of the windows so we can make it go
+        // big -> normal -> small -> big
+        let screenSize = (NSScreen.main?.frame)!
+        let minWidth = screenSize.maxX / collumns
+        let currentWindowSize = window.getSize()
+        if (currentWindowSize.width < minWidth) {
+            return screenSize.maxX
+        }
+        return currentWindowSize.width - minWidth
+    }
+    
+    func calculateNextSizeY(window: WindyWindow) -> CGFloat {
+        // we want to avoid having a state for each of the windows so we can make it go
+        // big -> normal -> small -> big
+        let screenSize = (NSScreen.main?.frame)!
+        let minHeight = screenSize.maxY / rows
+        let currentWindowSize = window.getSize()
+        if (currentWindowSize.height < minHeight) {
+            return screenSize.maxY
+        }
+        return currentWindowSize.height - minHeight
+    }
+    
     func globalKeyEventHandler(with event: NSEvent) {
-//        print("KeyDown:",event.characters!, " SpecialKey:", event.specialKey, " modifiers:", event.modifierFlags.intersection(.deviceIndependentFlagsMask))
-        // if short cut keys are not pressed break
 
-        if (event.modifierFlags.contains([.option, .control, .shift])) {
+        if (event.modifierFlags.contains([.option, .control])) {
             // pos
             // size
             let window = currentWindow()
-            let size = window.getSize()
+            var size = window.getSize()
             var point = window.getPoint()
             
        
-            
+            // if we collide then we want to cycle the sizes
             switch event.specialKey! {
             case .leftArrow:
-                // if colloide set the window to left most
-                if (checkCollision(window: window) == .Left) {
+                // if collide set the window to left most
+                if (checkCollision(window: window).contains(.Left)) {
+                    size.width = calculateNextSizeX(window: window)
                     point.x = 0
                 } else {
                     point.x = point.x - size.width
-
                 }
             case .rightArrow:
-                // if colloide set the window to right most
-                if (checkCollision(window: window) == .Right) {
+                // if collide set the window to right most
+                if (checkCollision(window: window).contains(.Right)) {
+                    size.width = calculateNextSizeX(window: window)
                     point.x = (NSScreen.main?.frame.maxX)! - size.width
                 } else {
                     point.x = point.x + size.width
 
                 }
             case .upArrow:
-                // if colloide set the window to up most
-                if (checkCollision(window: window) == .Top) {
+                // if collide set the window to up most
+                if (checkCollision(window: window).contains(.Top)) {
+                    size.width = calculateNextSizeY(window: window)
                     point.y = 0
                 } else {
                     point.y = point.y - size.height
                 }
             case .downArrow:
-                // if colloide set the window to bottom most
-                if (checkCollision(window: window) == .Bottom) {
+                // if collide set the window to bottom most
+                if (checkCollision(window: window).contains(.Bottom)) {
+                    size.height = calculateNextSizeY(window: window)
                     point.y = (NSScreen.main?.frame.maxY)! - size.height
                 } else {
                     point.y = point.y + size.height
@@ -148,25 +178,8 @@ class WindyManager {
             default:
                 break
             }
-            window.setPoint(point: point)
-        } else if (event.modifierFlags.contains([.option, .control])) {
-            // size
-            let window = currentWindow()
-            var size = window.getSize()
-
-            switch event.specialKey! {
-            case .leftArrow:
-                size.width = size.width / 2
-            case .rightArrow:
-                size.width = size.width * 2
-            case .upArrow:
-                size.height = size.height / 2
-            case .downArrow:
-                size.height = size.height * 2
-            default:
-                break
-            }
             window.setSize(size: size)
+            window.setPoint(point: point)
         }
     }
 }

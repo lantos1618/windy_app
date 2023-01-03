@@ -52,7 +52,7 @@ class WindyManager {
     func currentWindow()  -> WindyWindow {
         // get the most frontMostApp
         let frontApp = NSWorkspace.shared.frontmostApplication!
-        var windyWindow = WindyWindow(app: frontApp)!
+        let windyWindow = WindyWindow(app: frontApp)!
         return windyWindow
     }
     func infoAllWindows() {
@@ -71,34 +71,53 @@ class WindyManager {
 //
 //               let windowNumber =  windowInfo[kCGWindowNumber as String]
     }
+    
+    func checkCollision() {
+        // if pointX < 0 + some error
+        // if pointY < 0 + some error
+        // if pointX + width < screenWidth
+        // if pointY + height < screenHeight
+        // else just move
+    }
     func globalKeyEventHandler(with event: NSEvent) {
-        print("KeyDown:",event.characters!, " SpecialKey:", event.specialKey, " modifiers:", event.modifierFlags.intersection(.deviceIndependentFlagsMask))
-        if (event.modifierFlags.contains([.option, .control]) != true) {
-            
-            return
-        }
-        if (event.specialKey == .leftArrow) {
+//        print("KeyDown:",event.characters!, " SpecialKey:", event.specialKey, " modifiers:", event.modifierFlags.intersection(.deviceIndependentFlagsMask))
+        // if short cut keys are not pressed break
+
+        if (event.modifierFlags.contains([.option, .control, .shift])) {
+            // pos
+            // size
+            let window = currentWindow()
+            let size = window.getSize()
+            var point = window.getPoint()
+            switch event.specialKey! {
+            case .leftArrow:
+                point.x = point.x - size.width
+            case .rightArrow:
+                point.x = point.x + size.width
+            case .upArrow:
+                point.y = point.y - size.height
+            case .downArrow:
+                point.y = point.y + size.height
+            default:
+                break
+            }
+            window.setPoint(point: point)
+        } else if (event.modifierFlags.contains([.option, .control])) {
+            // size
             var window = currentWindow()
             var size = window.getSize()
-            size.width = size.width / 2
-            window.setSize(size: size)
-        }
-        if (event.specialKey == .rightArrow) {
-            var window = currentWindow()
-            var size = window.getSize()
-            size.width = size.width * 2
-            window.setSize(size: size)
-        }
-        if (event.specialKey == .upArrow) {
-            var window = currentWindow()
-            var size = window.getSize()
-            size.height = size.height / 2
-            window.setSize(size: size)
-        }
-        if (event.specialKey == .downArrow) {
-            var window = currentWindow()
-            var size = window.getSize()
-            size.height = size.height * 2
+            switch event.specialKey! {
+            case .leftArrow:
+                size.width = size.width / 2
+            case .rightArrow:
+                size.width = size.width * 2
+            case .upArrow:
+                size.height = size.height / 2
+            case .downArrow:
+                size.height = size.height * 2
+            default:
+                break
+            }
             window.setSize(size: size)
         }
     }

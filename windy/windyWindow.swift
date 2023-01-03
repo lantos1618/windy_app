@@ -17,7 +17,7 @@ class WindyWindow {
     }
     
     convenience init?(pid: pid_t) {
-        var AXApp = AXUIElementCreateApplication(pid)
+        let AXApp = AXUIElementCreateApplication(pid)
         var winPtr:  CFTypeRef?
         if AXUIElementCopyAttributeValue(AXApp, kAXMainWindowAttribute as CFString, &winPtr) != .success{
             print("error: Failed to get main window attribute")
@@ -51,14 +51,14 @@ class WindyWindow {
     }
     func setSize(size: CGSize) {
         var newSize = size
-        var CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
+        let CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
         if AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, CFsize) != .success {
             print("error: failed to set window size")
         }
     }
     func setPoint(point: CGPoint) {
         var newPoint = point
-        var position = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;
+        let position = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;
         if AXUIElementSetAttributeValue(AXWindow, kAXPositionAttribute as CFString, position) != .success {
             print("error: failed to set window point")
         }

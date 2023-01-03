@@ -49,6 +49,9 @@ class WindyWindow {
         }
         return currentSize
     }
+    func getActiveScreen() -> NSScreen{
+        return NSScreen.main!
+    }
     func setSize(size: CGSize) {
         var newSize = size
         let CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;

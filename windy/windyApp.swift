@@ -84,22 +84,24 @@ class WindyManager {
 
         let point = window.getPoint()
         let size = window.getSize()
-        let screenSize = NSScreen.main
+        let screenSize = window.getActiveScreen().frame
         var collisions: [Collision] = []
+        let errorX = screenSize.maxX * 0.10
+        let errorY = screenSize.maxY * 0.10
         
-        if ( point.x < 0 + (screenSize?.frame.maxX)! * 0.10 ) {
+        if ( point.x < 0 + errorX ) {
             print("Colission! left")
             collisions.append(.Left)
         }
-        if ( point.y < 0 + (screenSize?.frame.maxY)! * 0.10 ) {
-            print("Colission! top")
-            collisions.append(.Top)
-        }
-        if ( point.x + size.width > ( screenSize?.frame.width)! - ( screenSize?.frame.maxX)! * 0.10) {
+        if ( point.x + size.width > screenSize.maxX - errorX) {
             print("Colission! right")
             collisions.append(.Right)
         }
-        if ( point.y + size.height > ( screenSize?.frame.height)! - ( screenSize?.frame.maxY)! * 0.10) {
+        if ( point.y < 0 + errorY ) {
+            print("Colission! top")
+            collisions.append(.Top)
+        }
+        if ( point.y + size.height > screenSize.maxY - errorY) {
             print("Colission! bottom")
             collisions.append(.Bottom)
         }
@@ -109,10 +111,12 @@ class WindyManager {
     func calculateNextSizeX(window: WindyWindow) -> CGFloat {
         // we want to avoid having a state for each of the windows so we can make it go
         // big -> normal -> small -> big
-        let screenSize = (NSScreen.main?.frame)!
+        let screenSize = window.getActiveScreen().frame
         let minWidth = screenSize.maxX / collumns
         let currentWindowSize = window.getSize()
-        if (currentWindowSize.width < minWidth) {
+        let error = minWidth * 0.1
+        
+        if (currentWindowSize.width < minWidth + error) {
             return screenSize.maxX
         }
         return currentWindowSize.width - minWidth
@@ -121,21 +125,23 @@ class WindyManager {
     func calculateNextSizeY(window: WindyWindow) -> CGFloat {
         // we want to avoid having a state for each of the windows so we can make it go
         // big -> normal -> small -> big
-        let screenSize = (NSScreen.main?.frame)!
+        let screenSize = window.getActiveScreen().frame
         let minHeight = screenSize.maxY / rows
         let currentWindowSize = window.getSize()
-        if (currentWindowSize.height < minHeight) {
+        let error = minHeight * 0.1
+
+        if (currentWindowSize.height < minHeight + error) {
             return screenSize.maxY
         }
         return currentWindowSize.height - minHeight
     }
     
     func globalKeyEventHandler(with event: NSEvent) {
-
         if (event.modifierFlags.contains([.option, .control])) {
             // pos
             // size
             let window = currentWindow()
+            let screen = window.getActiveScreen()
             var size = window.getSize()
             var point = window.getPoint()
             
@@ -154,7 +160,7 @@ class WindyManager {
                 // if collide set the window to right most
                 if (checkCollision(window: window).contains(.Right)) {
                     size.width = calculateNextSizeX(window: window)
-                    point.x = (NSScreen.main?.frame.maxX)! - size.width
+                    point.x = screen.frame.maxX - size.width
                 } else {
                     point.x = point.x + size.width
 
@@ -162,7 +168,7 @@ class WindyManager {
             case .upArrow:
                 // if collide set the window to up most
                 if (checkCollision(window: window).contains(.Top)) {
-                    size.width = calculateNextSizeY(window: window)
+                    size.height = calculateNextSizeY(window: window)
                     point.y = 0
                 } else {
                     point.y = point.y - size.height
@@ -171,7 +177,7 @@ class WindyManager {
                 // if collide set the window to bottom most
                 if (checkCollision(window: window).contains(.Bottom)) {
                     size.height = calculateNextSizeY(window: window)
-                    point.y = (NSScreen.main?.frame.maxY)! - size.height
+                    point.y = screen.frame.maxY - size.height
                 } else {
                     point.y = point.y + size.height
                 }
@@ -206,6 +212,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.keyDown) { event in
                 self.windyManager.globalKeyEventHandler(with: event)
             }
+            
             return true
         } else {
             print("Not trusted")

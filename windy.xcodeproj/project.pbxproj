@@ -8,14 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		470C5764295F062E00B0DC3E /* windyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5763295F062E00B0DC3E /* windyApp.swift */; };
-		470C5766295F062E00B0DC3E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5765295F062E00B0DC3E /* ContentView.swift */; };
 		470C5768295F062F00B0DC3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 470C5767295F062F00B0DC3E /* Assets.xcassets */; };
 		470C576B295F062F00B0DC3E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 470C576A295F062F00B0DC3E /* Preview Assets.xcassets */; };
-		470C576D295F062F00B0DC3E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C576C295F062F00B0DC3E /* Persistence.swift */; };
-		470C5770295F062F00B0DC3E /* windy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 470C576E295F062F00B0DC3E /* windy.xcdatamodeld */; };
 		470C577B295F062F00B0DC3E /* windyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C577A295F062F00B0DC3E /* windyTests.swift */; };
 		470C5785295F062F00B0DC3E /* windyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5784295F062F00B0DC3E /* windyUITests.swift */; };
 		470C5787295F062F00B0DC3E /* windyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */; };
+		470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C57B129642E6100B0DC3E /* windyWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,17 +36,16 @@
 /* Begin PBXFileReference section */
 		470C5760295F062E00B0DC3E /* windy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = windy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		470C5763295F062E00B0DC3E /* windyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyApp.swift; sourceTree = "<group>"; };
-		470C5765295F062E00B0DC3E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		470C5767295F062F00B0DC3E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		470C576A295F062F00B0DC3E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		470C576C295F062F00B0DC3E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		470C576F295F062F00B0DC3E /* windy.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = windy.xcdatamodel; sourceTree = "<group>"; };
 		470C5771295F062F00B0DC3E /* windy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = windy.entitlements; sourceTree = "<group>"; };
 		470C5776295F062F00B0DC3E /* windyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = windyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		470C577A295F062F00B0DC3E /* windyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyTests.swift; sourceTree = "<group>"; };
 		470C5780295F062F00B0DC3E /* windyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = windyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		470C5784295F062F00B0DC3E /* windyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyUITests.swift; sourceTree = "<group>"; };
 		470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "windy-Bridging-Header.h"; sourceTree = "<group>"; };
+		470C57B129642E6100B0DC3E /* windyWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,12 +96,11 @@
 		470C5762295F062E00B0DC3E /* windy */ = {
 			isa = PBXGroup;
 			children = (
+				470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */,
 				470C5763295F062E00B0DC3E /* windyApp.swift */,
-				470C5765295F062E00B0DC3E /* ContentView.swift */,
+				470C57B129642E6100B0DC3E /* windyWindow.swift */,
 				470C5767295F062F00B0DC3E /* Assets.xcassets */,
-				470C576C295F062F00B0DC3E /* Persistence.swift */,
 				470C5771295F062F00B0DC3E /* windy.entitlements */,
-				470C576E295F062F00B0DC3E /* windy.xcdatamodeld */,
 				470C5769295F062F00B0DC3E /* Preview Content */,
 			);
 			path = windy;
@@ -265,10 +261,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				470C576D295F062F00B0DC3E /* Persistence.swift in Sources */,
-				470C5770295F062F00B0DC3E /* windy.xcdatamodeld in Sources */,
-				470C5766295F062E00B0DC3E /* ContentView.swift in Sources */,
 				470C5764295F062E00B0DC3E /* windyApp.swift in Sources */,
+				470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,6 +409,7 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				"SWIFT_OPTIMIZATION_LEVEL[arch=*]" = "-O";
 			};
 			name = Release;
 		};
@@ -430,15 +425,18 @@
 				DEVELOPMENT_ASSET_PATHS = "\"windy/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "windy/windy-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -455,15 +453,18 @@
 				DEVELOPMENT_ASSET_PATHS = "\"windy/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = zug.dev.windy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "windy/windy-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -576,19 +577,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		470C576E295F062F00B0DC3E /* windy.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				470C576F295F062F00B0DC3E /* windy.xcdatamodel */,
-			);
-			currentVersion = 470C576F295F062F00B0DC3E /* windy.xcdatamodel */;
-			path = windy.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 470C5758295F062E00B0DC3E /* Project object */;
 }

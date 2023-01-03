@@ -45,10 +45,11 @@ struct windyApp: App {
     }
 }
 
+enum Collision {
+    case Left, Right, Top, Bottom, None
+}
 
 class WindyManager {
-    
-    
     func currentWindow()  -> WindyWindow {
         // get the most frontMostApp
         let frontApp = NSWorkspace.shared.frontmostApplication!
@@ -72,12 +73,33 @@ class WindyManager {
 //               let windowNumber =  windowInfo[kCGWindowNumber as String]
     }
     
-    func checkCollision() {
+    func checkCollision(window: WindyWindow ) -> Collision {
         // if pointX < 0 + some error
         // if pointY < 0 + some error
-        // if pointX + width < screenWidth
-        // if pointY + height < screenHeight
+        // if pointX + width > screenWidth - some error
+        // if pointY + height > screenHeight - some error
         // else just move
+
+        let point = window.getPoint()
+        let size = window.getSize()
+        let screenSize = NSScreen.main
+        if ( point.x < 0 + (screenSize?.frame.width)! * 0.10 ) {
+            print("Colission! left")
+            return .Left
+        }
+        if ( point.y < 0 + (screenSize?.frame.height)! * 0.10 ) {
+            print("Colission! top")
+            return .Top
+        }
+        if ( point.x + size.width > ( screenSize?.frame.width)! - ( screenSize?.frame.width)! * 0.10) {
+            print("Colission! right")
+            return .Right
+        }
+        if ( point.y + size.height > ( screenSize?.frame.height)! - ( screenSize?.frame.height)! * 0.10) {
+            print("Colission! bottom")
+            return .Bottom
+        }
+        return .None
     }
     func globalKeyEventHandler(with event: NSEvent) {
 //        print("KeyDown:",event.characters!, " SpecialKey:", event.specialKey, " modifiers:", event.modifierFlags.intersection(.deviceIndependentFlagsMask))
@@ -89,23 +111,49 @@ class WindyManager {
             let window = currentWindow()
             let size = window.getSize()
             var point = window.getPoint()
+            
+       
+            
             switch event.specialKey! {
             case .leftArrow:
-                point.x = point.x - size.width
+                // if colloide set the window to left most
+                if (checkCollision(window: window) == .Left) {
+                    point.x = 0
+                } else {
+                    point.x = point.x - size.width
+
+                }
             case .rightArrow:
-                point.x = point.x + size.width
+                // if colloide set the window to right most
+                if (checkCollision(window: window) == .Right) {
+                    point.x = (NSScreen.main?.frame.maxX)! - size.width
+                } else {
+                    point.x = point.x + size.width
+
+                }
             case .upArrow:
-                point.y = point.y - size.height
+                // if colloide set the window to up most
+                if (checkCollision(window: window) == .Top) {
+                    point.y = 0
+                } else {
+                    point.y = point.y - size.height
+                }
             case .downArrow:
-                point.y = point.y + size.height
+                // if colloide set the window to bottom most
+                if (checkCollision(window: window) == .Bottom) {
+                    point.y = (NSScreen.main?.frame.maxY)! - size.height
+                } else {
+                    point.y = point.y + size.height
+                }
             default:
                 break
             }
             window.setPoint(point: point)
         } else if (event.modifierFlags.contains([.option, .control])) {
             // size
-            var window = currentWindow()
+            let window = currentWindow()
             var size = window.getSize()
+
             switch event.specialKey! {
             case .leftArrow:
                 size.width = size.width / 2

@@ -1,7 +1,27 @@
 {
   "images" : [
     {
-      "filename" : "window-maximize.png",
+      "filename" : "windyIcon.png",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "light"
+        }
+      ],
+      "filename" : "windyIconLight.png",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "windyIconDark.png",
       "idiom" : "universal"
     }
   ],

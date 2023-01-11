@@ -14,18 +14,45 @@
 //  if tap crtl + option + double tap lArrow = expand
 //  if window collides on screen wall it cycles 1(max screen), 0.5, 0.33, 0.25
 //  if double tap (ctrl + option) == auto tile so that, collumns are auto fit
+//
+//
+// TODO
+// [x] get current window
+// [x] global hot key
+// [ ] mouse click and drag
+// [ ] debug/test nsscreen.main.Frame
+// [x] Make collision system
+// [ ] Get current window in Screen
+//  - [ ] make window have screen offset
+// [ ] Make wrap around behaviour
+// [ ] unwrap all ! add try/catch conditions
+// [x] icon, dark & light modes
 
 
-import Cocoa
-import AppKit
+//import Cocoa
+//import AppKit
+//import Foundation
+//import ApplicationServices
+//import Accessibility
 import SwiftUI
-import Foundation
-import ApplicationServices
-import Accessibility
+
+
+// SwiftUI Main Window
+// we have disabled it
+@main
+struct windyApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    var body: some Scene {
+        WindowGroup {
+            // disabled here and in the AppDelegate
+            if false {}
+        }
+    }
+}
 
 
 
-struct ContentView: View {
+struct MenuPopover: View {
     var body: some View {
         List {
             Button("Quit") {
@@ -35,162 +62,7 @@ struct ContentView: View {
     }
 }
 
-@main
-struct windyApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    var body: some Scene {
-        WindowGroup {
-            if false {}
-        }
-    }
-}
-
-enum Collision {
-    case Left, Right, Top, Bottom, None
-}
-
-class WindyManager {
-    var collumns = 4.0
-    var rows = 3.0
-    func currentWindow()  -> WindyWindow {
-        // get the most frontMostApp
-        let frontApp = NSWorkspace.shared.frontmostApplication!
-        let windyWindow = WindyWindow(app: frontApp)!
-        return windyWindow
-    }
-    func infoAllWindows() {
-//       // get all available windows windows
-//       let options = CGWindowListOption(arrayLiteral: CGWindowListOption.excludeDesktopElements, CGWindowListOption.optionOnScreenOnly)
-//
-//       let windowListInfo = CGWindowListCopyWindowInfo(options, CGWindowID(0))
-//       let windowInfoList = windowListInfo as NSArray? as? [[String: AnyObject]]
-//
-//       // check if PID is the same as the window PID
-//       for windowInfo in windowInfoList! {
-//           let windowPID = windowInfo[kCGWindowOwnerPID as String] as! UInt32
-//           if windowPID == frontMostAppPID {
-//               // do something with the window...
-//               print(windowInfo)
-//
-//               let windowNumber =  windowInfo[kCGWindowNumber as String]
-    }
-    
-    func checkCollision(window: WindyWindow ) -> [Collision] {
-        // if pointX < 0 + some error
-        // if pointY < 0 + some error
-        // if pointX + width > screenWidth - some error
-        // if pointY + height > screenHeight - some error
-        // else just move
-
-        let point = window.getPoint()
-        let size = window.getSize()
-        let screenSize = window.getActiveScreen().frame
-        var collisions: [Collision] = []
-        let errorX = screenSize.maxX * 0.10
-        let errorY = screenSize.maxY * 0.10
-        
-        if ( point.x < 0 + errorX ) {
-            print("Colission! left")
-            collisions.append(.Left)
-        }
-        if ( point.x + size.width > screenSize.maxX - errorX) {
-            print("Colission! right")
-            collisions.append(.Right)
-        }
-        if ( point.y < 0 + errorY ) {
-            print("Colission! top")
-            collisions.append(.Top)
-        }
-        if ( point.y + size.height > screenSize.maxY - errorY) {
-            print("Colission! bottom")
-            collisions.append(.Bottom)
-        }
-        return collisions
-    }
-    
-    func calculateNextSizeX(window: WindyWindow) -> CGFloat {
-        // we want to avoid having a state for each of the windows so we can make it go
-        // big -> normal -> small -> big
-        let screenSize = window.getActiveScreen().frame
-        let minWidth = screenSize.maxX / collumns
-        let currentWindowSize = window.getSize()
-        let error = minWidth * 0.1
-        
-        if (currentWindowSize.width < minWidth + error) {
-            return screenSize.maxX
-        }
-        return currentWindowSize.width - minWidth
-    }
-    
-    func calculateNextSizeY(window: WindyWindow) -> CGFloat {
-        // we want to avoid having a state for each of the windows so we can make it go
-        // big -> normal -> small -> big
-        let screenSize = window.getActiveScreen().frame
-        let minHeight = screenSize.maxY / rows
-        let currentWindowSize = window.getSize()
-        let error = minHeight * 0.1
-
-        if (currentWindowSize.height < minHeight + error) {
-            return screenSize.maxY
-        }
-        return currentWindowSize.height - minHeight
-    }
-    
-    func globalKeyEventHandler(with event: NSEvent) {
-        if (event.modifierFlags.contains([.option, .control])) {
-            // pos
-            // size
-            let window = currentWindow()
-            let screen = window.getActiveScreen()
-            var size = window.getSize()
-            var point = window.getPoint()
-            
-       
-            // if we collide then we want to cycle the sizes
-            switch event.specialKey! {
-            case .leftArrow:
-                // if collide set the window to left most
-                if (checkCollision(window: window).contains(.Left)) {
-                    size.width = calculateNextSizeX(window: window)
-                    point.x = 0
-                } else {
-                    point.x = point.x - size.width
-                }
-            case .rightArrow:
-                // if collide set the window to right most
-                if (checkCollision(window: window).contains(.Right)) {
-                    size.width = calculateNextSizeX(window: window)
-                    point.x = screen.frame.maxX - size.width
-                } else {
-                    point.x = point.x + size.width
-
-                }
-            case .upArrow:
-                // if collide set the window to up most
-                if (checkCollision(window: window).contains(.Top)) {
-                    size.height = calculateNextSizeY(window: window)
-                    point.y = 0
-                } else {
-                    point.y = point.y - size.height
-                }
-            case .downArrow:
-                // if collide set the window to bottom most
-                if (checkCollision(window: window).contains(.Bottom)) {
-                    size.height = calculateNextSizeY(window: window)
-                    point.y = screen.frame.maxY - size.height
-                } else {
-                    point.y = point.y + size.height
-                }
-            default:
-                break
-            }
-            window.setSize(size: size)
-            window.setPoint(point: point)
-        }
-    }
-}
-
-//@NSApplicationMain
+// Application Logic
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     // the status button in the apple menu
@@ -198,55 +70,55 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var statusBarButton: NSStatusBarButton!
     private var popover: NSPopover!
     private var windyManager = WindyManager()
-
+    private var privilegeManager = PrivilegeManager()
     
-    func checkPrivilege(prompt: Bool) -> Bool {
-        let options = NSDictionary(
-            object: prompt ? kCFBooleanTrue! : kCFBooleanFalse!, forKey: kAXTrustedCheckOptionPrompt.takeUnretainedValue() as NSString) as CFDictionary
-        // this needs sandbox turned off :/
-         let trusted = AXIsProcessTrustedWithOptions(options)
-        
-        if (trusted) {
-            print("Trusted!")
-            // register windy window manager
-            NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.keyDown) { event in
-                self.windyManager.globalKeyEventHandler(with: event)
-            }
-            
-            return true
-        } else {
-            print("Not trusted")
-            return false
-        }
-    }
-    
-    @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
-        
+    func hideMainWindow() {
         // hide the main window on launch
         if let mainWindow = NSApplication.shared.windows.first {
             mainWindow.close()
         }
+    }
+    
+    func registerGlobalEvents() {
+        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.keyDown) { event in
+            self.windyManager.globalKeyEventHandler(with: event)
+        }
+    }
+    
+    @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
+        hideMainWindow()
         
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        
+        // put the windy icon in the mac toolbar
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusBarButton = statusItem.button!
         statusBarButton.image = NSImage(imageLiteralResourceName : "StatusBarIcon")
-        statusBarButton.image!.size = NSSize ( width: 18 , height: 18 )
+        statusBarButton.image!.size = NSSize ( width: 32 , height: 32 )
         statusBarButton.action = #selector(togglePopover)
         
+        // open the MenuPopover when user clicks the status bar icon
         popover = NSPopover()
         popover.contentSize = NSSize(width: 300, height: 400)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: ContentView())
-
-        _ = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
-            if (self.checkPrivilege(prompt: true)) {
-                // we got permission
-                timer.invalidate()
-            }
-        }
+        popover.contentViewController = NSHostingController(rootView: MenuPopover())
         
-
+        
+        // open a request permissions
+        var accessRequestModalWindow: NSWindow
+        accessRequestModalWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 380),
+            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        accessRequestModalWindow.contentView = NSHostingView(
+            rootView: AccessRequestModal(
+                accessWindow: accessRequestModalWindow,
+                closeCallBack: registerGlobalEvents
+            )
+        )
+        accessRequestModalWindow.center()
+        accessRequestModalWindow.makeKeyAndOrderFront(nil)
+        
     }
     
     @objc func togglePopover() {

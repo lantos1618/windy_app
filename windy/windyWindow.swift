@@ -7,8 +7,6 @@
 
 import Foundation
 
-
-
 class WindyWindow {
     var AXWindow: AXUIElement
     
@@ -24,9 +22,21 @@ class WindyWindow {
         }
         self.init(ele: winPtr as! AXUIElement)
     }
+    
     convenience init?(app: NSRunningApplication) {
         self.init(pid: app.processIdentifier)
     }
+    
+    convenience init?(point: CGPoint) {
+        var winPtr: AXUIElement?
+        let systemWide = AXUIElementCreateSystemWide()
+        
+        if AXUIElementCopyElementAtPosition(systemWide, Float(point.x), Float(point.y), &winPtr) != .success {
+            print("failed to get window at point")
+        }
+        self.init(ele: winPtr!)
+    }
+    
     func getPoint() -> CGPoint {
         var oldPointCFT:  CFTypeRef?
         if AXUIElementCopyAttributeValue(self.AXWindow, kAXPositionAttribute as CFString, &oldPointCFT) != .success {
@@ -38,6 +48,7 @@ class WindyWindow {
         }
         return currentPoint
     }
+    
     func getSize() -> CGSize {
         var oldSizeCFT:  CFTypeRef?
         if AXUIElementCopyAttributeValue(self.AXWindow, kAXSizeAttribute as CFString, &oldSizeCFT) != .success {
@@ -49,9 +60,22 @@ class WindyWindow {
         }
         return currentSize
     }
-    func getActiveScreen() -> NSScreen{
-        return NSScreen.main!
+    
+    func getAttrNames() -> [String] {
+        var attrNames: CFArray?
+        if AXUIElementCopyAttributeNames(AXWindow, &attrNames) != .success {
+            print("could not get AXUIElementAttributeNames")
+        }
+        return attrNames as! [String]
     }
+    func getScreen() -> NSScreen {
+        // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
+        // Returns the screen object containing the window with the keyboard focus.
+        let screen = NSScreen.main!
+//        return CGSize(width: screen.width, height: screen.height)
+        return screen
+    }
+    
     func setSize(size: CGSize) {
         var newSize = size
         let CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
@@ -59,6 +83,7 @@ class WindyWindow {
             print("error: failed to set window size")
         }
     }
+    
     func setPoint(point: CGPoint) {
         var newPoint = point
         let position = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;

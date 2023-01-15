@@ -31,8 +31,9 @@ class WindyWindow {
         var winPtr: AXUIElement?
         let systemWide = AXUIElementCreateSystemWide()
         
-        if AXUIElementCopyElementAtPosition(systemWide, Float(point.x), Float(point.y), &winPtr) != .success {
-            print("failed to get window at point")
+        let axErr = AXUIElementCopyElementAtPosition(systemWide, Float(point.x), Float(point.y), &winPtr)
+        if axErr != .success {
+            print("failed to get window at point, error:", axErr)
         }
         self.init(ele: winPtr!)
     }
@@ -90,6 +91,14 @@ class WindyWindow {
         if AXUIElementSetAttributeValue(AXWindow, kAXPositionAttribute as CFString, position) != .success {
             print("error: failed to set window point")
         }
+    }
+    func getWindowId() -> CGWindowID {
+        var winId = CGWindowID(0)
+        let axErr = _AXUIElementGetWindow(self.AXWindow, &winId)
+        if axErr != .success {
+            print("error: failed to get windowID")
+        }
+        return winId
     }
 }
 

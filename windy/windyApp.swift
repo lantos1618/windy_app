@@ -29,6 +29,18 @@
 // [x] icon, dark & light modes
 
 
+// how determin if window is being dragged
+// var initialWindow
+
+// if leftMouseDown:
+//  initialWindow = getWindow
+// if mouseMove:
+//  if initialWindow.origin != getWindow.origin:
+//    // window resizing
+// if leftMouseUp:
+//  if intialWindow.origin != getWindow.orign:
+//    // window resizingDone
+
 //import Cocoa
 //import AppKit
 //import Foundation
@@ -71,6 +83,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var popover: NSPopover!
     private var windyManager = WindyManager()
     private var privilegeManager = PrivilegeManager()
+    private var initialLeftClickWindowOrigin: CGRect?
+    private var snapWindow: NSWindow?
+//    private var initialWindow = WindyWindow
     
     func hideMainWindow() {
         // hide the main window on launch
@@ -84,6 +99,96 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func registerGlobalEvents() {
         NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.keyDown) { event in
             self.windyManager.globalKeyEventHandler(with: event)
+        }
+        
+        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.leftMouseDown) {event in
+            guard let window = self.windyManager.currentWindow() else {
+                print("failed to get window")
+                return
+            }
+            let point = window.getPoint()
+            let size = window.getSize()
+            let initialLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
+            self.initialLeftClickWindowOrigin = initialLeftClickWindowOrigin
+
+        }
+        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.leftMouseDragged) {event in
+            guard self.initialLeftClickWindowOrigin != nil else {
+                print("noInitialWindowSet")
+                return
+            }
+            guard let window = self.windyManager.currentWindow() else {
+                print("failed to get window")
+                return
+            }
+            let point = window.getPoint()
+            let size = window.getSize()
+            let currentLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
+
+            
+            if (self.initialLeftClickWindowOrigin != currentLeftClickWindowOrigin ) {
+                print("windowMoved:", currentLeftClickWindowOrigin)
+                let mousePos = event.locationInWindow
+                let screen = window.getScreen()
+                if (mousePos.x < screen.frame.width * 0.10) {
+                    if self.snapWindow != nil {
+                        if (self.snapWindow?.isVisible == false) {
+                            self.snapWindow?.setIsVisible(true)
+                        }
+                    } else {
+                        self.snapWindow = NSWindow(
+                            contentRect: NSRect(x: 0, y: 0, width: screen.frame.width/2, height: screen.frame.height),
+                            styleMask: [.fullSizeContentView],
+                            backing: .buffered,
+                            defer: false
+                        )
+//                        self.snapWindow?.titleVisibility = .hidden
+//                        self.snapWindow?.toolbar?.isVisible = false
+                        self.snapWindow?.backgroundColor = NSColor(calibratedRed: 0.3, green: 0.4, blue: 1, alpha: 0.2)
+                        
+                    }
+                } else {
+                    if self.snapWindow != nil {
+                        if (self.snapWindow?.isVisible == true) {
+                            self.snapWindow?.setIsVisible(false)
+                        }
+                    }
+                }
+            }
+        }
+        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.leftMouseUp) {
+            event in
+            guard self.initialLeftClickWindowOrigin != nil else {
+                print("noInitialWindowSet")
+                return
+            }
+            guard let window = self.windyManager.currentWindow() else {
+                print("failed to get window")
+                return
+            }
+            let point = window.getPoint()
+            let size = window.getSize()
+            let currentLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
+
+            if (self.initialLeftClickWindowOrigin != currentLeftClickWindowOrigin ) {
+                let mousePos = event.locationInWindow
+                let screen = window.getScreen()
+                if (mousePos.x < screen.frame.width * 0.10) {
+                    let rec = NSRect(x: 0, y: 0, width: screen.frame.width/2, height: screen.frame.height)
+                    window.setSize(size: CGSize(
+                        width: rec.width, height: rec.height
+                    ))
+                    window.setPoint(point: CGPoint(
+                        x: rec.minX, y: rec.minY
+                    ))
+                    if self.snapWindow != nil {
+                        if (self.snapWindow?.isVisible == true) {
+                            self.snapWindow?.setIsVisible(false)
+                        }
+                    }
+                }
+            }
+            
         }
     }
     

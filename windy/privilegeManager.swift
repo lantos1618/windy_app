@@ -22,13 +22,9 @@ struct AccessRequestModal: View {
             }.padding()
             HStack {
                 Button("Open Accessability Permissions") {
-                    let accessibilityURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
-                    NSWorkspace.shared.open(URL(string: accessibilityURL)!)
-                    if (firstClick != true) {
-                        // force a prompt
-                        _ = self.checkPrivilege(prompt: true)
-                    }
-                    firstClick = false
+//                    let accessibilityURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+//                    NSWorkspace.shared.open(URL(string: accessibilityURL)!)
+                    _ = self.checkPrivilege(prompt: true)
                 }
                 Button("Quit") {
                     NSApplication.shared.terminate(self)
@@ -36,7 +32,9 @@ struct AccessRequestModal: View {
             }.padding()
         }.padding().onAppear() {
             if (checkPrivilegeHandle(timer: nil) != true) {
-                self.accessTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { timer in
+                let accessibilityURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+                NSWorkspace.shared.open(URL(string: accessibilityURL)!)
+                self.accessTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
                     _ = checkPrivilegeHandle(timer: timer)
                  }
             }
@@ -48,7 +46,6 @@ struct AccessRequestModal: View {
             // we got permission
             // start the windy Manager key event Listener
             print("permission granted!")
-            print("window", self.accessWindow as Any)
             timer?.invalidate()
             self.accessWindow?.close()
             self.closeCallBack()

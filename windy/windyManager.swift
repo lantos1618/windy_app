@@ -73,10 +73,36 @@ func checkCollision(window: WindyWindow ) -> [Collision] {
     return collisions
 }
 
+
+func mouseCollision(mousePos: CGPoint, screen: NSScreen) -> [Collision] {
+    
+    var collisions: [Collision] = []
+    var hotZone = 0.05
+    if mousePos.x < screen.frame.width * hotZone {
+        collisions.append(.Left)
+    }
+    if mousePos.x > screen.frame.width * (1 - hotZone){
+        collisions.append(.Right)
+    }
+    
+    // mouse pos is not the same, top let == max
+    if mousePos.y > screen.frame.height *  (1 - hotZone){
+        collisions.append(.Top)
+    }
+    if mousePos.y < screen.frame.height * hotZone {
+        collisions.append(.Bottom)
+    }
+//    print("MousePos:", mousePos, "Collision:", collisions)
+    return collisions
+}
+
 class WindyManager {
     var windyData = WindyData()
-    private var initialLeftClickWindowOrigin: CGRect?
-    private var snapWindow: NSWindow?
+    
+    private var initialLeftClickWindowId: CGWindowID? = nil
+    private var initialLeftClickWindowOrigin: CGRect? = nil
+    private var snapWindow: NSWindow? = nil
+    private var isWindowResizing: Bool = false
     
     func currentWindow()  -> WindyWindow? {
         // get the most frontMostApp
@@ -93,30 +119,30 @@ class WindyManager {
     //    where action: CGRect(mapped point:1,-1, 0 = left, right, 0; width: 2, -2, 1, 0= grow, shrink, nothing, collapse)
     
     
-    func nextRect(currentRect: CGRect, offset: CGPoint, maxRect: CGRect, divVec: CGPoint, action: Collision) -> CGRect {
-        var result = CGRect(x: 0, y: 0, width: 100, height: 100)
-        var tempRect = currentRect
-        // correct for offest
-        // if pos is max in dir:
-        //   if size < minWidth:
-        //     setTo Max
-        //   else:
-        //     setNext Min
-        // else:
-        //   move dir
-        // add offset
-                
-        tempRect.origin.x -= offset.x
-        tempRect.origin.y -=  offset.y
-        
-        
-        var minWidth = maxRect.width / divVec.x
-        var minRow = maxRect.width / divVec.y
-        // TODO
-        
-        return result
-    }
-    
+//    func nextRect(currentRect: CGRect, offset: CGPoint, maxRect: CGRect, divVec: CGPoint, action: Collision) -> CGRect {
+//        var result = CGRect(x: 0, y: 0, width: 100, height: 100)
+//        var tempRect = currentRect
+//        // correct for offest
+//        // if pos is max in dir:
+//        //   if size < minWidth:
+//        //     setTo Max
+//        //   else:
+//        //     setNext Min
+//        // else:
+//        //   move dir
+//        // add offset
+//
+//        tempRect.origin.x -= offset.x
+//        tempRect.origin.y -=  offset.y
+//
+//
+//        var minWidth = maxRect.width / divVec.x
+//        var minRow = maxRect.width / divVec.y
+//        // TODO
+//
+//        return result
+//    }
+//
     func calculateNextSizeX(window: WindyWindow) -> CGFloat {
         // we want to avoid having a state for each of the windows so we can make it go
         // big -> normal -> small -> big
@@ -152,8 +178,34 @@ class WindyManager {
         }
         let point = window.getPoint()
         let size = window.getSize()
-        let initialLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
-        self.initialLeftClickWindowOrigin = initialLeftClickWindowOrigin
+        self.initialLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
+        self.initialLeftClickWindowId = window.getWindowId()
+    }
+    
+
+    
+    func drawSnapWindow(rect: NSRect) {
+
+        if self.snapWindow == nil {
+            self.snapWindow = NSWindow(
+                contentRect: rect,
+                styleMask: [.fullSizeContentView],
+                backing: .buffered,
+                defer: false
+            )
+            self.snapWindow?.backgroundColor = NSColor(calibratedRed: 0.3, green: 0.4, blue: 1, alpha: 0.2)
+        } else {
+            // we have to swap topLeft to topRight...
+            self.snapWindow?.setFrame(rect, display: true, animate: true)
+            self.snapWindow?.setIsVisible(true)
+            //
+        }
+    }
+    func hideSnapWindow() {
+        if self.snapWindow == nil {
+            return
+        }
+        self.snapWindow?.setIsVisible(false)
     }
     
     func globaLeftMouseDragHandler(with event: NSEvent) {
@@ -165,114 +217,78 @@ class WindyManager {
             print("failed to get window")
             return
         }
+        if self.initialLeftClickWindowId != window.getWindowId() {
+            print("windowId are not the same")
+            return
+        }
+        
         let point = window.getPoint()
         let size = window.getSize()
         let currentLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
-
-
+        
         if (self.initialLeftClickWindowOrigin != currentLeftClickWindowOrigin ) {
-            print("windowMoved:", currentLeftClickWindowOrigin)
+            self.isWindowResizing = true
+        }
+        
+        if (self.isWindowResizing) {
             let mousePos = event.locationInWindow
             let screen = window.getScreen()
+
+            let collission = mouseCollision(mousePos: mousePos, screen:  screen)
+            var tRect = NSRect(x: 0,y: 0, width: screen.frame.width, height: screen.frame.height)
             
-            if (mousePos.x < screen.frame.width * 0.10) {
-                if self.snapWindow != nil {
-                    if (self.snapWindow?.isVisible == false) {
-                        self.snapWindow?.setIsVisible(true)
-                    }
-                } else {
-                    self.snapWindow = NSWindow(
-                        contentRect: NSRect(x: 0, y: 0, width: screen.frame.width/2, height: screen.frame.height),
-                        styleMask: [.fullSizeContentView],
-                        backing: .buffered,
-                        defer: false
-                    )
-//                        self.snapWindow?.titleVisibility = .hidden
-//                        self.snapWindow?.toolbar?.isVisible = false
-                    self.snapWindow?.backgroundColor = NSColor(calibratedRed: 0.3, green: 0.4, blue: 1, alpha: 0.2)
-                    
-                }
-            } else {
-                if self.snapWindow != nil {
-                    if (self.snapWindow?.isVisible == true) {
-                        self.snapWindow?.setIsVisible(false)
-                    }
-                }
+            if collission.isEmpty {
+                return
             }
-            
-            if (mousePos.x > screen.frame.width * 0.90) {
-                if self.snapWindow != nil {
-                    if (self.snapWindow?.isVisible == false) {
-                        self.snapWindow?.setIsVisible(true)
-                    }
-                } else {
-                    self.snapWindow = NSWindow(
-                        contentRect: NSRect(x: screen.frame.width/2, y: 0, width: screen.frame.width/2, height: screen.frame.height),
-                        styleMask: [.fullSizeContentView],
-                        backing: .buffered,
-                        defer: false
-                    )
-//                        self.snapWindow?.titleVisibility = .hidden
-//                        self.snapWindow?.toolbar?.isVisible = false
-                    self.snapWindow?.backgroundColor = NSColor(calibratedRed: 0.3, green: 0.4, blue: 1, alpha: 0.2)
-                    
-                }
-            } else {
-                if self.snapWindow != nil {
-                    if (self.snapWindow?.isVisible == true) {
-                        self.snapWindow?.setIsVisible(false)
-                    }
-                }
+            if collission.contains(.Left) {
+                tRect.size.width /= 2
             }
+            if collission.contains(.Right) {
+                tRect.origin.x = screen.frame.width/2
+                tRect.size.width /= 2
+            }
+            if collission.contains(.Top) {
+                tRect.size.height /= 2
+            }
+            if collission.contains(.Bottom) {
+                tRect.origin.y = screen.frame.height/2
+                tRect.size.height /= 2
+            }
+            // we need to convert to BottomLeft
+            var tRectFlip = tRect
+            tRectFlip.origin.y = screen.frame.height - tRectFlip.height - tRectFlip.origin.y
+            drawSnapWindow(rect: tRectFlip)
         }
+        
     }
     
     func globaLeftMouseUpHandler(with event: NSEvent) {
-        guard self.initialLeftClickWindowOrigin != nil else {
-            print("noInitialWindowSet")
+        if !self.isWindowResizing {
+            return
+        }
+        if self.snapWindow == nil {
+            return
+        }
+        if !(self.snapWindow?.isVisible ?? false) {
             return
         }
         guard let window = self.currentWindow() else {
             print("failed to get window")
             return
         }
-        let point = window.getPoint()
-        let size = window.getSize()
-        let currentLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
+        print("setting window: ", self.snapWindow?.frame)
+        
+        var tOrigin = self.snapWindow?.frame.origin ?? CGPoint(x: 0, y: 0)
+        var tSize = self.snapWindow?.frame.size ?? CGSize(width: 100, height: 100)
 
-        if (self.initialLeftClickWindowOrigin != currentLeftClickWindowOrigin ) {
-            let mousePos = event.locationInWindow
-            let screen = window.getScreen()
-            if (mousePos.x < screen.frame.width * 0.10) {
-                let rec = NSRect(x: 0, y: 0, width: screen.frame.width/2, height: screen.frame.height)
-                window.setSize(size: CGSize(
-                    width: rec.width, height: rec.height
-                ))
-                window.setPoint(point: CGPoint(
-                    x: rec.minX, y: rec.minY
-                ))
-                if self.snapWindow != nil {
-                    if (self.snapWindow?.isVisible == true) {
-                        self.snapWindow?.setIsVisible(false)
-                    }
-                }
-            }
-            
-            if (mousePos.x > screen.frame.width * 0.90) {
-                let rec = NSRect(x: 0, y: 0, width: screen.frame.width/2, height: screen.frame.height)
-                window.setSize(size: CGSize(
-                    width: rec.width, height: rec.height
-                ))
-                window.setPoint(point: CGPoint(
-                    x: rec.minX, y: rec.minY
-                ))
-                if self.snapWindow != nil {
-                    if (self.snapWindow?.isVisible == true) {
-                        self.snapWindow?.setIsVisible(false)
-                    }
-                }
-            }
-        }
+        let screen = window.getScreen()
+        tOrigin.y = screen.frame.height - tOrigin.y - tSize.height
+        window.setSize(size: tSize)
+        window.setPoint(point: tOrigin)
+        self.hideSnapWindow()
+        self.initialLeftClickWindowOrigin = nil
+        self.initialLeftClickWindowId = nil
+        self.isWindowResizing = false
     }
     
     
@@ -286,7 +302,6 @@ class WindyManager {
             let screen = window.getScreen()
             var size = window.getSize()
             var point = window.getPoint()
-            
 //            infoAllWindows()
 //            window.getAttrNames()
             

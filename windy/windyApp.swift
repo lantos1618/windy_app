@@ -14,17 +14,25 @@
 //  if tap crtl + option + double tap lArrow = expand
 //  if window collides on screen wall it cycles 1(max screen), 0.5, 0.33, 0.25
 //  if double tap (ctrl + option) == auto tile so that, collumns are auto fit
+
+// change to windows behaviour?
+// up collapsed = fullscreen
+// left/right arrow = half, small, move to next column + resized, repeat.
+
+
+
+
 //
 //
 // TODO
 // [x] get current window
 // [x] global hot key
-// [ ] mouse click and drag
+// [x] mouse click and drag
 // [ ] debug/test nsscreen.main.Frame
 // [x] Make collision system
 // [x] Get current window in Screen
 //  - [ ] make window have screen offset
-// [ ] Make wrap around behaviour
+// [x] Make wrap around behaviour
 // [ ] unwrap all ! add try/catch conditions
 // [x] icon, dark & light modes
 
@@ -100,7 +108,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         var accessRequestModalWindow: NSWindow
         accessRequestModalWindow = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 380),
-            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -112,6 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         )
         accessRequestModalWindow.center()
         accessRequestModalWindow.makeKeyAndOrderFront(nil)
+
     }
     
     @objc func togglePopover() {

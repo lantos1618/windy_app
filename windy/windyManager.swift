@@ -7,29 +7,36 @@
 
 import Foundation
 
-
-
-
 class WindyData: ObservableObject {
     @Published var windyColumns = UserDefaults.standard.double(forKey: "windyColumns") {
         didSet {
             UserDefaults.standard.set(self.windyColumns, forKey: "windyColumns")
         }
+        
     }
     @Published var windyRows = UserDefaults.standard.double(forKey: "windyRows") {
         didSet {
             UserDefaults.standard.set(self.windyRows, forKey: "windyRows")
         }
     }
+    init() {
+        if UserDefaults.standard.bool(forKey: "defaultSet") == false {
+            UserDefaults.standard.set(2, forKey: "windyColumns")
+            UserDefaults.standard.set(2, forKey: "windyRows")
+            UserDefaults.standard.set(true, forKey: "defaultSet")
+        }
+    }
 }
 
+
+enum Direction {
+    case Left, Right, Up, Down
+}
 enum Collision {
-    case Left, Right, Top, Bottom, None
+    case Left, Right, Top, Bottom, None, OutOfBounds
 }
 
-
-
-func checkCollision(window: WindyWindow ) -> [Collision] {
+func checkCollision(window: WindyWindow) -> [Collision] {
     // if pointX < 0 + some error
     // if pointY < 0 + some error
     // if pointX + width > screenWidth - some error
@@ -38,34 +45,37 @@ func checkCollision(window: WindyWindow ) -> [Collision] {
 
     let point = window.getPoint()
     let size = window.getSize()
-    let screen = window.getScreen()
+    guard let screen = window.getScreen() else {
+        print("error: failed to get screen")
+        return []
+    }
     var collisions: [Collision] = []
-    let errorWidth = screen.frame.width * 0.10
-    let errorHeight = screen.frame.height * 0.10
+    
+    let hotZone = 0.05
     
     // check if the window is already left most position
-    let leftMost = screen.frame.origin.x + errorWidth
+    let leftMost = screen.frame.origin.x + screen.frame.width * hotZone
     if ( point.x < leftMost) {
         print("Colission! left")
         collisions.append(.Left)
     }
     
     // check if the window is already right most position
-    let rightMost = screen.frame.origin.x + screen.frame.width - errorWidth
+    let rightMost = screen.frame.origin.x + screen.frame.width * (1 - hotZone)
     if ( point.x + size.width > rightMost) {
         print("Colission! right")
         collisions.append(.Right)
     }
     
     // check if the window is already top most position
-    let topMost =  -screen.frame.origin.y + errorHeight
+    let topMost =  -screen.frame.origin.y + screen.frame.width * hotZone
     if ( point.y < topMost) {
         print("Colission! top")
         collisions.append(.Top)
     }
     
     // check if the window is already bottom most position
-    let bottomMost = -screen.frame.origin.y + screen.frame.height - errorHeight
+    let bottomMost = -screen.frame.origin.y + screen.frame.height * (1 - hotZone)
     if ( point.y + size.height > bottomMost) {
         print("Colission! bottom")
         collisions.append(.Bottom)
@@ -75,24 +85,35 @@ func checkCollision(window: WindyWindow ) -> [Collision] {
 
 
 func mouseCollision(mousePos: CGPoint, screen: NSScreen) -> [Collision] {
-    
     var collisions: [Collision] = []
-    var hotZone = 0.05
-    if mousePos.x < screen.frame.width * hotZone {
+    let hotZone = 0.05
+    
+    // need to make this relative to offset
+    let mousePosX = mousePos.x
+    let mousePosY = mousePos.y
+
+    if
+        mousePosX < 0 ||
+        mousePosY < 0 ||
+        mousePosX > screen.frame.width ||
+        mousePosY > screen.frame.height
+    {
+        return [.OutOfBounds]
+    }
+
+    // check bounds
+    if mousePosX < screen.frame.width * hotZone {
         collisions.append(.Left)
     }
-    if mousePos.x > screen.frame.width * (1 - hotZone){
+    if mousePos.x > screen.frame.width * (1 - hotZone) {
         collisions.append(.Right)
     }
-    
-    // mouse pos is not the same, top let == max
-    if mousePos.y > screen.frame.height *  (1 - hotZone){
+    if mousePos.y > screen.frame.height *  (1 - hotZone) {
         collisions.append(.Top)
     }
     if mousePos.y < screen.frame.height * hotZone {
         collisions.append(.Bottom)
     }
-//    print("MousePos:", mousePos, "Collision:", collisions)
     return collisions
 }
 
@@ -113,79 +134,8 @@ class WindyManager {
         let windyWindow = WindyWindow(app: frontApp)
         return windyWindow
     }
-    
-    
-    // currentRect, maxRect, divPoint, actionRect -> nextRect
-    //    where action: CGRect(mapped point:1,-1, 0 = left, right, 0; width: 2, -2, 1, 0= grow, shrink, nothing, collapse)
-    
-    
-//    func nextRect(currentRect: CGRect, offset: CGPoint, maxRect: CGRect, divVec: CGPoint, action: Collision) -> CGRect {
-//        var result = CGRect(x: 0, y: 0, width: 100, height: 100)
-//        var tempRect = currentRect
-//        // correct for offest
-//        // if pos is max in dir:
-//        //   if size < minWidth:
-//        //     setTo Max
-//        //   else:
-//        //     setNext Min
-//        // else:
-//        //   move dir
-//        // add offset
-//
-//        tempRect.origin.x -= offset.x
-//        tempRect.origin.y -=  offset.y
-//
-//
-//        var minWidth = maxRect.width / divVec.x
-//        var minRow = maxRect.width / divVec.y
-//        // TODO
-//
-//        return result
-//    }
-//
-    func calculateNextSizeX(window: WindyWindow) -> CGFloat {
-        // we want to avoid having a state for each of the windows so we can make it go
-        // big -> normal -> small -> big
-        let screen = window.getScreen()
-        let minWidth = screen.frame.width / self.windyData.windyColumns
-        let currentWindowSize = window.getSize()
-        let error = minWidth * 0.1
-        
-        if (currentWindowSize.width < minWidth + error) {
-            return screen.frame.origin.x + screen.frame.width
-        }
-        return screen.frame.origin.x + currentWindowSize.width - minWidth
-    }
-    
-    func calculateNextSizeY(window: WindyWindow) -> CGFloat {
-        // we want to avoid having a state for each of the windows so we can make it go
-        // big -> normal -> small -> big
-        let screen = window.getScreen()
-        let minHeight = screen.frame.height / self.windyData.windyRows
-        let currentWindowSize = window.getSize()
-        let error = minHeight * 0.1
 
-        if (currentWindowSize.height < minHeight + error) {
-            return  -screen.frame.origin.y + screen.frame.height
-        }
-        return -screen.frame.origin.y +  currentWindowSize.height - minHeight
-    }
-    
-    func globaLeftMouseDownHandler() {
-        guard let window = self.currentWindow() else {
-            print("failed to get window")
-            return
-        }
-        let point = window.getPoint()
-        let size = window.getSize()
-        self.initialLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
-        self.initialLeftClickWindowId = window.getWindowId()
-    }
-    
-
-    
     func drawSnapWindow(rect: NSRect) {
-
         if self.snapWindow == nil {
             self.snapWindow = NSWindow(
                 contentRect: rect,
@@ -194,186 +144,224 @@ class WindyManager {
                 defer: false
             )
             self.snapWindow?.backgroundColor = NSColor(calibratedRed: 0.3, green: 0.4, blue: 1, alpha: 0.2)
-        } else {
-            // we have to swap topLeft to topRight...
-            self.snapWindow?.setFrame(rect, display: true, animate: true)
-            self.snapWindow?.setIsVisible(true)
-            //
+            return
         }
+        self.snapWindow?.setFrame(rect, display: true, animate: true)
+        self.snapWindow?.setIsVisible(true)
     }
+
     func hideSnapWindow() {
         if self.snapWindow == nil {
             return
         }
         self.snapWindow?.setIsVisible(false)
     }
-    
-    func globaLeftMouseDragHandler(with event: NSEvent) {
-        guard self.initialLeftClickWindowOrigin != nil else {
-            print("noInitialWindowSet")
-            return
-        }
-        guard let window = self.currentWindow() else {
-            print("failed to get window")
-            return
-        }
-        if self.initialLeftClickWindowId != window.getWindowId() {
-            print("windowId are not the same")
-            return
-        }
-        
-        let point = window.getPoint()
-        let size = window.getSize()
-        let currentLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
-        
-        if (self.initialLeftClickWindowOrigin != currentLeftClickWindowOrigin ) {
-            self.isWindowResizing = true
-        }
-        
-        if (self.isWindowResizing) {
-            let mousePos = event.locationInWindow
-            let screen = window.getScreen()
 
-            let collission = mouseCollision(mousePos: mousePos, screen:  screen)
-            var tRect = NSRect(x: 0,y: 0, width: screen.frame.width, height: screen.frame.height)
-            
-            if collission.isEmpty {
-                return
-            }
-            if collission.contains(.Left) {
-                tRect.size.width /= 2
-            }
-            if collission.contains(.Right) {
-                tRect.origin.x = screen.frame.width/2
-                tRect.size.width /= 2
-            }
-            if collission.contains(.Top) {
-                tRect.size.height /= 2
-            }
-            if collission.contains(.Bottom) {
-                tRect.origin.y = screen.frame.height/2
-                tRect.size.height /= 2
-            }
-            // we need to convert to BottomLeft
-            var tRectFlip = tRect
-            tRectFlip.origin.y = screen.frame.height - tRectFlip.height - tRectFlip.origin.y
-            drawSnapWindow(rect: tRectFlip)
-        }
-        
-    }
-    
-    func globaLeftMouseUpHandler(with event: NSEvent) {
-        if !self.isWindowResizing {
-            return
-        }
-        if self.snapWindow == nil {
-            return
-        }
-        if !(self.snapWindow?.isVisible ?? false) {
-            return
-        }
-        guard let window = self.currentWindow() else {
-            print("failed to get window")
-            return
-        }
-        print("setting window: ", self.snapWindow?.frame)
-        
-        var tOrigin = self.snapWindow?.frame.origin ?? CGPoint(x: 0, y: 0)
-        var tSize = self.snapWindow?.frame.size ?? CGSize(width: 100, height: 100)
-
-        let screen = window.getScreen()
-        tOrigin.y = screen.frame.height - tOrigin.y - tSize.height
-        window.setSize(size: tSize)
-        window.setPoint(point: tOrigin)
+    func cleanUpSnapWindow() {
         self.hideSnapWindow()
         self.initialLeftClickWindowOrigin = nil
         self.initialLeftClickWindowId = nil
         self.isWindowResizing = false
     }
+
+    func globaLeftMouseDownHandler(with event: NSEvent) {
+        guard let window = self.currentWindow() else {
+            print("error: failed to get window")
+            return
+        }
+        let point = window.getPoint()
+        let size = window.getSize()
+        self.initialLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height:  size.height)
+        self.initialLeftClickWindowId = window.getWindowId()
+    }
     
+    func globaLeftMouseDragHandler(with event: NSEvent) {
+        guard self.initialLeftClickWindowOrigin != nil else {
+            print("error: noInitialWindowSet")
+            return
+        }
+        guard let window = self.currentWindow() else {
+            print("error: failed to get window")
+            return
+        }
+        if self.initialLeftClickWindowId != window.getWindowId() {
+            print("error: windowId are not the same")
+            return
+        }
+
+        let point = window.getPoint()
+        let size = window.getSize()
+        let currentLeftClickWindowOrigin = CGRect(x: point.x, y: point.y, width: size.width, height: size.height)
+        
+        self.isWindowResizing = self.initialLeftClickWindowOrigin != currentLeftClickWindowOrigin
+        
+        if (!self.isWindowResizing) {
+            return
+        }
+        
+        self.DrawSnapWindow(event: event, window: window)
+    }
+    
+    func DrawSnapWindow(event: NSEvent, window: WindyWindow) {
+        let mousePos = event.locationInWindow
+        guard let screen = window.getScreen() else {
+            print("error: failed to get screen")
+            return
+        }
+        print("screen:", screen.deviceDescription)
+
+        let collission = mouseCollision(mousePos: mousePos, screen:  screen)
+        var tRect = NSRect(x: 0, y: 0, width: screen.frame.width, height: screen.frame.height)
+        
+        if collission.isEmpty {
+            self.hideSnapWindow()
+            return
+        }
+        
+        if collission.elementsEqual([.OutOfBounds]) {
+            // we want to deal with screen move
+            return
+        }
+        if collission.contains(.Left) {
+            tRect.size.width /= 2
+        }
+        if collission.contains(.Right) {
+            tRect.origin.x = screen.frame.width/2
+            tRect.size.width /= 2
+        }
+        if collission.contains(.Top) {
+            tRect.size.height /= 2
+        }
+        if collission.contains(.Bottom) {
+            tRect.origin.y = screen.frame.height/2
+            tRect.size.height /= 2
+        }
+        // we need to convert to BottomLeft
+        var tRectFlip = tRect
+        tRectFlip.origin.y = screen.frame.height - tRectFlip.height - tRectFlip.origin.y
+        self.drawSnapWindow(rect: tRectFlip)
+    }
+    
+    func globaLeftMouseUpHandler(with event: NSEvent) {
+        // guard to check if the window is moving
+        if !self.isWindowResizing { return }
+        // guard check snapWindow is set
+        if self.snapWindow == nil { return }
+        // guard to see if the window was drawn
+        if !(self.snapWindow?.isVisible ?? false) { return }
+        
+        guard let window = self.currentWindow() else {
+            print("failed to get window")
+            return
+        }
+        
+        // get the snap window to move to
+        var tOrigin = self.snapWindow?.frame.origin ?? CGPoint(x: 0, y: 0)
+        let tSize = self.snapWindow?.frame.size ?? CGSize(width: 100, height: 100)
+
+        guard let screen = window.getScreen() else {
+            print("error: failed to get screen")
+            return
+        }
+        tOrigin.y = screen.frame.height - tOrigin.y - tSize.height
+        window.setSize(size: tSize)
+        window.setPoint(point: tOrigin)
+        cleanUpSnapWindow()
+    }
+    
+    func decodeKey(specialKey: NSEvent.SpecialKey) -> Direction? {
+        switch specialKey {
+        case .leftArrow:
+            return .Left
+        case .rightArrow:
+            return .Right
+        case .upArrow:
+            return .Up
+        case .downArrow:
+            return .Down
+        default:
+            return nil
+        }
+    }
+    func move(window: WindyWindow, direction: Direction) {
+        // move window by minWidth
+        guard let screen = window.getScreen() else { return }
+        let minWidth = screen.frame.width / windyData.windyColumns
+        let minHeight = screen.frame.height / windyData.windyRows
+        var point = window.getPoint()
+                
+        switch direction {
+        case .Left:
+            point.x -= minWidth
+            break
+        case .Right:
+            point.x += minWidth
+            break
+        case .Up:
+            point.y -= minHeight
+            break
+        case .Down:
+            point.y += minHeight
+            break
+        }
+        window.setPoint(point: point)
+    }
+    func resize(window: WindyWindow, collisions: [Collision]) {
+        guard let screen = window.getScreen() else { return }
+        let minWidth = screen.frame.width / windyData.windyColumns
+        let minHeight = screen.frame.height / windyData.windyRows
+        var point = CGPoint(x: 0, y: 0)
+        var size = window.getSize()
+        
+        if collisions.contains(.Left) {
+            size.width -= minWidth
+        }
+        if collisions.contains(.Right) {
+            size.width += minWidth
+            point.x = screen.frame.width - size.width
+        }
+        if collisions.contains(.Top) {
+            size.height -= minHeight
+        }
+        if collisions.contains(.Bottom) {
+            size.height += minHeight
+            point.y = screen.frame.height - size.height
+        }
+        if size.width < minWidth {
+            size.width = screen.frame.width
+        }
+        if size.height < minHeight {
+            size.height = screen.frame.height
+        }
+        window.setSize(size: size)
+        window.setPoint(point: point)
+    }
     
     func globalKeyEventHandler(with event: NSEvent) {
-        
         if (event.modifierFlags.contains([.option, .control])) {
+            //        if window no colision:
+            //            move
+            //            return
+            //        resize
             guard let specialKey = event.specialKey else { return }
-            // pos
-            // size
             guard let window = currentWindow() else { return }
-            let screen = window.getScreen()
-            var size = window.getSize()
-            var point = window.getPoint()
-//            infoAllWindows()
-//            window.getAttrNames()
-            
-//             https://developer.apple.com/documentation/appkit/nsscreen/1388360-devicedescription
-//             maybe useful
-//            In addition to the display device constants described in NSWindow, you can also retrieve the CGDirectDisplayID value associated with the screen from this dictionary. To access this value, specify the Objective-C string @"NSScreenNumber" as the key when requesting the item from the dictionary. The value associated with this key is an NSNumber object containing the display ID value. This string is only valid when used as a key for the dictionary returned by this method.
-            
-//            print("screen:", NSScreen.main?.deviceDescription ,":", NSScreen.main?.frame)
-            print("screen_origin:",  NSScreen.main?.frame.origin as Any)
-            print("screen_size:",  NSScreen.main?.frame.size as Any)
-            print("----")
-            print("window_origin:", window.getPoint())
-            print("window_size:", window.getSize())
-            
-//             if we collide then we want to cycle the sizes
-            switch specialKey {
-            case .leftArrow:
-                // if collide set the window to left most
-                if (checkCollision(window: window).contains(.Left)) {
-                    size.width = calculateNextSizeX(window: window)
-                    point.x = screen.frame.origin.x + 0
-                } else {
-                    point.x = screen.frame.origin.x + point.x - size.width
-                }
-            case .rightArrow:
-                // if collide set the window to right most
-                if (checkCollision(window: window).contains(.Right)) {
-                    size.width = calculateNextSizeX(window: window)
-                    point.x = screen.frame.origin.x + screen.frame.width - size.width
-                } else {
-                    point.x = screen.frame.origin.x + point.x + size.width
-
-                }
-            case .upArrow:
-                // if collide set the window to up most
-                if (checkCollision(window: window).contains(.Top)) {
-                    size.height = calculateNextSizeY(window: window)
-                    point.y = -screen.frame.origin.y + 0
-                } else {
-                    point.y = -screen.frame.origin.y + point.y - size.height
-                }
-            case .downArrow:
-                // if collide set the window to bottom most
-                if (checkCollision(window: window).contains(.Bottom)) {
-                    size.height = calculateNextSizeY(window: window)
-                    point.y = -screen.frame.origin.y + screen.frame.height - size.height
-                } else {
-                    point.y = -screen.frame.origin.y + point.y + size.height
-                }
-            default:
-                break
+            guard let direction = decodeKey(specialKey: specialKey) else { return }
+            let colissions = checkCollision(window: window)
+            if colissions.isEmpty {
+                move(window: window, direction: direction)
+                return
             }
-            window.setSize(size: size)
-            window.setPoint(point: point)
+            resize(window: window, collisions: colissions)
         }
     }
     func registerGlobalEvents() {
         // keyboard shortcuts
-        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.keyDown) { event in
-            self.globalKeyEventHandler(with: event)
-        }
+        NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: self.globalKeyEventHandler)
         // mouse snapping - leftMouse Down
-        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.leftMouseDown) {event in
-            self.globaLeftMouseDownHandler()
-        }
+        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown, handler: self.globaLeftMouseDownHandler)
         // mouse snapping - leftMouse Drag
-        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.leftMouseDragged) {event in
-            self.globaLeftMouseDragHandler(with: event)
-        }
+        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged, handler: self.globaLeftMouseDragHandler)
         // mouse snapping - leftMouse Up
-        NSEvent.addGlobalMonitorForEvents(matching: NSEvent.EventTypeMask.leftMouseUp) {event in
-            self.globaLeftMouseUpHandler(with: event)
-        }
+        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp, handler: self.globaLeftMouseUpHandler)
     }
 }

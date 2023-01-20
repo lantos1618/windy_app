@@ -7,6 +7,10 @@
 
 import Foundation
 
+
+
+
+
 class WindyWindow {
     var AXWindow: AXUIElement
     
@@ -17,7 +21,8 @@ class WindyWindow {
     convenience init?(pid: pid_t) {
         let AXApp = AXUIElementCreateApplication(pid)
         var winPtr:  CFTypeRef?
-        if AXUIElementCopyAttributeValue(AXApp, kAXMainWindowAttribute as CFString, &winPtr) != .success{
+        let axErr = AXUIElementCopyAttributeValue(AXApp, kAXMainWindowAttribute as CFString, &winPtr)
+        if axErr != .success{
             print("error: Failed to get main window attribute")
         }
         self.init(ele: winPtr as! AXUIElement)
@@ -69,11 +74,10 @@ class WindyWindow {
         }
         return attrNames as! [String]
     }
-    func getScreen() -> NSScreen {
+    func getScreen() -> NSScreen? {
         // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
         // Returns the screen object containing the window with the keyboard focus.
         let screen = NSScreen.main!
-//        return CGSize(width: screen.width, height: screen.height)
         return screen
     }
     
@@ -88,15 +92,24 @@ class WindyWindow {
     func setPoint(point: CGPoint) {
         var newPoint = point
         let position = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;
-        if AXUIElementSetAttributeValue(AXWindow, kAXPositionAttribute as CFString, position) != .success {
-            print("error: failed to set window point")
+        let axErr = AXUIElementSetAttributeValue(AXWindow, kAXPositionAttribute as CFString, position)
+        if axErr != .success {
+            print("error: failed to set window point, ", axErr)
         }
+    }
+    func setPointFlippedY(point: CGPoint) {
+        var tpointFlip = point
+        guard let screen = self.getScreen() else {
+            return
+        }
+        tpointFlip.y = screen.frame.height - self.getSize().height - point.y
+        setPoint(point: tpointFlip)
     }
     func getWindowId() -> CGWindowID {
         var winId = CGWindowID(0)
         let axErr = _AXUIElementGetWindow(self.AXWindow, &winId)
         if axErr != .success {
-            print("error: failed to get windowID")
+            print("error: failed to get windowID, ", axErr)
         }
         return winId
     }

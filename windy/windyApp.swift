@@ -73,7 +73,6 @@ struct windyApp: App {
 
 // Application Logic
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-    
     // the status button in the apple menu
     private var statusItem: NSStatusItem!
     private var statusBarButton: NSStatusBarButton!
@@ -100,7 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         
         // open the MenuPopover when user clicks the status bar icon
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 300, height: 400)
+        popover.contentSize = NSSize(width: 400, height: 800)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: MenuPopover())
         

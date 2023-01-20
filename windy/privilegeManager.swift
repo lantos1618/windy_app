@@ -15,7 +15,7 @@ struct AccessRequestModal: View {
 
     @State var accessTimer: Timer?
     @State var firstClick = true
-    
+
     var body: some View {
         VStack {
             Text("Windy Requires Accesibilty permissions for the following functionality").padding()

@@ -77,8 +77,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var statusItem: NSStatusItem!
     private var statusBarButton: NSStatusBarButton!
     private var popover: NSPopover!
-    private var windyManager = WindyManager()
-    private var privilegeManager = PrivilegeManager()
+    
+    private var windyManager: WindyManager!
+    private var privilegeManager: PrivilegeManager!
  
     func hideMainWindow() {
         // hide the main window on launch
@@ -89,6 +90,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
         hideMainWindow()
+        windyManager = WindyManager()
+        privilegeManager = PrivilegeManager()
         
         // put the windy icon in the mac toolbar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)

@@ -14,9 +14,11 @@
 		470C5785295F062F00B0DC3E /* windyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5784295F062F00B0DC3E /* windyUITests.swift */; };
 		470C5787295F062F00B0DC3E /* windyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */; };
 		470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C57B129642E6100B0DC3E /* windyWindow.swift */; };
+		4732C0B8297DAFA200DB1C5B /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B7297DAFA100DB1C5B /* utils.swift */; };
+		4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B9297DAFA700DB1C5B /* snapWindow.swift */; };
 		475590D1296C6EF200E385F5 /* windyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D0296C6EF200E385F5 /* windyManager.swift */; };
 		475590D3296C6F8300E385F5 /* privilegeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D2296C6F8300E385F5 /* privilegeManager.swift */; };
-		47DEEBD6297456D300123E66 /* MenunPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DEEBD5297456D300123E66 /* MenunPopover.swift */; };
+		47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DEEBD5297456D300123E66 /* MenuPopover.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,9 +51,11 @@
 		470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "windy-Bridging-Header.h"; sourceTree = "<group>"; };
 		470C57B129642E6100B0DC3E /* windyWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyWindow.swift; sourceTree = "<group>"; };
+		4732C0B7297DAFA100DB1C5B /* utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = utils.swift; path = ../../test/test/utils.swift; sourceTree = "<group>"; };
+		4732C0B9297DAFA700DB1C5B /* snapWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = snapWindow.swift; sourceTree = "<group>"; };
 		475590D0296C6EF200E385F5 /* windyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyManager.swift; sourceTree = "<group>"; };
 		475590D2296C6F8300E385F5 /* privilegeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = privilegeManager.swift; sourceTree = "<group>"; };
-		47DEEBD5297456D300123E66 /* MenunPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenunPopover.swift; sourceTree = "<group>"; };
+		47DEEBD5297456D300123E66 /* MenuPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuPopover.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,11 +107,13 @@
 			isa = PBXGroup;
 			children = (
 				470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */,
+				4732C0B7297DAFA100DB1C5B /* utils.swift */,
 				470C5763295F062E00B0DC3E /* windyApp.swift */,
-				47DEEBD5297456D300123E66 /* MenunPopover.swift */,
-				475590D2296C6F8300E385F5 /* privilegeManager.swift */,
 				475590D0296C6EF200E385F5 /* windyManager.swift */,
+				4732C0B9297DAFA700DB1C5B /* snapWindow.swift */,
 				470C57B129642E6100B0DC3E /* windyWindow.swift */,
+				475590D2296C6F8300E385F5 /* privilegeManager.swift */,
+				47DEEBD5297456D300123E66 /* MenuPopover.swift */,
 				470C5767295F062F00B0DC3E /* Assets.xcassets */,
 				470C5771295F062F00B0DC3E /* windy.entitlements */,
 				470C5769295F062F00B0DC3E /* Preview Content */,
@@ -271,9 +277,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				475590D3296C6F8300E385F5 /* privilegeManager.swift in Sources */,
+				4732C0B8297DAFA200DB1C5B /* utils.swift in Sources */,
 				475590D1296C6EF200E385F5 /* windyManager.swift in Sources */,
 				470C5764295F062E00B0DC3E /* windyApp.swift in Sources */,
-				47DEEBD6297456D300123E66 /* MenunPopover.swift in Sources */,
+				47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */,
+				4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */,
 				470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,13 +1,11 @@
 //
 //  windyWindow.swift
-//  windy
+//  test
 //
-//  Created by Lyndon Leong on 03/01/2023.
+//  Created by Lyndon Leong on 22/01/2023.
 //
 
 import Foundation
-
-
 
 
 
@@ -25,6 +23,7 @@ class WindyWindow {
         if axErr != .success{
             print("error: Failed to get main window attribute")
         }
+        // FIX ME: BUG!
         self.init(ele: winPtr as! AXUIElement)
     }
     
@@ -44,15 +43,28 @@ class WindyWindow {
     }
     
     func getPoint() -> CGPoint {
+        // gets the top left point of the window relative to the top left point of the screen
         var oldPointCFT:  CFTypeRef?
         if AXUIElementCopyAttributeValue(self.AXWindow, kAXPositionAttribute as CFString, &oldPointCFT) != .success {
-            print("error: Failed to get main window size attribute")
+            print("error: Failed to get window point attribute")
         }
         var currentPoint = CGPoint()
         if AXValueGetValue(oldPointCFT as! AXValue, AXValueType(rawValue: kAXValueCGPointType)!, &currentPoint) != true {
-            print("error: failed to parse main window CGSize")
+            print("error: failed to parse window CGSize")
         }
+        
         return currentPoint
+    }
+    
+    func getNSPoint() -> CGPoint {
+        // gets the bottom left of window relative to the top left point of the screen
+        var point = self.getPoint().flip()
+        point.y -= self.getSize().height
+        return point
+    }
+    
+    func getFrame() -> NSRect {
+        return NSRect(origin: self.getPoint(), size: self.getSize())
     }
     
     func getSize() -> CGSize {
@@ -74,6 +86,7 @@ class WindyWindow {
         }
         return attrNames as! [String]
     }
+    
     func getScreen() -> NSScreen? {
         // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
         // Returns the screen object containing the window with the keyboard focus.
@@ -81,7 +94,7 @@ class WindyWindow {
         return screen
     }
     
-    func setSize(size: CGSize) {
+    func setFrameSize(size: CGSize) {
         var newSize = size
         let CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
         if AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, CFsize) != .success {
@@ -89,7 +102,7 @@ class WindyWindow {
         }
     }
     
-    func setPoint(point: CGPoint) {
+    func setTopLeftPoint(point: CGPoint) {
         var newPoint = point
         let position = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;
         let axErr = AXUIElementSetAttributeValue(AXWindow, kAXPositionAttribute as CFString, position)
@@ -97,14 +110,24 @@ class WindyWindow {
             print("error: failed to set window point, ", axErr)
         }
     }
-    func setPointFlippedY(point: CGPoint) {
-        var tpointFlip = point
-        guard let screen = self.getScreen() else {
-            return
-        }
-        tpointFlip.y = screen.frame.height - self.getSize().height - point.y
-        setPoint(point: tpointFlip)
+    
+    func setFrameOrigin(point: CGPoint) {
+        // sets the bottom left point of window relative
+        var tpointFlip = point.flip()
+        tpointFlip.y -= self.getSize().height
+        setTopLeftPoint(point: tpointFlip)
     }
+    
+    func setFrame(frame: NSRect) {
+        // the point is being set from the wrong side so it trys to grow into nothing.
+        // we need to adjust for the target height then move back
+        var t_point = frame.origin
+        t_point.y += frame.height
+        self.setFrameOrigin(point: t_point)
+        self.setFrameSize(size: frame.size)
+        self.setFrameOrigin(point: frame.origin)
+    }
+    
     func getWindowId() -> CGWindowID {
         var winId = CGWindowID(0)
         let axErr = _AXUIElementGetWindow(self.AXWindow, &winId)
@@ -114,5 +137,3 @@ class WindyWindow {
         return winId
     }
 }
-
-

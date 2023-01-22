@@ -70,29 +70,48 @@ class WindyManager {
         var point = window.getNSPoint()
         let columns = 2.0
         let rows = 2.0
-        let maxWidth = screen.frame.maxX / columns
-        let maxHeight = screen.frame.maxY / rows
+        let minWidth = screen.frame.maxX / columns
+        let minHeight = screen.frame.maxY / rows
         
         switch direction {
         case .Left:
-            point.x -= maxWidth
+            point.x -= minWidth
         case .Right:
-            point.x += maxWidth
+            point.x += minWidth
         case .Up:
-            point.y += maxHeight
+            point.y += minHeight
         case .Down:
-            point.y -= maxHeight
+            point.y -= minHeight
         }
         
         var screenSize = screen.frame.size
-        var windowSize = window.getSize()
+        let windowSize = window.getSize()
         screenSize.width -= windowSize.width
         point = point.clamp(NSRect(origin: screen.frame.origin, size: screenSize))
         window.setFrameOrigin(point: point)
     }
 
-    func resize(window: WindyWindow) {
+    func resize(window: WindyWindow, direction: Direction) {
+        let screen = NSScreen.main!
+        let point = window.getNSPoint()
+        var size = window.getSize()
+        let columns = 2.0
+        let rows = 2.0
+        let minWidth = screen.frame.maxX / columns
+        let minHeight = screen.frame.maxY / rows
         
+        
+        switch direction {
+        case .Left, .Right:
+            size.width += minWidth * (size.width <= minWidth ? columns : -1.0)
+        case .Up, .Down:
+            size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
+        }
+        print(size)
+        
+        
+        window.setFrame(frame: NSRect(origin: point, size: size))
+//        move(window: window, direction: direction)
     }
     func globalKeyEventHandler(event: NSEvent) {
         if (event.modifierFlags.contains([.option, .control])) {
@@ -102,16 +121,16 @@ class WindyManager {
             let screenFrame = window.getScreen()!.frame
             let windowCollisions = windowFrame.collisionsInside(rect: screenFrame)
             // if there are no window collisions we can move the window in the direction
-            let canMoveArr = windowCollisions.map { collision in collision != direction }
-            let canMove = canMoveArr.reduce(false) {(x, y) in x || y}
+            
+            let canMove = !windowCollisions.contains(direction)
             print("windowCollisions", windowCollisions)
-            print("canMoveArr", canMoveArr)
             print("can move", canMove)
+            
             if canMove || windowCollisions.isEmpty {
                 move(window: window, direction: direction)
                 return
             }
-            //        resize(window: window, direction)
+            resize(window: window, direction: direction)
         }
     }
     

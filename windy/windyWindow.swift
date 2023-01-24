@@ -7,6 +7,9 @@
 
 import Foundation
 
+enum WindyWindowError: Error {
+    case AXValueError(message: String)
+}
 
 
 class WindyWindow {
@@ -16,73 +19,77 @@ class WindyWindow {
         AXWindow = ele
     }
     
-    convenience init?(pid: pid_t) {
+    convenience init?(pid: pid_t) throws {
         let AXApp = AXUIElementCreateApplication(pid)
         var winPtr:  CFTypeRef?
         let axErr = AXUIElementCopyAttributeValue(AXApp, kAXMainWindowAttribute as CFString, &winPtr)
         if axErr != .success{
-            print("error: Failed to get main window attribute")
+            throw WindyWindowError.AXValueError(message: "Failed to get main window \(axErr)")
         }
-        // FIX ME: BUG!
         self.init(ele: winPtr as! AXUIElement)
     }
     
-    convenience init?(app: NSRunningApplication) {
-        self.init(pid: app.processIdentifier)
+    convenience init?(app: NSRunningApplication) throws {
+        try self.init(pid: app.processIdentifier)
     }
     
-    convenience init?(point: CGPoint) {
+    convenience init?(point: CGPoint) throws {
         var winPtr: AXUIElement?
         let systemWide = AXUIElementCreateSystemWide()
         
         let axErr = AXUIElementCopyElementAtPosition(systemWide, Float(point.x), Float(point.y), &winPtr)
         if axErr != .success {
-            print("failed to get window at point, error:", axErr)
+            throw WindyWindowError.AXValueError(message: "Failed to get window at point, error: \(axErr)")
+            
         }
         self.init(ele: winPtr!)
     }
     
-    func getPoint() -> CGPoint {
+    func getPoint() throws -> CGPoint {
         // gets the top left point of the window relative to the top left point of the screen
         var oldPointCFT:  CFTypeRef?
-        if AXUIElementCopyAttributeValue(self.AXWindow, kAXPositionAttribute as CFString, &oldPointCFT) != .success {
-            print("error: Failed to get window point attribute")
+        let axErr = AXUIElementCopyAttributeValue(self.AXWindow, kAXPositionAttribute as CFString, &oldPointCFT)
+        if axErr != .success {
+            throw WindyWindowError.AXValueError(message: "Failed to get window point attribute \(axErr)")
         }
+        
         var currentPoint = CGPoint()
         if AXValueGetValue(oldPointCFT as! AXValue, AXValueType(rawValue: kAXValueCGPointType)!, &currentPoint) != true {
-            print("error: failed to parse window CGSize")
+            throw WindyWindowError.AXValueError(message: "Failed to parse window CGPoint")
         }
         
         return currentPoint
     }
     
-    func getNSPoint() -> CGPoint {
+    func getNSPoint() throws -> CGPoint {
         // gets the bottom left of window relative to the top left point of the screen
-        var point = self.getPoint().flip()
-        point.y -= self.getSize().height
+        var point = try self.getPoint().flip()
+        point.y -= try self.getSize().height
         return point
     }
     
-    func getFrame() -> NSRect {
-        return NSRect(origin: self.getPoint(), size: self.getSize())
+    func getFrame() throws -> NSRect {
+        return NSRect(origin: try self.getPoint(), size: try self.getSize())
     }
     
-    func getSize() -> CGSize {
+    func getSize() throws -> CGSize {
         var oldSizeCFT:  CFTypeRef?
-        if AXUIElementCopyAttributeValue(self.AXWindow, kAXSizeAttribute as CFString, &oldSizeCFT) != .success {
-            print("error: Failed to get main window size attribute")
+        let axErr = AXUIElementCopyAttributeValue(self.AXWindow, kAXSizeAttribute as CFString, &oldSizeCFT)
+        if axErr != .success {
+            throw WindyWindowError.AXValueError(message: "Failed to get window size attribute \(axErr)")
         }
         var currentSize = CGSize()
         if AXValueGetValue(oldSizeCFT as! AXValue, AXValueType(rawValue: kAXValueCGSizeType)!, &currentSize) != true {
-            print("error: failed to parse main window CGSize")
+            throw WindyWindowError.AXValueError(message: "Failed to parse window CGSize")
         }
         return currentSize
     }
     
-    func getAttrNames() -> [String] {
+    func getAttrNames() throws -> [String] {
         var attrNames: CFArray?
-        if AXUIElementCopyAttributeNames(AXWindow, &attrNames) != .success {
-            print("could not get AXUIElementAttributeNames")
+        let axErr =  AXUIElementCopyAttributeNames(AXWindow, &attrNames)
+        if axErr != .success {
+            throw WindyWindowError.AXValueError(message: "Failed to get AXUIElementAttributeNames")
         }
         return attrNames as! [String]
     }
@@ -94,45 +101,46 @@ class WindyWindow {
         return screen
     }
     
-    func setFrameSize(size: CGSize) {
+    func setFrameSize(size: CGSize) throws {
         var newSize = size
         let CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
-        if AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, CFsize) != .success {
-            print("error: failed to set window size")
+        let axErr =  AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, CFsize)
+        if axErr != .success {
+            throw WindyWindowError.AXValueError(message: "Failed to set window size \(axErr)")
         }
     }
     
-    func setTopLeftPoint(point: CGPoint) {
+    func setTopLeftPoint(point: CGPoint) throws {
         var newPoint = point
         let position = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;
         let axErr = AXUIElementSetAttributeValue(AXWindow, kAXPositionAttribute as CFString, position)
         if axErr != .success {
-            print("error: failed to set window point, ", axErr)
+            throw WindyWindowError.AXValueError(message: "Failed to set window point, \(axErr)")
         }
     }
     
-    func setFrameOrigin(point: CGPoint) {
+    func setFrameOrigin(point: CGPoint) throws {
         // sets the bottom left point of window relative
         var tpointFlip = point.flip()
-        tpointFlip.y -= self.getSize().height
-        setTopLeftPoint(point: tpointFlip)
+        tpointFlip.y -= try self.getSize().height
+        try setTopLeftPoint(point: tpointFlip)
     }
     
-    func setFrame(frame: NSRect) {
+    func setFrame(frame: NSRect) throws {
         // the point is being set from the wrong side so it trys to grow into nothing.
         // we need to adjust for the target height then move back
         var t_point = frame.origin
         t_point.y += frame.height
-        self.setFrameOrigin(point: t_point)
-        self.setFrameSize(size: frame.size)
-        self.setFrameOrigin(point: frame.origin)
+        try self.setFrameOrigin(point: t_point)
+        try self.setFrameSize(size: frame.size)
+        try self.setFrameOrigin(point: frame.origin)
     }
     
-    func getWindowId() -> CGWindowID {
+    func getWindowId() throws -> CGWindowID {
         var winId = CGWindowID(0)
         let axErr = _AXUIElementGetWindow(self.AXWindow, &winId)
         if axErr != .success {
-            print("error: failed to get windowID, ", axErr)
+            throw WindyWindowError.AXValueError(message: "Failed to get windowID, \(axErr)")
         }
         return winId
     }

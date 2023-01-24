@@ -14,8 +14,8 @@
             filePath = "windy/windyManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "118"
-            endingLineNumber = "118"
+            startingLineNumber = "140"
+            endingLineNumber = "140"
             landmarkName = "globalKeyEventHandler(event:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -110,8 +110,8 @@
             filePath = "windy/windyManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "108"
-            endingLineNumber = "108"
+            startingLineNumber = "128"
+            endingLineNumber = "128"
             landmarkName = "resize(window:direction:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -126,10 +126,10 @@
             filePath = "windy/windyWindow.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "27"
-            endingLineNumber = "27"
-            landmarkName = "WindyWindow"
-            landmarkType = "3">
+            startingLineNumber = "23"
+            endingLineNumber = "23"
+            landmarkName = "init?(pid:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

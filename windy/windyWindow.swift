@@ -7,10 +7,6 @@
 
 import Foundation
 
-enum WindyWindowError: Error {
-    case AXValueError(message: String)
-}
-
 
 class WindyWindow {
     var AXWindow: AXUIElement
@@ -94,10 +90,12 @@ class WindyWindow {
         return attrNames as! [String]
     }
     
-    func getScreen() -> NSScreen? {
+    func getScreen() throws -> NSScreen  {
         // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
         // Returns the screen object containing the window with the keyboard focus.
-        let screen = NSScreen.main!
+        guard let screen = NSScreen.main else {
+            throw WindyWindowError.NSError(message: "failed to get the main screen")
+        }
         return screen
     }
     

@@ -17,47 +17,52 @@ class SnapWindow {
             defer: false
         )
         window.backgroundColor = NSColor(calibratedRed: 0.4, green: 0.4, blue: 0.4, alpha: 0.4)
+        window.collectionBehavior = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
         window.setIsVisible(false)
     }
     
-    func snapMouse(point: NSPoint) {
-        let screen = point.getScreen()
+    func snapMouse(point: NSPoint) throws {
+        guard let screen = point.getScreen() else {
+            throw WindyWindowError.NSError(message: "could not get screen at point")
+        }
         // went out side of window don't draw anything
-        let inSideScreen = NSPointInRect(point, screen!.frame)
+        let inSideScreen = NSPointInRect(point, screen.frame)
         if !inSideScreen  {
             return
         }
-        let insideGutter = point.collisionsInside(rect: (screen?.frame.insetBy(dx: 50, dy: 50))!)
+        let insideGutter = point.collisionsInside(rect: (screen.frame.insetBy(dx: 50, dy: 50)))
         if insideGutter.isEmpty {
             return
         }
         
-        var t_point = screen!.frame.origin
-        var t_size = screen!.frame.size
+        var t_point = screen.frame.origin
+        var t_size = screen.frame.size
         
         let columns = 2.0
         let rows = 2.0
         
-        let minWidth = screen!.frame.width / columns
-        let minHeight = screen!.frame.height / rows
+        let minWidth = screen.frame.width / columns
+        let minHeight = screen.frame.height / rows
         
         if insideGutter.contains(.Left) {
             t_size.width = minWidth
-            t_point.x = screen!.frame.minX
+            t_point.x = screen.frame.minX
         }
         if insideGutter.contains(.Right) {
             t_size.width = minWidth
-            t_point.x = screen!.frame.maxX - t_size.width
+            t_point.x = screen.frame.maxX - t_size.width
         }
         if insideGutter.contains(.Up) {
             t_size.height = minHeight
-            t_point.y = screen!.frame.minY
+            t_point.y = screen.frame.minY
         }
         if insideGutter.contains(.Down) {
             t_size.height = minHeight
-            t_point.y = screen!.frame.maxY - t_size.height
+            t_point.y = screen.frame.maxY - t_size.height
         }
-        window.setFrame(point: t_point, size: t_size)
+        
+        let tFrame = NSRect(origin: t_point, size: t_size)
+        window.setFrame(tFrame, display: true)
         window.setIsVisible(true)
         window.orderFrontRegardless()
 

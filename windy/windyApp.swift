@@ -28,14 +28,16 @@
 // [x] get current window
 // [x] global hot key
 // [x] mouse click and drag
-// [ ] debug/test nsscreen.main.Frame
+// [x] debug/test nsscreen.main.Frame
 // [x] Make collision system
 // [x] Get current window in Screen
-//  - [ ] make window have screen offset
+//  - [x] make window have screen offset
 // [x] Make wrap around behaviour
-// [ ] unwrap all ! add try/catch conditions
+// [x] unwrap all ! add try/catch conditions
 // [x] icon, dark & light modes
-
+// [ ] check next screen if is avaliable
+// [ ] re do move mechanich
+// [ ] create a safeSetFrame()
 
 // // How determin if window is being dragged
 // //
@@ -70,7 +72,6 @@ struct windyApp: App {
     }
 }
 
-
 // Application Logic
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     // the status button in the apple menu
@@ -80,6 +81,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     private var windyManager: WindyManager!
     private var privilegeManager: PrivilegeManager!
+    private var gridManager: GridManager!
  
     func hideMainWindow() {
         // hide the main window on launch
@@ -92,7 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         hideMainWindow()
         windyManager = WindyManager()
         privilegeManager = PrivilegeManager()
-        
+        gridManager = GridManager()
+
         // put the windy icon in the mac toolbar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusBarButton = statusItem.button!
@@ -103,8 +106,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // open the MenuPopover when user clicks the status bar icon
         popover = NSPopover()
         popover.contentSize = NSSize(width: 400, height: 800)
-        popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: MenuPopover())
+        popover.behavior = NSPopover.Behavior.transient;
+        popover.contentViewController = NSHostingController(
+            rootView: MenuPopover(gridManager: self.gridManager)
+        )
         
         // open a request permissions modal
         var accessRequestModalWindow: NSWindow
@@ -132,6 +137,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            // fixes popover bug not closing after focus lost
+            NSApplication.shared.activate(ignoringOtherApps: true)
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
         }
     }

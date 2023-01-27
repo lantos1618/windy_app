@@ -7,29 +7,8 @@
 
 import Foundation
 
-class WindyData: ObservableObject {
-    @Published var windyColumns = UserDefaults.standard.double(forKey: "windyColumns") {
-        didSet {
-            UserDefaults.standard.set(self.windyColumns, forKey: "windyColumns")
-        }
-        
-    }
-    @Published var windyRows = UserDefaults.standard.double(forKey: "windyRows") {
-        didSet {
-            UserDefaults.standard.set(self.windyRows, forKey: "windyRows")
-        }
-    }
-    init() {
-        if UserDefaults.standard.bool(forKey: "defaultSet") == false {
-            UserDefaults.standard.set(2, forKey: "windyColumns")
-            UserDefaults.standard.set(2, forKey: "windyRows")
-            UserDefaults.standard.set(true, forKey: "defaultSet")
-        }
-    }
-}
 
 class WindyManager {
-    var windyData = WindyData()
     // window snapping
     var windyWindow: WindyWindow!
     var initialWindyWindowPos = NSPoint(x: 0, y: 0)
@@ -53,7 +32,7 @@ class WindyManager {
                 windowIsMoving = true
             }
             if (windowIsMoving) {
-                snapWindow.snapMouse(point: NSEvent.mouseLocation)
+                try snapWindow.snapMouse(point: NSEvent.mouseLocation)
             }
         } catch {
             print("error \(error)")
@@ -61,7 +40,6 @@ class WindyManager {
     }
     
     func globalLeftMouseUpHandler(event: NSEvent)  {
-        
         do {
             if(snapWindow.window.isVisible) {
                 try windyWindow.setFrame(frame: snapWindow.window.frame)
@@ -80,6 +58,7 @@ class WindyManager {
         }
         return try WindyWindow(app: frontApp)
     }
+    
     func move(window: WindyWindow, direction: Direction) throws {
         do {
             let screen = NSScreen.main!
@@ -104,7 +83,7 @@ class WindyManager {
             let windowSize = try window.getSize()
             screenSize.width -= windowSize.width
             point = point.clamp(NSRect(origin: screen.frame.origin, size: screenSize))
-            try window.setFrameOrigin(point: point)
+            try window.setFrameOrigin(origin: point)
         } catch {
             print("error \(error)")
         }
@@ -113,27 +92,33 @@ class WindyManager {
     func resize(window: WindyWindow, direction: Direction) throws {
         do {
             let screen = NSScreen.main!
-            let point = try window.getNSPoint()
+            var point = try window.getNSPoint()
             var size = try window.getSize()
             let columns = 2.0
             let rows = 2.0
             let minWidth = screen.frame.maxX / columns
             let minHeight = screen.frame.maxY / rows
             
-            
             switch direction {
-            case .Left, .Right:
+            case .Left:
                 size.width += minWidth * (size.width <= minWidth ? columns : -1.0)
-            case .Up, .Down:
+            case .Right:
+                size.width += minWidth * (size.width <= minWidth ? columns : -1.0)
+                point.x -= size.width
+            case .Up:
                 size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
+            case .Down:
+                size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
+//                point.y -= size.height
+
             }
-            
-            try window.setFrame(frame: NSRect(origin: point, size: size))
-            //        move(window: window, direction: direction)
+            let frame = NSRect(origin: point, size: size)
+            try window.setFrame(frame: frame)
         } catch {
             print("error \(error)")
         }
     }
+    
     func globalKeyEventHandler(event: NSEvent) {
         do {
             if (event.modifierFlags.contains([.option, .control])) {
@@ -143,7 +128,6 @@ class WindyManager {
                 let screenFrame = try window.getScreen().frame
                 let windowCollisions = windowFrame.collisionsInside(rect: screenFrame)
                 // if there are no window collisions we can move the window in the direction
-                
                 let canMove = !windowCollisions.contains(direction)
                 print("windowCollisions", windowCollisions)
                 print("can move", canMove)

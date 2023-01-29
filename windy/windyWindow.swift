@@ -163,6 +163,14 @@ class WindyWindow {
 
     }
     
+     static func currentWindow() throws -> WindyWindow? {
+        // get the most frontMostApp
+        guard let frontApp = NSWorkspace.shared.frontmostApplication else {
+            throw WindyWindowError.NSError(message: "failed to get frontmost app")
+        }
+        return try WindyWindow(app: frontApp)
+    }
+    
     func getWindowId() throws -> CGWindowID {
         var winId = CGWindowID(0)
         let axErr = _AXUIElementGetWindow(self.AXWindow, &winId)

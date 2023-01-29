@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "79B7CA4A-A6CF-4881-BF10-7EA3715057C6"
+            uuid = "D94E0BC6-2927-4BB5-AE30-2588DF3C0DBE"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "windy/windyManager.swift"
+            filePath = "windy/windyData.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "115"
-            endingLineNumber = "115"
-            landmarkName = "resize(window:direction:)"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
+            landmarkName = "init()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

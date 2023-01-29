@@ -6,31 +6,47 @@
 //
 
 import SwiftUI
+//
+//struct WindyScreen: Identifiable {
+//    var id: ObjectIdentifier
+//    var screen: NSScreen
+//}
 
 struct MenuPopover: View {
-    @StateObject var gridManager: GridManager
+    @StateObject var windyData: WindyData
     @State var window: NSWindow?
-
-
-
+//    @State var screens: [WindyScreen] {
+//        get {
+//            let tScreens = NSScreen.screens
+//            let wScreens: [WindyScreen] = []
+//            for screen in tScreens {
+//                let wScreen = WindyScreen(id: screen.hash, screen: screen)
+//            }
+//            return wScreens
+//        }
+//
+//    }
+    @State var selectedScreenHash = 0
     var body: some View {
         VStack {
             Text("Windy window manager").padding()
-            
- 
-            
+            Picker("Select Moniter", selection: $selectedScreenHash) {
+                ForEach(NSScreen.screens, id: \.hash) { screen in
+                    Text("\(screen.localizedName) \(screen.hash)")
+                }
+            }
             Grid {
                 GridRow {
-                    Text ("Columns \(Int(gridManager.columns))")
+                    Text ("Columns \(Int(windyData.columns))")
                     HStack {
                         Button {
-                            gridManager.columns = (gridManager.columns - 1).clamp(to: 1...6)
+                            windyData.columns = (windyData.columns - 1).clamp(to: 1...6)
 
                         } label: {
                             Image(systemName: "minus.circle")
                         }
                         Button {
-                            gridManager.columns = (gridManager.columns + 1).clamp(to: 1...6)
+                            windyData.columns = (windyData.columns + 1).clamp(to: 1...6)
 
                         } label: {
                             Image(systemName: "plus.circle")
@@ -38,21 +54,19 @@ struct MenuPopover: View {
                     }
                 }
                 GridRow {
-                    Text ("Rows \(Int(gridManager.rows))")
+                    Text ("Rows \(Int(windyData.rows))")
                     HStack {
                         Button {
-                            gridManager.rows = (gridManager.rows - 1).clamp(to: 1...6)
+                            windyData.rows = (windyData.rows - 1).clamp(to: 1...6)
 
                         } label: {
                             Image(systemName: "minus.circle")
                         }
                         Button {
-                            gridManager.rows = (gridManager.rows + 1).clamp(to: 1...6)
+                            windyData.rows = (windyData.rows + 1).clamp(to: 1...6)
                         } label: {
                             Image(systemName: "plus.circle")
                         }
-                        
-                      
                     }
                 }
 //
@@ -76,15 +90,13 @@ struct MenuPopover: View {
 //                    Button("CTRL+OPTION+↑") {
 //                    }
 //                }
-                ColorPicker("Accent colour:", selection: $gridManager.accentColour)
-
+                ColorPicker("Accent colour:", selection: $windyData.accentColour)
             }
             
             
             Button("Quit Windy") {
                 NSApplication.shared.terminate(self)
             }.padding()
-            //        }.padding(EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20))
         }.padding()
     }
 }

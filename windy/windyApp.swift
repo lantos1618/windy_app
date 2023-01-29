@@ -81,8 +81,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     private var windyManager: WindyManager!
     private var privilegeManager: PrivilegeManager!
-    private var gridManager: GridManager!
- 
+    private var windyData: WindyData!
+
     func hideMainWindow() {
         // hide the main window on launch
         if let mainWindow = NSApplication.shared.windows.first {
@@ -92,9 +92,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
         hideMainWindow()
-        windyManager = WindyManager()
+       
+        // this has to be here to init window...
+        windyData = WindyData()
+        windyManager = WindyManager(windyData: windyData)
         privilegeManager = PrivilegeManager()
-        gridManager = GridManager()
 
         // put the windy icon in the mac toolbar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -102,15 +104,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         statusBarButton.image = NSImage(imageLiteralResourceName : "StatusBarIcon")
         statusBarButton.image!.size = NSSize ( width: 32 , height: 32 )
         statusBarButton.action = #selector(togglePopover)
-        
+
         // open the MenuPopover when user clicks the status bar icon
         popover = NSPopover()
         popover.contentSize = NSSize(width: 400, height: 800)
         popover.behavior = NSPopover.Behavior.transient;
         popover.contentViewController = NSHostingController(
-            rootView: MenuPopover(gridManager: self.gridManager)
+            rootView: MenuPopover(windyData: self.windyData)
         )
-        
+
         // open a request permissions modal
         var accessRequestModalWindow: NSWindow
         accessRequestModalWindow = NSWindow(

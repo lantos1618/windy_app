@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct AccessRequestModal: View {
-    var accessWindow: NSWindow?
+    var accessWindow: NSWindow
     var closeCallBack: () -> ()
     var privilegeManager = PrivilegeManager()
 
@@ -50,7 +50,7 @@ struct AccessRequestModal: View {
             // start the windy Manager key event Listener
             print("permission granted!")
             timer?.invalidate()
-            self.accessWindow?.close()
+            self.accessWindow.close()
             self.closeCallBack()
             return true
         }

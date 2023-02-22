@@ -7,16 +7,18 @@
 
 import Foundation
 import SwiftUI
+import Combine
+
 
 struct GridView: View {
-    @State var rects: [[NSRect]]
+    @ObservedObject var windyData: WindyData
     
     var body: some View {
         Path {
             path in
-            for row in 0..<rects.count {
-                for col in 0..<rects[row].count {
-                    path.addRect(rects[row][col].insetBy(dx: 10, dy: 10))
+            for row in 0..<windyData.rects.count {
+                for col in 0..<windyData.rects[row].count {
+                    path.addRect(windyData.rects[row][col].insetBy(dx: 10, dy: 10))
                 }
             }
         }
@@ -51,6 +53,9 @@ class GridManager: ObservableObject {
     var window: NSWindow
     var gridView: GridView
     var windyData: WindyData
+    var isShownListener: AnyCancellable?
+    
+
     
     init(windyData: WindyData) {
         self.windyData = windyData
@@ -61,20 +66,31 @@ class GridManager: ObservableObject {
             defer: false
         )
         
-        window.backgroundColor = NSColor(calibratedRed: 0.4, green: 0.4, blue: 0.4, alpha: 0.2)
+        window.backgroundColor = NSColor(windyData.accentColour)
         //        gridView = GridView(gridManagerData: self.gridManagerData
-        gridView = GridView(rects: [])
-        gridView.rects = createRects(rows: self.windyData.rows, columns: self.windyData.columns, screen: NSScreen.main!)
+        gridView = GridView(windyData: windyData)
+
         
         window.contentView = NSHostingView(rootView: gridView)
         window.collectionBehavior = .canJoinAllSpaces // allow window to be shown on all virtual desktops (spaces)
-        window.setIsVisible(self.windyData.isShown)
+        window.setIsVisible(true)
+//        window.setIsVisible(self.windyData.isShown)
+        isShownListener = windyData.$isShown.sink { isShown in
+            self.window.setIsVisible(isShown)
+            self.window.setFrame(NSScreen.main!.frame, display: true)
+            self.windyData.rects = createRects(rows: Double(windyData.displaySettings[NSScreen.main!.getIdString()]?.x ?? CGFloat(2.0)),
+                                               columns: Double(windyData.displaySettings[NSScreen.main!.getIdString()]?.y ?? CGFloat(2.0)),
+                                    screen: NSScreen.main!)
+        }
     }
+    
     func moveWindow(window: WindyWindow, direction: Direction) throws {
         // check to see center of window is coliding with rects
         let screen = try window.getScreen()
         let windowRect = try  window.getFrame()
-        let rects = createRects(rows: self.windyData.rows, columns: self.windyData.columns, screen: screen)
+        let rects = createRects(rows: windyData.displaySettings[NSScreen.main!.getIdString()]!.x,
+                                columns:windyData.displaySettings[NSScreen.main!.getIdString()]!.y,
+                                screen: screen)
         
         // find the center rect
         var rowIndex = 0
@@ -170,7 +186,7 @@ class GridManager: ObservableObject {
         do {
             if (event.modifierFlags.contains([.option, .control])) {
                 guard let direction = event.direction else { return }
-                let window = try WindyWindow.currentWindow()!
+                let window = try WindyWindow.currentWindow()
                 let windowFrame =   try window.getFrame()
                 let screenFrame = try window.getScreen().frame
                 let windowCollisions = windowFrame.collisionsInside(rect: screenFrame)

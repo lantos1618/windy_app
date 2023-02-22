@@ -9,43 +9,72 @@ import Foundation
 import SwiftUI
 
 
-// this should be split into its own data class
+func createDefaultDisplaySettings() -> [String: NSPoint]{
+    var result: [String: NSPoint] = [:]
+    for screen in NSScreen.screens {
+        result[screen.getIdString()] = NSPoint(x: 2.0, y: 2.0)
+    }
+    return result
+}
+
+
 class WindyData: ObservableObject {
-    //    var gridManagerData = GridManagerData()
-    
-    @Published var columns = 2.0 {
+    // could move this to its own struct and have its own toJson fromJson
+    @Published var displaySettings: [String: NSPoint] = [:] {
         didSet {
-            UserDefaults.standard.set(self.columns, forKey: "columns")
+//            print("changed:\(displaySettings)")
+            do {
+                try UserDefaults.standard.set(dict: displaySettings, forKey: "displaySettings")
+            }
+            catch {
+                print("\(error)")
+            }
+            
+            if !isShownTimeout {
+                self.isShown = true
+                isShownTimeout = true
+                Timer.init(timeInterval: 1, repeats: false) { timer in
+                    print("pong")
+                    self.isShown = false
+                    self.isShownTimeout = false
+                    timer.invalidate()
+                    
+                }
+            }
+           
         }
     }
-    @Published var rows = 2.0  {
+    @Published var isShown = false {
         didSet {
-            UserDefaults.standard.set(self.rows, forKey: "rows")
+            print("isShown", isShown)
         }
     }
-    @Published var isShown = false
-    @Published var point =  NSPoint(x: 0, y: 0)
-    @Published var rects: [NSRect] = []
-    
-    @Published var accentColour =
-    Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
+    var isShownTimeout = false
+    @Published var rects: [[NSRect]] = []
+    @Published var accentColour = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
         didSet {
-            UserDefaults.standard.setColor(self.accentColour, forKey: "accentColour")
+            UserDefaults.standard.set(self.accentColour, forKey: "accentColour")
         }
     }
     
     init() {
         if UserDefaults.standard.bool(forKey: "defaultsSet") == false {
-            UserDefaults.standard.set(2.0, forKey: "rows")
-            UserDefaults.standard.set(2.0, forKey: "columns")
+            do {
+                try UserDefaults.standard.set(dict: createDefaultDisplaySettings(), forKey: "displaySettings")
+            } catch {
+                print("failed to set default displaySettings")
+            }
             
             let defaultAccentColour = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2)
-            UserDefaults.standard.setColor(defaultAccentColour, forKey: "accentColour")
+            UserDefaults.standard.set(defaultAccentColour, forKey: "accentColour")
             UserDefaults.standard.set(true, forKey: "defaultsSet")
         }
-        
-        self.rows = UserDefaults.standard.double(forKey: "rows")
-        self.columns = UserDefaults.standard.double(forKey: "columns")
+        do {
+            self.displaySettings = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
+        } catch {
+            print("failed to get the displaySettings")
+        }
         self.accentColour =  UserDefaults.standard.color(forKey: "accentColour")
     }
+    
 }

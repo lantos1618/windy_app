@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4700D4392992737F00A5D8D8 /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4700D4382992737F00A5D8D8 /* utils.swift */; };
 		470C5764295F062E00B0DC3E /* windyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5763295F062E00B0DC3E /* windyApp.swift */; };
 		470C5768295F062F00B0DC3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 470C5767295F062F00B0DC3E /* Assets.xcassets */; };
 		470C576B295F062F00B0DC3E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 470C576A295F062F00B0DC3E /* Preview Assets.xcassets */; };
@@ -15,7 +16,6 @@
 		470C5787295F062F00B0DC3E /* windyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */; };
 		470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C57B129642E6100B0DC3E /* windyWindow.swift */; };
 		47165E2E298416C900BCB775 /* windyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47165E2D298416C900BCB775 /* windyData.swift */; };
-		4732C0B8297DAFA200DB1C5B /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B7297DAFA100DB1C5B /* utils.swift */; };
 		4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B9297DAFA700DB1C5B /* snapWindow.swift */; };
 		47458FF72982FD60005B024B /* gridManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47458FF62982FD60005B024B /* gridManager.swift */; };
 		475590D1296C6EF200E385F5 /* windyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D0296C6EF200E385F5 /* windyManager.swift */; };
@@ -41,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4700D4382992737F00A5D8D8 /* utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = utils.swift; sourceTree = "<group>"; };
 		470C5760295F062E00B0DC3E /* windy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = windy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		470C5763295F062E00B0DC3E /* windyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyApp.swift; sourceTree = "<group>"; };
 		470C5767295F062F00B0DC3E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -54,7 +55,6 @@
 		470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "windy-Bridging-Header.h"; sourceTree = "<group>"; };
 		470C57B129642E6100B0DC3E /* windyWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyWindow.swift; sourceTree = "<group>"; };
 		47165E2D298416C900BCB775 /* windyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyData.swift; sourceTree = "<group>"; };
-		4732C0B7297DAFA100DB1C5B /* utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = utils.swift; path = ../../test/test/utils.swift; sourceTree = "<group>"; };
 		4732C0B9297DAFA700DB1C5B /* snapWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = snapWindow.swift; sourceTree = "<group>"; };
 		47458FF62982FD60005B024B /* gridManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gridManager.swift; sourceTree = "<group>"; };
 		475590D0296C6EF200E385F5 /* windyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyManager.swift; sourceTree = "<group>"; };
@@ -111,7 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */,
-				4732C0B7297DAFA100DB1C5B /* utils.swift */,
+				4700D4382992737F00A5D8D8 /* utils.swift */,
 				470C5763295F062E00B0DC3E /* windyApp.swift */,
 				47165E2D298416C900BCB775 /* windyData.swift */,
 				475590D0296C6EF200E385F5 /* windyManager.swift */,
@@ -284,12 +284,12 @@
 			files = (
 				475590D3296C6F8300E385F5 /* privilegeManager.swift in Sources */,
 				47165E2E298416C900BCB775 /* windyData.swift in Sources */,
-				4732C0B8297DAFA200DB1C5B /* utils.swift in Sources */,
 				475590D1296C6EF200E385F5 /* windyManager.swift in Sources */,
 				470C5764295F062E00B0DC3E /* windyApp.swift in Sources */,
 				47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */,
 				47458FF72982FD60005B024B /* gridManager.swift in Sources */,
 				4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */,
+				4700D4392992737F00A5D8D8 /* utils.swift in Sources */,
 				470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

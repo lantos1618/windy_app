@@ -6,66 +6,55 @@
 //
 
 import SwiftUI
-//
-//struct WindyScreen: Identifiable {
-//    var id: ObjectIdentifier
-//    var screen: NSScreen
-//}
+
 
 struct MenuPopover: View {
     @StateObject var windyData: WindyData
     @State var window: NSWindow?
-//    @State var screens: [WindyScreen] {
-//        get {
-//            let tScreens = NSScreen.screens
-//            let wScreens: [WindyScreen] = []
-//            for screen in tScreens {
-//                let wScreen = WindyScreen(id: screen.hash, screen: screen)
-//            }
-//            return wScreens
-//        }
-//
-//    }
-    @State var selectedScreenHash = 0
+    @State var selectedScreenHash = NSScreen.main!.getIdString()
     var body: some View {
         VStack {
             Text("Windy window manager").padding()
-            Picker("Select Moniter", selection: $selectedScreenHash) {
+            Picker("Screen", selection: $selectedScreenHash) {
                 ForEach(NSScreen.screens, id: \.hash) { screen in
-                    Text("\(screen.localizedName) \(screen.hash)")
+                    Text("\(screen.hash):\(screen.localizedName)").tag(screen.getIdString())
                 }
             }
-            Grid {
-                GridRow {
-                    Text ("Columns \(Int(windyData.columns))")
-                    HStack {
-                        Button {
-                            windyData.columns = (windyData.columns - 1).clamp(to: 1...6)
+            if (windyData.displaySettings.keys.contains(selectedScreenHash)) {
+                Grid {
+                    GridRow {
+                        Text ("Rows \(Int(windyData.displaySettings[selectedScreenHash]!.x))")
+                        HStack {
+                            Button {
+                                windyData.displaySettings[selectedScreenHash]!.x = (windyData.displaySettings[selectedScreenHash]!.x - 1).clamp(to: 1...6)
+                                windyData.isShown = true
+                            } label: {
+                                Image(systemName: "minus.circle")
+                            }
+                            Button {
+                                windyData.displaySettings[selectedScreenHash]!.x = (windyData.displaySettings[selectedScreenHash]!.x + 1).clamp(to: 1...6)
+                                windyData.isShown = false
 
-                        } label: {
-                            Image(systemName: "minus.circle")
+                            } label: {
+                                Image(systemName: "plus.circle")
+                            }
                         }
-                        Button {
-                            windyData.columns = (windyData.columns + 1).clamp(to: 1...6)
-
-                        } label: {
-                            Image(systemName: "plus.circle")
-                        }
-                    }
-                }
-                GridRow {
-                    Text ("Rows \(Int(windyData.rows))")
-                    HStack {
-                        Button {
-                            windyData.rows = (windyData.rows - 1).clamp(to: 1...6)
-
-                        } label: {
-                            Image(systemName: "minus.circle")
-                        }
-                        Button {
-                            windyData.rows = (windyData.rows + 1).clamp(to: 1...6)
-                        } label: {
-                            Image(systemName: "plus.circle")
+                        GridRow {
+                            Text ("Columns \(Int(windyData.displaySettings[selectedScreenHash]!.y))")
+                            HStack {
+                                Button {
+                                    windyData.displaySettings[selectedScreenHash]!.y = (windyData.displaySettings[selectedScreenHash]!.y - 1).clamp(to: 1...6)
+                                    
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                }
+                                Button {
+                                    windyData.displaySettings[selectedScreenHash]!.y = (windyData.displaySettings[selectedScreenHash]!.y + 1).clamp(to: 1...6)
+                                    
+                                } label: {
+                                    Image(systemName: "plus.circle")
+                                }
+                            }
                         }
                     }
                 }

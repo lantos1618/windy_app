@@ -38,6 +38,8 @@
 // [ ] check next screen if is avaliable
 // [ ] re do move mechanich
 // [ ] create a safeSetFrame()
+// [ ] add check to on drag snap to see if window is still avaliable if not hide snap
+
 
 // // How determin if window is being dragged
 // //

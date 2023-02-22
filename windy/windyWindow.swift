@@ -15,7 +15,7 @@ class WindyWindow {
         AXWindow = ele
     }
     
-    convenience init?(pid: pid_t) throws {
+    convenience init(pid: pid_t) throws {
         let AXApp = AXUIElementCreateApplication(pid)
         var winPtr:  CFTypeRef?
         let axErr = AXUIElementCopyAttributeValue(AXApp, kAXMainWindowAttribute as CFString, &winPtr)
@@ -25,11 +25,11 @@ class WindyWindow {
         self.init(ele: winPtr as! AXUIElement)
     }
     
-    convenience init?(app: NSRunningApplication) throws {
+    convenience init(app: NSRunningApplication) throws {
         try self.init(pid: app.processIdentifier)
     }
     
-    convenience init?(point: CGPoint) throws {
+    convenience init(point: CGPoint) throws {
         var winPtr: AXUIElement?
         let systemWide = AXUIElementCreateSystemWide()
         
@@ -163,7 +163,7 @@ class WindyWindow {
 
     }
     
-     static func currentWindow() throws -> WindyWindow? {
+     static func currentWindow() throws -> WindyWindow {
         // get the most frontMostApp
         guard let frontApp = NSWorkspace.shared.frontmostApplication else {
             throw WindyWindowError.NSError(message: "failed to get frontmost app")

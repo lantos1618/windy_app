@@ -105,8 +105,8 @@ class WindyWindow {
     
     func setFrameSize(size: CGSize) throws {
         var newSize = size
-        let CFsize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
-        let axErr =  AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, CFsize)
+        let cfSize = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
+        let axErr =  AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, cfSize)
         if axErr != .success {
             throw WindyWindowError.AXValueError(message: "Failed to set window size \(axErr)")
         }
@@ -123,13 +123,13 @@ class WindyWindow {
     
     func setFrameOrigin(origin: CGPoint) throws {
         // sets the bottom left point of window relative
-        var tpointFlip = origin.flip()
-        tpointFlip.y -= try self.getSize().height
-        try setTopLeftPoint(point: tpointFlip)
+        var tPointFlipped = origin.flip()
+        tPointFlipped.y -= try self.getSize().height
+        try setTopLeftPoint(point: tPointFlipped)
     }
     
     func setFrame(frame: NSRect) throws {
-        // the point is being set from the wrong side so it trys to grow into nothing.
+        // the point is being set from the wrong side so it tries to grow into nothing.
         // we need to adjust for the target height then move back
 //        var t_point = frame.origin
         // give the window some space to resize

@@ -85,14 +85,14 @@ class GridManager: ObservableObject {
     }
     
     func moveWindow(window: WindyWindow, direction: Direction) throws {
-        // check to see center of window is coliding with rects
+        // check to see centre of window is colliding with rects
         let screen = try window.getScreen()
         let windowRect = try  window.getFrame()
         let rects = createRects(rows: windyData.displaySettings[NSScreen.main!.getIdString()]!.x,
                                 columns:windyData.displaySettings[NSScreen.main!.getIdString()]!.y,
                                 screen: screen)
         
-        // find the center rect
+        // find the centre rect
         var rowIndex = 0
         var colIndex = 0
         for row in 0..<rects.count {

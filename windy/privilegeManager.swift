@@ -18,13 +18,13 @@ struct AccessRequestModal: View {
 
     var body: some View {
         VStack {
-            Text("Windy Requires Accesibilty permissions for the following functionality").padding()
+            Text("Windy Requires Accessibility permissions for the following functionality").padding()
             List {
                 Text("\u{2022} Move and resize windows")
                 Text("\u{2022} Use Global HotKeys")
             }.padding()
             HStack {
-                Button("Open Accessability Permissions") {
+                Button("Open Accessibility Permissions") {
 //                    let accessibilityURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
 //                    NSWorkspace.shared.open(URL(string: accessibilityURL)!)
                     _ = self.checkPrivilegeHandle(timer: nil, prompt: true)

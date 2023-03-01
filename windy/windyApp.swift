@@ -2,18 +2,18 @@
 //  windyApp.swift
 //  windy
 //    global hotkeys
-// https://stackoverflow.com/questions/28281653/how-to-listen-to-global-hotkeys-with-swift-in-a-macos-app/40509620#40509620
-// https://stackoverflow.com/questions/50990430/moving-windows-programmatically-on-macos-in-swift
+// https://stack-overflow.com/questions/28281653/how-to-listen-to-global-hotkeys-with-swift-in-a-macOS-app/40509620#40509620
+// https://stack-overflow.com/questions/50990430/moving-windows-programmatically-on-macOS-in-swift
 //  Created by Lyndon Leong on 30/12/2022.
 //  windy is a window manager that moves windows based on snap locations
 //  hotKeys;
 //    crtl + option + lArrow = move to left
 //    crtl + option + lArrow + rArrow = expand
 //  same for left + right, up + down
-//  behaviour
+//  behavior
 //  if tap crtl + option + double tap lArrow = expand
 //  if window collides on screen wall it cycles 1(max screen), 0.5, 0.33, 0.25
-//  if double tap (ctrl + option) == auto tile so that, collumns are auto fit
+//  if double tap (ctrl + option) == auto tile so that, columns are auto fit
 
 // change to windows behaviour?
 // up collapsed = fullscreen
@@ -28,20 +28,20 @@
 // [x] get current window
 // [x] global hot key
 // [x] mouse click and drag
-// [x] debug/test nsscreen.main.Frame
+// [x] debug/test nsScreen.main.Frame
 // [x] Make collision system
 // [x] Get current window in Screen
 //  - [x] make window have screen offset
 // [x] Make wrap around behaviour
 // [x] unwrap all ! add try/catch conditions
 // [x] icon, dark & light modes
-// [ ] check next screen if is avaliable
-// [ ] re do move mechanich
+// [ ] check next screen if is available
+// [ ] re do move mechanic
 // [ ] create a safeSetFrame()
-// [ ] add check to on drag snap to see if window is still avaliable if not hide snap
+// [ ] add check to on drag snap to see if window is still available if not hide snap
 
 
-// // How determin if window is being dragged
+// // How determine if window is being dragged
 // //
 // var initialWindow
 // if leftMouseDown:
@@ -50,7 +50,7 @@
 //  if initialWindow.origin != getWindow.origin:
 //    // window resizing
 // if leftMouseUp:
-//  if intialWindow.origin != getWindow.orign:
+//  if initialWindow.origin != getWindow.origin:
 //    // window resizingDone
 
 //import Cocoa

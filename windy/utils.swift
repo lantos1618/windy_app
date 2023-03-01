@@ -132,8 +132,8 @@ extension NSWindow {
 
 extension Color {
 
-    /// Explicitly extracted Core Graphics color
-    /// for the purpose of reconstruction and persistance.
+    /// Explicitly extracted Core Graphics color's
+    /// for the purpose of reconstruction and persistence.
     var cgColor_: CGColor {
         NSColor(self).cgColor
     }

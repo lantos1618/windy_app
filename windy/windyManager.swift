@@ -9,8 +9,8 @@ import Foundation
 
 
 class WindyManager {
-    var snapManager: SnapManager
-    var gridManager: GridManager
+    var snapManager : SnapManager
+    var gridManager : GridManager
     
     init(windyData: WindyData) {
         snapManager = SnapManager(windyData: windyData)

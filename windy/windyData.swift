@@ -46,8 +46,8 @@ class WindyData: ObservableObject {
         didSet {
             setDisplaySettings(settings: displaySettings)
             if !isShownTimeout {
-                self.isShown = true
-                isShownTimeout = true
+                self.isShown    = true
+                isShownTimeout  = true
                 _ = Timer.init(timeInterval: 1, repeats: false) { timer in
                     print("pong")
                     self.isShown = false
@@ -64,9 +64,9 @@ class WindyData: ObservableObject {
             print("isShown", isShown)
         }
     }
-    @Published var isShownTimeout = false
-    @Published var rects: [[NSRect]] = []
-    @Published var accentColour = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
+    @Published var isShownTimeout   = false
+    @Published var rects            : [[NSRect]] = []
+    @Published var accentColour     = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
         didSet {
             UserDefaults.standard.set(self.accentColour, forKey: "accentColour")
         }
@@ -90,10 +90,10 @@ class WindyData: ObservableObject {
         
         // add listener to update the defaults when a new monitor is added
         NotificationCenter.default.addObserver(
-            forName: NSApplication.didChangeScreenParametersNotification,
-            object: NSApplication.shared,
-            queue: OperationQueue.main)
-        {
+            forName : NSApplication.didChangeScreenParametersNotification,
+            object  : NSApplication.shared,
+            queue   : OperationQueue.main
+        ){
             notification -> Void in setDisplaySettings()
         }
     }

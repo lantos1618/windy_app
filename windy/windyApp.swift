@@ -77,13 +77,13 @@ struct windyApp: App {
 // Application Logic
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     // the status button in the apple menu
-    private var statusItem: NSStatusItem!
-    private var statusBarButton: NSStatusBarButton!
-    private var popover: NSPopover!
+    private var statusItem          : NSStatusItem!
+    private var statusBarButton     : NSStatusBarButton!
+    private var popover             : NSPopover!
     
-    private var windyManager: WindyManager!
-    private var privilegeManager: PrivilegeManager!
-    private var windyData: WindyData!
+    private var windyManager        : WindyManager!
+    private var privilegeManager    : PrivilegeManager!
+    private var windyData           : WindyData!
 
     func hideMainWindow() {
         // hide the main window on launch
@@ -96,9 +96,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         hideMainWindow()
        
         // this has to be here to init window...
-        windyData = WindyData()
-        windyManager = WindyManager(windyData: windyData)
-        privilegeManager = PrivilegeManager()
+        windyData           = WindyData()
+        windyManager        = WindyManager(windyData: windyData)
+        privilegeManager    = PrivilegeManager()
 
         // put the windy icon in the mac toolbar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -108,25 +108,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         statusBarButton.action = #selector(togglePopover)
 
         // open the MenuPopover when user clicks the status bar icon
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 400, height: 800)
-        popover.behavior = NSPopover.Behavior.transient;
-        popover.contentViewController = NSHostingController(
+        popover                         = NSPopover()
+        popover.contentSize             = NSSize(width: 400, height: 800)
+        popover.behavior                = NSPopover.Behavior.transient;
+        popover.contentViewController   = NSHostingController(
             rootView: MenuPopover(windyData: self.windyData)
         )
 
         // open a request permissions modal
-        var accessRequestModalWindow: NSWindow
-        accessRequestModalWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 380),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
+        var accessRequestModalWindow    : NSWindow
+        accessRequestModalWindow        = NSWindow(
+            contentRect : NSRect(x: 0, y: 0, width: 400, height: 380),
+            styleMask   : [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing     : .buffered,
+            defer       : false
         )
         accessRequestModalWindow.contentView = NSHostingView(
             rootView: AccessRequestModal(
-                accessWindow: accessRequestModalWindow,
-                closeCallBack: self.windyManager.registerGlobalEvents
+                accessWindow    : accessRequestModalWindow,
+                closeCallBack   : self.windyManager.registerGlobalEvents
             )
         )
         accessRequestModalWindow.center()

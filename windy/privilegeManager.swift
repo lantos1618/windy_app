@@ -9,12 +9,12 @@
 import SwiftUI
 
 struct AccessRequestModal: View {
-    var accessWindow: NSWindow
-    var closeCallBack: () -> ()
-    var privilegeManager = PrivilegeManager()
+    var accessWindow        : NSWindow
+    var closeCallBack       : () -> ()
+    var privilegeManager    = PrivilegeManager()
 
-    @State var accessTimer: Timer?
-    @State var firstClick = true
+    @State var accessTimer  : Timer?
+    @State var firstClick   = true
 
     var body: some View {
         VStack {
@@ -60,10 +60,9 @@ struct AccessRequestModal: View {
 
 class PrivilegeManager {
     func checkPrivilege(prompt: Bool) -> Bool {
-        let options = NSDictionary(
+        let options     = NSDictionary(
             object: prompt ? kCFBooleanTrue! : kCFBooleanFalse!, forKey: kAXTrustedCheckOptionPrompt.takeUnretainedValue() as NSString) as CFDictionary
-        // this needs sandbox turned off :/
-         let trusted = AXIsProcessTrustedWithOptions(options)
+         let trusted    = AXIsProcessTrustedWithOptions(options)
         
         if (trusted) {
             print("Trusted!")

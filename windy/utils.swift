@@ -53,14 +53,14 @@ extension NSPoint {
     }
     
     func clamp(_ rect: NSRect) -> NSPoint {
-        var point = self
-        point.x = point.x.clamp(to: 0...rect.width)
-        point.y = point.y.clamp(to: 0...rect.height)
+        var point   = self
+        point.x     = point.x.clamp(to: 0...rect.width)
+        point.y     = point.y.clamp(to: 0...rect.height)
         return point
     }
     
     func getScreen() -> NSScreen? {
-        let screens = NSScreen.screens
+        let screens         = NSScreen.screens
         let screenWithMouse = (screens.first {screen in
             NSPointInRect(self, screen.frame)})
         return screenWithMouse ?? NSScreen.main
@@ -116,8 +116,8 @@ extension NSWindow {
 //        var tPoint = point
 //    }
     func setFrameSize(_ size: CGSize) {
-        var frame = self.frame
-        frame.size = size
+        var frame   = self.frame
+        frame.size  = size
         self.setFrame(frame, display: self.isVisible)
     }
     
@@ -142,14 +142,14 @@ extension Color {
 extension UserDefaults {
     // color
     func set(_ color: Color, forKey key: String) {
-        let cgColor = color.cgColor_
-        let array = cgColor.components ?? []
+        let cgColor     = color.cgColor_
+        let array       = cgColor.components ?? []
         set(array, forKey: key)
     }
 
     func color(forKey key: String) -> Color {
-        guard let array = object(forKey: key) as? [CGFloat] else { return .accentColor }
-        let color = CGColor(colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!, components: array)!
+        guard let array     = object(forKey: key) as? [CGFloat] else { return .accentColor }
+        let color           = CGColor(colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!, components: array)!
         return Color(color)
     }
     // [String: NSPoint]
@@ -159,10 +159,10 @@ extension UserDefaults {
         UserDefaults.standard.set(data, forKey: forKey)
     }
     func getDictPoints(forKey: String) throws -> [String: NSPoint] {
-        guard let data = UserDefaults.standard.data(forKey: forKey) else {
+        guard let data  = UserDefaults.standard.data(forKey: forKey) else {
             throw WindyWindowError.NSError(message: "key:\(forKey) Not Found")
         }
-        let decoder = JSONDecoder()
+        let decoder     = JSONDecoder()
         return try decoder.decode([String: NSPoint].self, from: data)
         
     }

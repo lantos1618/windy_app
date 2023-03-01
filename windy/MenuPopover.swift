@@ -9,9 +9,10 @@ import SwiftUI
 
 
 struct MenuPopover: View {
-    @StateObject var windyData: WindyData
-    @State var window: NSWindow?
-    @State var selectedScreenHash = NSScreen.main!.getIdString()
+    @StateObject var windyData      : WindyData
+    @State var window               : NSWindow?
+    @State var selectedScreenHash   = NSScreen.main!.getIdString()
+    
     var body: some View {
         VStack {
             Text("Windy window manager").padding()

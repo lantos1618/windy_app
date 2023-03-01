@@ -18,13 +18,13 @@ class SnapManager {
     
     init(windyData: WindyData) {
         snapWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500 , height: 500),
-            styleMask: [.fullSizeContentView],
-            backing: .buffered,
-            defer: false
+            contentRect     : NSRect(x: 0, y: 0, width: 500 , height: 500),
+            styleMask       : [.fullSizeContentView],
+            backing         : .buffered,
+            defer           : false
         )
-        snapWindow.backgroundColor = NSColor(windyData.accentColour)
-        snapWindow.collectionBehavior = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
+        snapWindow.backgroundColor      = NSColor(windyData.accentColour)
+        snapWindow.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
         snapWindow.setIsVisible(false)
     }
     
@@ -59,22 +59,22 @@ class SnapManager {
         
         
         if insideGutter.contains(.Left) {
-            t_size.width = minWidth
-            t_point.x = screen.frame.minX
+            t_size.width    = minWidth
+            t_point.x       = screen.frame.minX
         }
         if insideGutter.contains(.Right) {
-            t_size.width = minWidth
-            t_point.x = screen.frame.maxX - t_size.width
+            t_size.width    = minWidth
+            t_point.x       = screen.frame.maxX - t_size.width
         }
         
         if insideGutter.contains(.Up) {
-            t_size.height = minHeight
-            t_point.y = screen.frame.maxY - t_size.height
+            t_size.height   = minHeight
+            t_point.y       = screen.frame.maxY - t_size.height
          
         }
         if insideGutter.contains(.Down) {
-            t_size.height = minHeight
-            t_point.y = screen.frame.minY
+            t_size.height   = minHeight
+            t_point.y       = screen.frame.minY
         }
         
         let tFrame = NSRect(origin: t_point, size: t_size)
@@ -88,8 +88,8 @@ class SnapManager {
     
     func globalLeftMouseDownHandler(event: NSEvent)  {
         do {
-            currentMovingWindow = try WindyWindow.currentWindow()
-            initialWindyWindowPos = try currentMovingWindow.getPoint()
+            currentMovingWindow     = try WindyWindow.currentWindow()
+            initialWindyWindowPos   = try currentMovingWindow.getPoint()
         } catch {
             print("\(error)")
         }
@@ -140,10 +140,10 @@ class SnapManager {
     
     func registerEvents() {
         // snapping window
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown, handler: self.globalLeftMouseDownHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged, handler: self.globalLeftMouseDragHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp, handler: self.globalLeftMouseUpHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .keyDown , handler: self.globalEscKeyDownHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .keyUp , handler: self.globalEscKeyUpHandler)
+        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown,     handler: self.globalLeftMouseDownHandler)
+        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged,  handler: self.globalLeftMouseDragHandler)
+        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp,       handler: self.globalLeftMouseUpHandler)
+        NSEvent.addGlobalMonitorForEvents(matching: .keyDown,           handler: self.globalEscKeyDownHandler)
+        NSEvent.addGlobalMonitorForEvents(matching: .keyUp,             handler: self.globalEscKeyUpHandler)
     }
 }

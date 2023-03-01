@@ -50,29 +50,29 @@ func createRects(rows: Double, columns: Double, screen: NSScreen) -> [[NSRect]] 
 
 // this should be split into its own data class
 class GridManager: ObservableObject {
-    var window: NSWindow
-    var gridView: GridView
-    var windyData: WindyData
-    var isShownListener: AnyCancellable?
+    var window          : NSWindow
+    var gridView        : GridView
+    var windyData       : WindyData
+    var isShownListener : AnyCancellable?
     
 
     
     init(windyData: WindyData) {
         self.windyData = windyData
         window = NSWindow(
-            contentRect: NSScreen.main!.frame,
-            styleMask: [.fullSizeContentView, .resizable],
-            backing: .buffered,
-            defer: false
+            contentRect : NSScreen.main!.frame,
+            styleMask   : [.fullSizeContentView, .resizable],
+            backing     : .buffered,
+            defer       : false
         )
         
-        window.backgroundColor = NSColor(windyData.accentColour)
+        window.backgroundColor      = NSColor(windyData.accentColour)
         //        gridView = GridView(gridManagerData: self.gridManagerData
-        gridView = GridView(windyData: windyData)
+        gridView                    = GridView(windyData: windyData)
 
         
-        window.contentView = NSHostingView(rootView: gridView)
-        window.collectionBehavior = .canJoinAllSpaces // allow window to be shown on all virtual desktops (spaces)
+        window.contentView          = NSHostingView(rootView: gridView)
+        window.collectionBehavior   = .canJoinAllSpaces // allow window to be shown on all virtual desktops (spaces)
         window.setIsVisible(true)
 //        window.setIsVisible(self.windyData.isShown)
         isShownListener = windyData.$isShown.sink { isShown in
@@ -86,9 +86,9 @@ class GridManager: ObservableObject {
     
     func moveWindow(window: WindyWindow, direction: Direction) throws {
         // check to see centre of window is colliding with rects
-        let screen = try window.getScreen()
-        let windowRect = try  window.getFrame()
-        let rects = createRects(rows: windyData.displaySettings[NSScreen.main!.getIdString()]!.x,
+        let screen      = try window.getScreen()
+        let windowRect  = try  window.getFrame()
+        let rects       = createRects(rows: windyData.displaySettings[NSScreen.main!.getIdString()]!.x,
                                 columns:windyData.displaySettings[NSScreen.main!.getIdString()]!.y,
                                 screen: screen)
         
@@ -154,20 +154,20 @@ class GridManager: ObservableObject {
     
     func resize(window: WindyWindow, direction: Direction) throws {
         do {
-            let screen = NSScreen.main!
-            var point = try window.getNSPoint()
-            var size = try window.getSize()
-            let columns = 2.0
-            let rows = 2.0
-            let minWidth = screen.frame.maxX / columns
-            let minHeight = screen.frame.maxY / rows
+            let screen      = NSScreen.main!
+            var point       = try window.getNSPoint()
+            var size        = try window.getSize()
+            let columns     = 2.0
+            let rows        = 2.0
+            let minWidth    = screen.frame.maxX / columns
+            let minHeight   = screen.frame.maxY / rows
 
             switch direction {
             case .Left:
-                size.width += minWidth * (size.width <= minWidth ? columns : -1.0)
+                size.width  += minWidth * (size.width <= minWidth ? columns : -1.0)
             case .Right:
-                size.width += minWidth * (size.width <= minWidth ? columns : -1.0)
-                point.x -= size.width
+                size.width  += minWidth * (size.width <= minWidth ? columns : -1.0)
+                point.x     -= size.width
             case .Up:
                 size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
             case .Down:
@@ -185,13 +185,13 @@ class GridManager: ObservableObject {
     func globalKeyEventHandler(event: NSEvent) {
         do {
             if (event.modifierFlags.contains([.option, .control])) {
-                guard let direction = event.direction else { return }
-                let window = try WindyWindow.currentWindow()
-                let windowFrame =   try window.getFrame()
-                let screenFrame = try window.getScreen().frame
-                let windowCollisions = windowFrame.collisionsInside(rect: screenFrame)
+                guard let direction     = event.direction else { return }
+                let window              = try WindyWindow.currentWindow()
+                let windowFrame         = try window.getFrame()
+                let screenFrame         = try window.getScreen().frame
+                let windowCollisions    = windowFrame.collisionsInside(rect: screenFrame)
                 // if there are no window collisions we can move the window in the direction
-                let canMove = !windowCollisions.contains(direction)
+                let canMove             = !windowCollisions.contains(direction)
                 print("windowCollisions", windowCollisions)
                 print("can move", canMove)
                 

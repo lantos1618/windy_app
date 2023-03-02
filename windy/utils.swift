@@ -19,6 +19,7 @@ enum Direction {
     case Left, Right, Up, Down
 }
 
+
 extension NSEvent {
     var direction: Direction? {
         get {
@@ -171,5 +172,8 @@ extension UserDefaults {
 extension NSScreen {
     func getIdString() -> String {
         return "\(self.hash):\(self.localizedName)"
+    }
+    func fromIdString(str: String) -> NSScreen? {
+        return NSScreen.screens.first(where: { screen in screen.getIdString() == str })
     }
 }

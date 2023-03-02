@@ -11,7 +11,7 @@ import SwiftUI
 func createDefaultSettings() -> [String: NSPoint] {
     var result: [String: NSPoint] = [:]
     for screen in NSScreen.screens {
-        var screenName = screen.getIdString()
+        let screenName = screen.getIdString()
         if !result.keys.contains(screenName) {
             result[screenName] = NSPoint(x: 2.0, y: 2.0)
         }
@@ -42,31 +42,16 @@ func createDefaultAccentColor() {
 
 class WindyData: ObservableObject {
     // could move this to its own struct and have its own toJson fromJson
-    @Published var displaySettings: [String: NSPoint] = [:] {
+    @Published var activeSettingScreen  : String            = NSScreen.main!.getIdString()
+    @Published var displaySettings      : [String: NSPoint] = [:] {
         didSet {
             setDisplaySettings(settings: displaySettings)
-            if !isShownTimeout {
-                self.isShown    = true
-                isShownTimeout  = true
-                _ = Timer.init(timeInterval: 1, repeats: false) { timer in
-                    print("pong")
-                    self.isShown = false
-                    self.isShownTimeout = false
-                    timer.invalidate()
-                    
-                }
-            }
-           
         }
     }
-    @Published var isShown = false {
-        didSet {
-            print("isShown", isShown)
-        }
-    }
-    @Published var isShownTimeout   = false
-    @Published var rects            : [[NSRect]] = []
-    @Published var accentColour     = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
+    @Published var isShown              = false
+    @Published var isShownTimeout       : Timer?
+    @Published var rects                : [[NSRect]]        = []
+    @Published var accentColour         = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
         didSet {
             UserDefaults.standard.set(self.accentColour, forKey: "accentColour")
         }

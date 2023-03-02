@@ -114,6 +114,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         popover.contentViewController   = NSHostingController(
             rootView: MenuPopover(windyData: self.windyData)
         )
+        // add listener to close the rectangle preview
+        NotificationCenter.default.addObserver(forName: NSPopover.willCloseNotification, object: popover, queue: OperationQueue.main) {_ in
+            self.windyData.isShown = false
+        }
 
         // open a request permissions modal
         var accessRequestModalWindow    : NSWindow

@@ -10,29 +10,29 @@ import SwiftUI
 struct MenuPopover: View {
     @StateObject var windyData      : WindyData
     @State var window               : NSWindow?
-    @State var selectedScreenHash   = NSScreen.main!.getIdString()
+//    @State var selectedScreenHash   = NSScreen.main!.getIdString()
     
     var body: some View {
         VStack {
             Text("Windy window manager").padding()
-            Picker("Screen", selection: $selectedScreenHash) {
+            Picker("Screen", selection: $windyData.activeSettingScreen) {
                 ForEach(NSScreen.screens, id: \.hash) { screen in
                     Text("\(screen.hash):\(screen.localizedName)").tag(screen.getIdString())
                 }
             }
-            if (windyData.displaySettings.keys.contains(selectedScreenHash)) {
+            if (windyData.displaySettings.keys.contains(windyData.activeSettingScreen)) {
                 Grid {
                     GridRow {
                         Text ("Columns:").gridColumnAlignment(.trailing) // Align the entire first column.
-                        Text ("\(Int(windyData.displaySettings[selectedScreenHash]!.x))")
+                        Text ("\(Int(windyData.displaySettings[windyData.activeSettingScreen]!.x))")
                         HStack {
                             Button {
-                                windyData.displaySettings[selectedScreenHash]!.x = (windyData.displaySettings[selectedScreenHash]!.x - 1).clamp(to: 1...6)
+                                windyData.displaySettings[windyData.activeSettingScreen]!.x = (windyData.displaySettings[windyData.activeSettingScreen]!.x - 1).clamp(to: 1...6)
                             } label: {
                                 Image(systemName: "minus.circle")
                             }
                             Button {
-                                windyData.displaySettings[selectedScreenHash]!.x = (windyData.displaySettings[selectedScreenHash]!.x + 1).clamp(to: 1...6)
+                                windyData.displaySettings[windyData.activeSettingScreen]!.x = (windyData.displaySettings[windyData.activeSettingScreen]!.x + 1).clamp(to: 1...6)
                                 
                             } label: {
                                 Image(systemName: "plus.circle")
@@ -41,16 +41,16 @@ struct MenuPopover: View {
                     }
                     GridRow {
                         Text ("Rows:")
-                        Text(" \(Int(windyData.displaySettings[selectedScreenHash]!.y))")
+                        Text(" \(Int(windyData.displaySettings[windyData.activeSettingScreen]!.y))")
                         HStack {
                             Button {
-                                windyData.displaySettings[selectedScreenHash]!.y = (windyData.displaySettings[selectedScreenHash]!.y - 1).clamp(to: 1...6)
+                                windyData.displaySettings[windyData.activeSettingScreen]!.y = (windyData.displaySettings[windyData.activeSettingScreen]!.y - 1).clamp(to: 1...6)
                                 
                             } label: {
                                 Image(systemName: "minus.circle")
                             }
                             Button {
-                                windyData.displaySettings[selectedScreenHash]!.y = (windyData.displaySettings[selectedScreenHash]!.y + 1).clamp(to: 1...6)
+                                windyData.displaySettings[windyData.activeSettingScreen]!.y = (windyData.displaySettings[windyData.activeSettingScreen]!.y + 1).clamp(to: 1...6)
                                 
                             } label: {
                                 Image(systemName: "plus.circle")

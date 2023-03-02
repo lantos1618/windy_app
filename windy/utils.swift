@@ -173,7 +173,32 @@ extension NSScreen {
     func getIdString() -> String {
         return "\(self.hash):\(self.localizedName)"
     }
-    func fromIdString(str: String) -> NSScreen? {
+    static func fromIdString(str: String) -> NSScreen? {
         return NSScreen.screens.first(where: { screen in screen.getIdString() == str })
     }
+}
+
+func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] {
+    print (columns, rows)
+    var rects       : [[NSRect]] = []
+    let minWidth    = (screen.frame.width / CGFloat(columns))
+    let minHeight   = (screen.frame.height / CGFloat(rows))
+    
+    for col in 0..<Int(columns) {
+        rects.append([])
+        for row in 0..<Int(rows) {
+            let rect = NSRect(
+                origin: NSPoint(
+                    x   : Int(minWidth) * col,
+                    y   : Int(minHeight) * row
+                ),
+                size: NSSize(
+                    width   : Int(minWidth),
+                    height  : Int(minHeight)
+                )
+            )
+            rects[col].append(rect)
+        }
+    }
+    return rects
 }

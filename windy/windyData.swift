@@ -42,15 +42,29 @@ func createDefaultAccentColor() {
 
 class WindyData: ObservableObject {
     // could move this to its own struct and have its own toJson fromJson
-    @Published var activeSettingScreen  : String            = NSScreen.main!.getIdString()
+    @Published var activeSettingScreen  : String            = NSScreen.main!.getIdString() {
+        didSet {
+            print("activeSettingScreen.value", activeSettingScreen)
+            print("rectsDict[activeSettingScreen] ?? []", rectsDict[activeSettingScreen] ?? [])
+            previewRects = rectsDict[activeSettingScreen] ?? []
+        }
+    }
     @Published var displaySettings      : [String: NSPoint] = [:] {
         didSet {
+            for (key, val) in displaySettings {
+                rectsDict[key] = createRects(
+                    columns : Double(val.x),
+                    rows    : Double(val.y),
+                    screen  : NSScreen.fromIdString(str: key) ?? NSScreen.main!
+                )
+            }
             setDisplaySettings(settings: displaySettings)
         }
     }
     @Published var isShown              = false
     @Published var isShownTimeout       : Timer?
-    @Published var rects                : [[NSRect]]        = []
+    @Published var rectsDict            : [String: [[NSRect]]]        = [:]
+    @Published var previewRects         : [[NSRect]] = []
     @Published var accentColour         = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
         didSet {
             UserDefaults.standard.set(self.accentColour, forKey: "accentColour")

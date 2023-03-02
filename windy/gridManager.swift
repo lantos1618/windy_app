@@ -11,15 +11,20 @@ import Combine
 
 
 struct GridView: View {
-    @ObservedObject var windyData: WindyData
+    // this needs to be redrawn every time
+    // activeDisplayWindow is Changed
+    // display rows/cols are updated
+    @ObservedObject var windyData: WindyData;
+
     
     var body: some View {
-        let path = Path {
+        let rects       = windyData.previewRects
+
+        let path        = Path {
             path in
-            for col in 0..<windyData.rects.count {
-                for row in 0..<windyData.rects[col].count {
-                    path.addRect(windyData.rects[col][row].insetBy(dx: 10, dy: 10))
-                    print("col: \(col) row: \(row)", windyData.rects[col][row].insetBy(dx: 10, dy: 10))
+            for col in 0..<rects.count {
+                for row in 0..<rects[col].count {
+                    path.addRect(rects[col][row].insetBy(dx: 10, dy: 10))
                 }
             }
         }
@@ -27,30 +32,6 @@ struct GridView: View {
     }
 }
 
-func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] {
-    print (columns, rows)
-    var rects       : [[NSRect]] = []
-    let minWidth    = (screen.frame.width / CGFloat(columns))
-    let minHeight   = (screen.frame.height / CGFloat(rows))
-    print (screen.frame.width, screen.frame.height)
-    for col in 0..<Int(columns) {
-        rects.append([])
-        for row in 0..<Int(rows) {
-            let rect = NSRect(
-                origin: NSPoint(
-                    x   : Int(minWidth) * col,
-                    y   : Int(minHeight) * row
-                ),
-                size: NSSize(
-                    width   : Int(minWidth),
-                    height  : Int(minHeight)
-                )
-            )
-            rects[col].append(rect)
-        }
-    }
-    return rects
-}
 
 // this should be split into its own data class
 class GridManager: ObservableObject {
@@ -59,9 +40,9 @@ class GridManager: ObservableObject {
     var windyData           : WindyData
     var isShownListener     : AnyCancellable?
     var accentColorListener : AnyCancellable?
-    var rectsListener       : AnyCancellable?
-    
-    
+    var activeScreenListener       : AnyCancellable?
+
+
     
     init(windyData: WindyData) {
         self.windyData = windyData
@@ -73,8 +54,10 @@ class GridManager: ObservableObject {
         )
         
         window.backgroundColor      = NSColor(windyData.accentColour)
-        
+
         gridView                    = GridView(windyData: windyData)
+        //        set default preview rects
+        windyData.previewRects      = windyData.rectsDict[windyData.activeSettingScreen] ?? []
         
         window.contentView          = NSHostingView(rootView: gridView)
         window.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
@@ -84,21 +67,13 @@ class GridManager: ObservableObject {
             self.window.backgroundColor = NSColor(accentColor)
         }
         isShownListener             = windyData.$isShown.sink { isShown in
+            let screen = NSScreen.fromIdString(str: windyData.activeSettingScreen) ?? NSScreen.main!
             self.window.setIsVisible(isShown)
-            self.window.setFrame(NSScreen.main!.frame, display: true)
-            self.windyData.rects = createRects(
-                columns : Double(windyData.displaySettings[windyData.activeSettingScreen]?.x ?? CGFloat(2.0)),
-                rows    : Double(windyData.displaySettings[windyData.activeSettingScreen]?.y ?? CGFloat(2.0)),
-                screen  : NSScreen.main!
-            )
+            self.window.setFrame(screen.frame, display: true)
         }
-        //        rectsListener               = windyData.$rects.sink { rects in
-        //            self.windyData.rects = createRects(
-        //                rows    : Double(windyData.displaySettings[NSScreen.main!.getIdString()]?.x ?? CGFloat(2.0)),
-        //                columns : Double(windyData.displaySettings[NSScreen.main!.getIdString()]?.y ?? CGFloat(2.0)),
-        //                screen  : NSScreen.main!
-        //            )
-        //        }
+        activeScreenListener        = windyData.$activeSettingScreen.sink { screenId in
+            self.window.setFrame( (NSScreen.fromIdString(str: screenId) ?? NSScreen.main!).frame, display: true)
+        }
     }
     
     func moveWindow(window: WindyWindow, direction: Direction) throws {
@@ -123,18 +98,18 @@ class GridManager: ObservableObject {
                 }
             }
         }
-        //        switch direction {
-        //        case .Left:
-        //
-        //            window.setFrame(frame: )
-        //            break
-        //        case .Right:
-        //            break
-        //        case .Up:
-        //            break
-        //        case .Down:
-        //            break
-        //        }
+//        switch direction {
+//        case .Left:
+//
+//            window.setFrame(frame: )
+//            break
+//        case .Right:
+//            break
+//        case .Up:
+//            break
+//        case .Down:
+//            break
+//        }
     }
     func resizeWindow(window: WindyWindow, direction: Direction) throws {
         
@@ -149,7 +124,7 @@ class GridManager: ObservableObject {
             let rows = 2.0
             let minWidth = screen.frame.maxX / columns
             let minHeight = screen.frame.maxY / rows
-            
+
             switch direction {
             case .Left:
                 point.x -= minWidth
@@ -160,7 +135,7 @@ class GridManager: ObservableObject {
             case .Down:
                 point.y -= minHeight
             }
-            
+
             var screenSize = screen.frame.size
             let windowSize = try window.getSize()
             screenSize.width -= windowSize.width
@@ -180,7 +155,7 @@ class GridManager: ObservableObject {
             let rows        = 2.0
             let minWidth    = screen.frame.maxX / columns
             let minHeight   = screen.frame.maxY / rows
-            
+
             switch direction {
             case .Left:
                 size.width  += minWidth * (size.width <= minWidth ? columns : -1.0)
@@ -191,8 +166,8 @@ class GridManager: ObservableObject {
                 size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
             case .Down:
                 size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
-                //                point.y -= size.height
-                
+//                point.y -= size.height
+
             }
             let frame = NSRect(origin: point, size: size)
             try window.setFrame(frame: frame)
@@ -215,11 +190,11 @@ class GridManager: ObservableObject {
                 print("can move", canMove)
                 
                 if canMove || windowCollisions.isEmpty {
-                    //                    try self.moveWindow(window: window, direction: direction)
+//                    try self.moveWindow(window: window, direction: direction)
                     try self.move(window: window, direction: direction)
                     return
                 }
-                //                try self.resizeWindow(window: window, direction: direction)
+//                try self.resizeWindow(window: window, direction: direction)
                 try self.resize(window: window, direction: direction)
             }
         } catch {
@@ -227,7 +202,7 @@ class GridManager: ObservableObject {
         }
     }
     
-    
+
     func registerEvents() {
         NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: self.globalKeyEventHandler)
     }

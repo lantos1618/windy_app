@@ -41,7 +41,7 @@ class WindyWindow {
         self.init(ele: winPtr!)
     }
     
-    func getPoint() throws -> CGPoint {
+    func getTopLeftPoint() throws -> CGPoint {
         // gets the top left point of the window relative to the top left point of the screen
         var oldPointCFT :  CFTypeRef?
         let axErr       = AXUIElementCopyAttributeValue(self.AXWindow, kAXPositionAttribute as CFString, &oldPointCFT)
@@ -58,15 +58,16 @@ class WindyWindow {
         return currentPoint
     }
     
-    func getNSPoint() throws -> CGPoint {
+    func getBottomLeftPoint() throws -> CGPoint {
         // gets the bottom left of window relative to the top left point of the screen
-        var point   = try self.getPoint().flip()
-        point.y     -= try self.getSize().height
+        var point   = try self.getTopLeftPoint()
+        point.y     += try self.getSize().height
+//        point       = point.flip()
         return point
     }
     
     func getFrame() throws -> NSRect {
-        return NSRect(origin: try self.getPoint(), size: try self.getSize())
+        return NSRect(origin: try self.getTopLeftPoint(), size: try self.getSize())
     }
     
     func getSize() throws -> CGSize {
@@ -111,7 +112,7 @@ class WindyWindow {
     func setFrameSize(size: CGSize) throws {
         var newSize     = size
         let cfSize      = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
-        let axErr       =  AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, cfSize)
+        let axErr       = AXUIElementSetAttributeValue(AXWindow, kAXSizeAttribute as CFString, cfSize)
         
         if axErr != .success {
             throw WindyWindowError.AXValueError(message: "Failed to set window size \(axErr)")
@@ -138,10 +139,9 @@ class WindyWindow {
     func setFrame(frame: NSRect) throws {
         // the point is being set from the wrong side so it tries to grow into nothing.
         // we need to adjust for the target height then move back
-//        var t_point = frame.origin
+        // var t_point = frame.origin
         // give the window some space to resize
-//        try self.setFrameSize(size: frame.size)
-//        try self.setFrameOrigin(point: frame.origin)
+
         // lazy fix bug
         for _ in 1...3 {
 //            if x == 3 {
@@ -153,7 +153,7 @@ class WindyWindow {
                 try self.setFrameSize(size: frame.size)
 
             }
-            let tPoint  = try self.getNSPoint()
+            let tPoint  = try self.getBottomLeftPoint()
             var tOrigin = frame.origin
             // fix resizing b.
             tOrigin     = tOrigin.flip()

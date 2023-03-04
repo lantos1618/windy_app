@@ -35,12 +35,12 @@ struct GridView: View {
 
 // this should be split into its own data class
 class GridManager: ObservableObject {
-    var window              : NSWindow
-    var gridView            : GridView
-    var windyData           : WindyData
-    var isShownListener     : AnyCancellable?
-    var accentColorListener : AnyCancellable?
-    var activeScreenListener       : AnyCancellable?
+    var window                  : NSWindow
+    var gridView                : GridView
+    var windyData               : WindyData
+    var isShownListener         : AnyCancellable?
+    var accentColorListener     : AnyCancellable?
+    var activeScreenListener    : AnyCancellable?
 
 
     
@@ -77,79 +77,56 @@ class GridManager: ObservableObject {
     }
     
     func moveWindow(window: WindyWindow, direction: Direction) throws {
-        // check to see centre of window is colliding with rects
-        let screen      = try window.getScreen()
-        let windowRect  = try  window.getFrame()
-        let rects       = createRects(
-            columns : windyData.displaySettings[screen.getIdString()]!.x,
-            rows    : windyData.displaySettings[screen.getIdString()]!.y,
-            screen  : screen
-        )
-        
-        // find the centre rect
-        var rowIndex = 0
-        var colIndex = 0
-        for row in 0..<rects.count {
-            for col in 0..<rects[row].count {
-                if NSPointInRect(windowRect.centerPoint(), rects[row][col]) {
-                    rowIndex = row
-                    colIndex = col
-                    break
-                }
-            }
-        }
-//        switch direction {
-//        case .Left:
-//
-//            window.setFrame(frame: )
-//            break
-//        case .Right:
-//            break
-//        case .Up:
-//            break
-//        case .Down:
-//            break
-//        }
-    }
-    func resizeWindow(window: WindyWindow, direction: Direction) throws {
-        
+        // TODO
+        // determine the closest size
+        // if can move      -> move to next rect
+        // if can not move  -> resize and then put to last or first index
     }
     
+    func resizeWindow(window: WindyWindow, direction: Direction) throws {
+        // TODO
+    }
+   
     
     func move(window: WindyWindow, direction: Direction) throws {
         do {
-            let screen = NSScreen.main!
-            var point = try window.getNSPoint()
-            let columns = 2.0
-            let rows = 2.0
-            let minWidth = screen.frame.maxX / columns
-            let minHeight = screen.frame.maxY / rows
-
+            let screen      = NSScreen.main!
+            var point       = try window.getTopLeftPoint()
+            
+            let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
+            let columns     = settings.x
+            let rows        = settings.y
+            let minWidth    = screen.frame.maxX / columns
+            let minHeight   = screen.frame.maxY / rows
+            
             switch direction {
             case .Left:
                 point.x -= minWidth
             case .Right:
                 point.x += minWidth
             case .Up:
-                point.y += minHeight
-            case .Down:
                 point.y -= minHeight
+            case .Down:
+                point.y += minHeight
             }
-
-            var screenSize = screen.frame.size
-            let windowSize = try window.getSize()
-            screenSize.width -= windowSize.width
-            point = point.clamp(NSRect(origin: screen.frame.origin, size: screenSize))
-            try window.setFrameOrigin(origin: point)
-        } catch {
-            print("error \(error)")
+            
+            // we have the new target point we should now move it
+            
+            point.x = point.x.clamp(to: screen.frame.minX...(screen.frame.maxX-minWidth))
+            point.y = point.y.clamp(to: screen.frame.minY...(screen.frame.maxY))
+            
+            do {
+                try window.setTopLeftPoint(point: point)
+            } catch {
+                print("error \(error)")
+            }
         }
     }
     
     func resize(window: WindyWindow, direction: Direction) throws {
         do {
             let screen      = NSScreen.main!
-            var point       = try window.getNSPoint()
+            var point       = try window.getBottomLeftPoint()
             var size        = try window.getSize()
             let columns     = 2.0
             let rows        = 2.0
@@ -166,8 +143,6 @@ class GridManager: ObservableObject {
                 size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
             case .Down:
                 size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
-//                point.y -= size.height
-
             }
             let frame = NSRect(origin: point, size: size)
             try window.setFrame(frame: frame)
@@ -184,8 +159,8 @@ class GridManager: ObservableObject {
                 let windowFrame         = try window.getFrame()
                 let screenFrame         = try window.getScreen().frame
                 let windowCollisions    = windowFrame.collisionsInside(rect: screenFrame)
-                // if there are no window collisions we can move the window in the direction
                 let canMove             = !windowCollisions.contains(direction)
+                print("move direction", direction)
                 print("windowCollisions", windowCollisions)
                 print("can move", canMove)
                 
@@ -195,7 +170,7 @@ class GridManager: ObservableObject {
                     return
                 }
 //                try self.resizeWindow(window: window, direction: direction)
-                try self.resize(window: window, direction: direction)
+//                try self.resize(window: window, direction: direction)
             }
         } catch {
             print("error: \(error)")

@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-func createDefaultSettings() -> [String: NSPoint] {
+func generateDisplaySettingsFromActiveScreens() -> [String: NSPoint] {
     var result: [String: NSPoint] = [:]
     for screen in NSScreen.screens {
         let screenName = screen.getIdString()
@@ -19,19 +19,24 @@ func createDefaultSettings() -> [String: NSPoint] {
     return result
 }
 
-func setDisplaySettings(settings: [String: NSPoint] = [:]) {
-    var result = createDefaultSettings()
-    // create the settings dict create default settings for anything that isn't set
-    for (key, val) in settings {
-        result[key] = val
+func mergeDisplaySettings(left: [String: NSPoint] = [:] , right: [String: NSPoint] = [:]) -> [String: NSPoint] {
+    var result: [String: NSPoint] = left
+    for (key, val) in right {
+        if !result.keys.contains(key) {
+            result[key] = val
+        }
     }
+    return result
+}
+
+func storeDisplaySettings(settings: [String: NSPoint]) {
     do {
-        try UserDefaults.standard.set(dict: result, forKey: "displaySettings")
+        try UserDefaults.standard.set(dict: settings , forKey: "displaySettings")
+        print("saved display settings")
     } catch {
         print("failed to set default displaySettings")
     }
 }
-
 
 
 func createDefaultAccentColor() {
@@ -40,17 +45,27 @@ func createDefaultAccentColor() {
 }
 
 
+
+func createDefaultDisplaySettings() {
+    storeDisplaySettings(settings: generateDisplaySettingsFromActiveScreens())
+}
+
+
+
 class WindyData: ObservableObject {
-    // could move this to its own struct and have its own toJson fromJson
+    @Published var isShown              = false
+    @Published var isShownTimeout       : Timer?
+    @Published var rectsDict            : [String: [[NSRect]]]        = [:]
+    @Published var previewRects         : [[NSRect]] = []
     @Published var activeSettingScreen  : String            = NSScreen.main!.getIdString() {
         didSet {
-            print("activeSettingScreen.value", activeSettingScreen)
-            print("rectsDict[activeSettingScreen] ?? []", rectsDict[activeSettingScreen] ?? [])
+            // set the preview rects when the active window settings are changed
             previewRects = rectsDict[activeSettingScreen] ?? []
         }
     }
     @Published var displaySettings      : [String: NSPoint] = [:] {
         didSet {
+            // update the rects window when the displaySettings change
             for (key, val) in displaySettings {
                 rectsDict[key] = createRects(
                     columns : Double(val.x),
@@ -58,13 +73,13 @@ class WindyData: ObservableObject {
                     screen  : NSScreen.fromIdString(str: key) ?? NSScreen.main!
                 )
             }
-            setDisplaySettings(settings: displaySettings)
+            // update the preview rects window when the displaySettings change
+            previewRects = rectsDict[activeSettingScreen] ?? []
+            // set the displaySettings to the local storage
+            storeDisplaySettings(settings: displaySettings)
+
         }
     }
-    @Published var isShown              = false
-    @Published var isShownTimeout       : Timer?
-    @Published var rectsDict            : [String: [[NSRect]]]        = [:]
-    @Published var previewRects         : [[NSRect]] = []
     @Published var accentColour         = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
         didSet {
             UserDefaults.standard.set(self.accentColour, forKey: "accentColour")
@@ -74,13 +89,18 @@ class WindyData: ObservableObject {
     init() {
         // create the default settings
         if UserDefaults.standard.bool(forKey: "defaultsSet") == false {
-            setDisplaySettings()
             createDefaultAccentColor()
+            createDefaultDisplaySettings()
             UserDefaults.standard.set(true, forKey: "defaultsSet")
         }
         // load the default display settings into the windyData
         do {
-            self.displaySettings = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
+            let oldDisplaySettings      = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
+            let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
+            let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
+            print("loaded display settings ", oldDisplaySettings, newDisplaySettings, mergedDisplaySettings)
+
+            self.displaySettings = mergedDisplaySettings
         } catch {
             print("failed to get the displaySettings")
         }
@@ -93,7 +113,11 @@ class WindyData: ObservableObject {
             object  : NSApplication.shared,
             queue   : OperationQueue.main
         ){
-            notification -> Void in setDisplaySettings()
+            notification -> Void in
+            let oldDisplaySettings      = self.displaySettings
+            let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
+            let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
+            self.displaySettings = mergedDisplaySettings
         }
     }
 }

@@ -179,7 +179,6 @@ extension NSScreen {
 }
 
 func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] {
-    print (columns, rows)
     var rects       : [[NSRect]] = []
     let minWidth    = (screen.frame.width / CGFloat(columns))
     let minHeight   = (screen.frame.height / CGFloat(rows))
@@ -201,4 +200,8 @@ func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] 
         }
     }
     return rects
+}
+
+func moveMouseTo(point: CGPoint) {
+    CGEvent(mouseEventSource: nil, mouseType: CGEventType.mouseMoved, mouseCursorPosition: point, mouseButton: CGMouseButton.left)?.post(tap: CGEventTapLocation.cghidEventTap)
 }

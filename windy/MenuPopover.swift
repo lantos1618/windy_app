@@ -16,8 +16,13 @@ struct MenuPopover: View {
         VStack {
             Text("Windy window manager").padding()
             Picker("Screen", selection: $windyData.activeSettingScreen) {
-                ForEach(NSScreen.screens, id: \.hash) { screen in
-                    Text("\(screen.hash):\(screen.localizedName)").tag(screen.getIdString())
+                    
+//                ForEach(NSScreen.screens, id: \.hash) { screen in
+//                    Text("\(screen.hash):\(screen.localizedName)").tag(screen.getIdString())
+//                }
+                ForEach(windyData.displaySettings.keys.sorted(), id: \.self) {
+                    key in
+                    Text(key).tag(key)
                 }
             }
             if (windyData.displaySettings.keys.contains(windyData.activeSettingScreen)) {

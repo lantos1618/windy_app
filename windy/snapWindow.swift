@@ -89,7 +89,7 @@ class SnapManager {
     func globalLeftMouseDownHandler(event: NSEvent)  {
         do {
             currentMovingWindow     = try WindyWindow.currentWindow()
-            initialWindyWindowPos   = try currentMovingWindow.getPoint()
+            initialWindyWindowPos   = try currentMovingWindow.getTopLeftPoint()
         } catch {
             print("\(error)")
         }
@@ -97,7 +97,7 @@ class SnapManager {
     
     func globalLeftMouseDragHandler(event: NSEvent)  {
         do {
-            let t_windyWindowPos = try currentMovingWindow.getPoint()
+            let t_windyWindowPos = try currentMovingWindow.getTopLeftPoint()
             // check to see if a window is being moved if not cancel
             if (t_windyWindowPos != initialWindyWindowPos) {
                 windowIsMoving = true

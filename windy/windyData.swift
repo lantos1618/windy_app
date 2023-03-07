@@ -32,9 +32,8 @@ func mergeDisplaySettings(left: [String: NSPoint] = [:] , right: [String: NSPoin
 func storeDisplaySettings(settings: [String: NSPoint]) {
     do {
         try UserDefaults.standard.set(dict: settings , forKey: "displaySettings")
-        print("saved display settings")
     } catch {
-        print("failed to set default displaySettings")
+        debugPrint("failed to set default displaySettings")
     }
 }
 
@@ -98,11 +97,10 @@ class WindyData: ObservableObject {
             let oldDisplaySettings      = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
             let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
             let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
-            print("loaded display settings ", oldDisplaySettings, newDisplaySettings, mergedDisplaySettings)
 
             self.displaySettings = mergedDisplaySettings
         } catch {
-            print("failed to get the displaySettings")
+            debugPrint("failed to get the displaySettings")
         }
         // load the default access colour into the windyData
         self.accentColour =  UserDefaults.standard.color(forKey: "accentColour")

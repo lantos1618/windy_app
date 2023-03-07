@@ -25,8 +25,6 @@ struct AccessRequestModal: View {
             }.padding()
             HStack {
                 Button("Open Accessibility Permissions") {
-//                    let accessibilityURL = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
-//                    NSWorkspace.shared.open(URL(string: accessibilityURL)!)
                     _ = self.checkPrivilegeHandle(timer: nil, prompt: true)
                 }
                 Button("Quit") {
@@ -48,7 +46,7 @@ struct AccessRequestModal: View {
         if (self.privilegeManager.checkPrivilege(prompt: prompt)) {
             // we got permission
             // start the windy Manager key event Listener
-            print("permission granted!")
+            debugPrint("permission granted!")
             timer?.invalidate()
             self.accessWindow.close()
             self.closeCallBack()
@@ -65,10 +63,10 @@ class PrivilegeManager {
          let trusted    = AXIsProcessTrustedWithOptions(options)
         
         if (trusted) {
-            print("Trusted!")
+            debugPrint("Trusted!")
             return true
         } else {
-            print("Not trusted")
+            debugPrint("Not trusted")
             return false
         }
     }

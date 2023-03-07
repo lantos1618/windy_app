@@ -64,7 +64,7 @@ extension NSPoint {
         let screens         = NSScreen.screens
         let screenWithMouse = (screens.first {screen in
             NSPointInRect(self, screen.frame)})
-        return screenWithMouse ?? NSScreen.main
+        return screenWithMouse ?? NSScreen.main!
     }
     
     func collisionsInside(rect: NSRect) -> [Direction] {
@@ -85,7 +85,25 @@ extension NSPoint {
     }
     
     func flip() -> NSPoint {
-        return NSPoint(x: x, y: NSScreen.screens[0].frame.maxY - self.y)
+        let screen = NSScreen.screens[0]
+        return NSPoint(x: x, y: screen.frame.maxY - self.y)
+    }
+    
+}
+
+extension CGPoint {
+    func convertedToAppKit(displayID: CGDirectDisplayID) -> CGPoint {
+        return .init(
+            x: x,
+            y: CGDisplayBounds(displayID).height - y
+        )
+    }
+
+    func convertedToCoreGraphics(displayID: CGDirectDisplayID) -> CGPoint {
+        return .init(
+            x: x,
+            y: CGDisplayBounds(displayID).height - y
+        )
     }
 }
 
@@ -176,6 +194,10 @@ extension NSScreen {
     static func fromIdString(str: String) -> NSScreen? {
         return NSScreen.screens.first(where: { screen in screen.getIdString() == str })
     }
+    var displayID: CGDirectDisplayID {
+         let key = NSDeviceDescriptionKey(rawValue: "NSScreenNumber")
+         return deviceDescription[key] as! CGDirectDisplayID
+     }
 }
 
 func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] {

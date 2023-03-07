@@ -19,16 +19,36 @@ struct GridView: View {
     
     var body: some View {
         let rects       = windyData.previewRects
-
+        
         let path        = Path {
             path in
-            for col in 0..<rects.count {
-                for row in 0..<rects[col].count {
-                    path.addRect(rects[col][row].insetBy(dx: 10, dy: 10))
-                }
+            var rects = [NSRect]()
+
+            for screen in NSScreen.screens {
+                var frame = screen.visibleFrame
+                frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame)
+                frame.origin.x = frame.origin.x / 3
+                frame.origin.y = frame.origin.y / 3
+                frame.size.width = frame.size.width / 3
+                frame.size.height  = frame.size.height / 3
+                rects.append(frame)
+                print(frame)
             }
+            for rect in rects {
+                path.addRect(rect)
+            }
+//            path in
+//
+//            for col in 0..<rects.count {
+//                for row in 0..<rects[col].count {
+//                    path.addRect(rects[col][row].insetBy(dx: 5, dy: 5))
+//                }
+//            }
         }
-        path.fill(Color(red: 0.2, green: 0.2, blue: 0.2, opacity: 0.8))
+        ZStack {
+            path.fill(Color(red: 0.2, green: 0.2, blue: 0.2, opacity: 0.8))
+            path.strokedPath(StrokeStyle(lineWidth: 1.0))
+        }
     }
 }
 
@@ -75,29 +95,18 @@ class GridManager: ObservableObject {
             self.window.setFrame( (NSScreen.fromIdString(str: screenId) ?? NSScreen.main!).frame, display: true)
         }
     }
-    
-    func moveWindow(window: WindyWindow, direction: Direction) throws {
-        // TODO
-        // determine the closest size
-        // if can move      -> move to next rect
-        // if can not move  -> resize and then put to last or first index
-    }
-    
-    func resizeWindow(window: WindyWindow, direction: Direction) throws {
-        // TODO
-    }
-   
+
     
     func move(window: WindyWindow, direction: Direction) throws {
         do {
-            let screen      = NSScreen.main!
+            debugPrint("moving: ", direction)
+            let screen      = try window.getScreen()
             var point       = try window.getTopLeftPoint()
-            
             let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
             let columns     = settings.x
             let rows        = settings.y
-            let minWidth    = screen.frame.maxX / columns
-            let minHeight   = screen.frame.maxY / rows
+            let minWidth    = screen.frame.width / columns
+            let minHeight   = screen.frame.height / rows
             
             switch direction {
             case .Left:
@@ -110,44 +119,92 @@ class GridManager: ObservableObject {
                 point.y += minHeight
             }
             
-            // we have the new target point we should now move it
+
+//            var minX = 0.0
+//            var maxX = 0.0
+//            var minY = 0.0
+//            var maxY = 0.0
+//
+//            for tScreen in NSScreen.screens {
+//                var frame = screen.frame
+//                frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(tScreen.frame)
+//                if minX > frame.minX {
+//                    minX = frame.minX
+//                }
+//                if minX < frame.maxX {
+//                    maxX = frame.maxX
+//                }
+//                if minY > frame.minY {
+//                    minY = frame.minY
+//                }
+//                if minY < frame.maxY {
+//                    maxY = frame.maxY
+//                }
+//
+//            }
+           
+            var frame = screen.visibleFrame
+//           frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame)
+            let minX = frame.minX
+            let maxX = frame.maxX
+            let minY = frame.minY
+            let maxY = frame.maxY
             
-            point.x = point.x.clamp(to: screen.frame.minX...(screen.frame.maxX-minWidth))
-            point.y = point.y.clamp(to: screen.frame.minY...(screen.frame.maxY))
+            point.x = round(point.x.clamp(to: minX...(maxX-minWidth)))
+            point.y = round(point.y.clamp(to: minY...(maxY-minHeight)))
             
             do {
                 try window.setTopLeftPoint(point: point)
             } catch {
-                print("error \(error)")
+                debugPrint("error \(error)")
             }
         }
     }
     
     func resize(window: WindyWindow, direction: Direction) throws {
         do {
-            let screen      = NSScreen.main!
-            var point       = try window.getBottomLeftPoint()
+            debugPrint("resizing: ", direction)
+            let screen      = try window.getScreen()
+            var point       = try window.getTopLeftPoint()
             var size        = try window.getSize()
-            let columns     = 2.0
-            let rows        = 2.0
-            let minWidth    = screen.frame.maxX / columns
-            let minHeight   = screen.frame.maxY / rows
+            let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
+            let columns     = settings.x
+            let rows        = settings.y
+            let minWidth    = screen.frame.width / columns
+            let minHeight   = screen.frame.height / rows
+            
 
+            // convert screen to quarts
+            var frame = screen.frame
+            frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame)
+            
             switch direction {
             case .Left:
-                size.width  += minWidth * (size.width <= minWidth ? columns : -1.0)
+                size.width  += minWidth * (size.width <= (minWidth + 1) ? columns : -1.0)
             case .Right:
-                size.width  += minWidth * (size.width <= minWidth ? columns : -1.0)
-                point.x     -= size.width
+                size.width  += minWidth * (size.width <= (minWidth + 1) ? columns : -1.0)
+                point.x = frame.maxX - (size.width)
             case .Up:
-                size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
+                size.height += minHeight * (size.height <= (minHeight + 1) ? rows : -1.0)
             case .Down:
-                size.height += minHeight * (size.height <= minHeight ? rows : -1.0)
+                size.height += minHeight * (size.height <= (minHeight + 1) ? rows : -1.0)
+                point.y = frame.maxY - (size.height)
+
             }
-            let frame = NSRect(origin: point, size: size)
-            try window.setFrame(frame: frame)
+            
+            size.width  = round(size.width.clamp(to: minWidth...frame.width))
+            size.height = round(size.height.clamp(to: minHeight...frame.height))
+            
+            point.x     = round(point.x.clamp(to: (frame.minX)...(frame.maxX - size.width)))
+            point.y     = round(point.y.clamp(to: (frame.minY)...(frame.maxY - size.height)))
+            
+            
+            try window.setTopLeftPoint(point: point)
+            try window.setFrameSize(size: size)
+            debugPrint("point", try window.getTopLeftPoint())
+
         } catch {
-            print("error \(error)")
+            debugPrint("error \(error)")
         }
     }
     
@@ -157,23 +214,26 @@ class GridManager: ObservableObject {
                 guard let direction     = event.direction else { return }
                 let window              = try WindyWindow.currentWindow()
                 let windowFrame         = try window.getFrame()
-                let screenFrame         = try window.getScreen().frame
+                let screen              = try window.getScreen()
+                var screenFrame         = screen.visibleFrame
+                screenFrame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame) // adjust to quarts origin
+                
                 let windowCollisions    = windowFrame.collisionsInside(rect: screenFrame)
                 let canMove             = !windowCollisions.contains(direction)
-                print("move direction", direction)
-                print("windowCollisions", windowCollisions)
-                print("can move", canMove)
+                debugPrint("windowCollisions", windowCollisions)
+                debugPrint("can move", canMove)
+//
+//                try window.setTopLeftPoint(point: screenFrame.origin)
+//                try window.setFrameSize(size: screenFrame.size)
                 
                 if canMove || windowCollisions.isEmpty {
-//                    try self.moveWindow(window: window, direction: direction)
                     try self.move(window: window, direction: direction)
                     return
                 }
-//                try self.resizeWindow(window: window, direction: direction)
-//                try self.resize(window: window, direction: direction)
+                try self.resize(window: window, direction: direction)
             }
         } catch {
-            print("error: \(error)")
+            debugPrint("error: \(error)")
         }
     }
     

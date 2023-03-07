@@ -8,16 +8,16 @@
 import Foundation
 
 class SnapManager {
-    var snapWindow: NSWindow
-
-    
-    var currentMovingWindow: WindyWindow!
-    var initialWindyWindowPos = NSPoint(x: 0, y: 0)
-    var windowIsMoving = false
-    var shouldSnap = true
+    var windyData               : WindyData
+    var snapWindow              : NSWindow
+    var currentMovingWindow     : WindyWindow!
+    var initialWindyWindowPos   = NSPoint(x: 0, y: 0)
+    var windowIsMoving          = false
+    var shouldSnap              = true
     
     init(windyData: WindyData) {
-        snapWindow = NSWindow(
+        self.windyData  = windyData
+        snapWindow      = NSWindow(
             contentRect     : NSRect(x: 0, y: 0, width: 500 , height: 500),
             styleMask       : [.fullSizeContentView],
             backing         : .buffered,
@@ -28,13 +28,13 @@ class SnapManager {
         snapWindow.setIsVisible(false)
     }
     
-    func snapMouse(point: NSPoint) throws {
-        guard let screen = point.getScreen() else {
+    func snapMouse(mousePos: NSPoint) throws {
+        guard let screen = mousePos.getScreen() else {
             throw WindyWindowError.NSError(message: "could not get screen at point")
         }
         // went out side of window don't draw anything
-        let inSideScreen = NSPointInRect(point, screen.frame.insetBy(dx: -1, dy: -1))
-        let insideGutter = point.collisionsInside(rect: (screen.frame.insetBy(dx: 100, dy: 100)))
+        let inSideScreen = NSPointInRect(mousePos, screen.frame.insetBy(dx: -1, dy: -1))
+        let insideGutter = mousePos.collisionsInside(rect: (screen.frame.insetBy(dx: 100, dy: 100)))
         if !inSideScreen  {
             snapWindow.setIsVisible(false)
             return
@@ -70,7 +70,7 @@ class SnapManager {
         if insideGutter.contains(.Up) {
             t_size.height   = minHeight
             t_point.y       = screen.frame.maxY - t_size.height
-         
+            
         }
         if insideGutter.contains(.Down) {
             t_size.height   = minHeight
@@ -78,12 +78,13 @@ class SnapManager {
         }
         
         let tFrame = NSRect(origin: t_point, size: t_size)
-       
-
-        snapWindow.setFrame(tFrame, display: true)
+        drawSnapWindow(frame: tFrame)
+    }
+    
+    func drawSnapWindow(frame: NSRect) {
+        snapWindow.setFrame(frame, display: true)
         snapWindow.setIsVisible(true)
         snapWindow.orderFrontRegardless()
-
     }
     
     func globalLeftMouseDownHandler(event: NSEvent)  {
@@ -97,28 +98,29 @@ class SnapManager {
     
     func globalLeftMouseDragHandler(event: NSEvent)  {
         do {
+            
             let t_windyWindowPos = try currentMovingWindow.getTopLeftPoint()
             // check to see if a window is being moved if not cancel
             if (t_windyWindowPos != initialWindyWindowPos) {
                 windowIsMoving = true
             }
             if (windowIsMoving) {
-                try self.snapMouse(point: NSEvent.mouseLocation)
+                try self.snapMouse(mousePos: NSEvent.mouseLocation)
             }
         } catch {
-            print("error \(error)")
+            debugPrint("error \(error)")
         }
     }
     
     func globalLeftMouseUpHandler(event: NSEvent)  {
         do {
             if( self.snapWindow.isVisible) {
-                try self.currentMovingWindow.setFrame(frame:  self.snapWindow.frame)
+                try self.currentMovingWindow.setFrameBottomLeft(frame:  self.snapWindow.frame)
                 self.snapWindow.setIsVisible(false)
             }
             self.windowIsMoving = false
         } catch {
-            print("error \(error)")
+            debugPrint("error \(error)")
         }
         
       

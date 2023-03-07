@@ -98,9 +98,10 @@ class WindyWindow {
     func getScreen() throws -> NSScreen {
         // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
         // Returns the screen object containing the window with the keyboard focus.
-        guard let screen = NSScreen.main else {
-            throw WindyWindowError.NSError(message: "failed to get the main screen")
-        }
+//        guard let screen = NSScreen.screens[0] else {
+//            throw WindyWindowError.NSError(message: "failed to get the main screen")
+//        }
+        let screen = NSScreen.main!
         
 //        let rect = try self.getFrame()
 //        guard let screen = NSPoint(x: rect.midX, y: rect.midX).getScreen() else {
@@ -128,45 +129,14 @@ class WindyWindow {
             throw WindyWindowError.AXValueError(message: "Failed to set window point, \(axErr)")
         }
     }
-    
-    func setFrameOrigin(origin: CGPoint) throws {
-        // sets the bottom left point of window relative
-        var tPointFlipped   = origin.flip()
-        tPointFlipped.y     -= try self.getSize().height
-        try setTopLeftPoint(point: tPointFlipped)
-    }
-    
-    func setFrame(frame: NSRect) throws {
-        // the point is being set from the wrong side so it tries to grow into nothing.
-        // we need to adjust for the target height then move back
-        // var t_point = frame.origin
-        // give the window some space to resize
-
-        // lazy fix bug
-        for _ in 1...3 {
-//            if x == 3 {
-//                throw WindyWindowError.NSError(message: "failed to set the window size after 3 attempts")
-//            }
-            let tSize = try self.getSize()
-            
-            if (tSize != frame.size) {
-                try self.setFrameSize(size: frame.size)
-
-            }
-            let tPoint  = try self.getBottomLeftPoint()
-            var tOrigin = frame.origin
-            // fix resizing b.
-            tOrigin     = tOrigin.flip()
-            tOrigin.y   -= frame.height
-            
-            if (tPoint != frame.origin) {
-                try self.setTopLeftPoint(point: tOrigin)
-            }
-            if (tSize == frame.size && tPoint == frame.origin) {
-                break
-            }
-        }
-
+    func setFrameBottomLeft(frame: NSRect) throws {
+        var tPoint = frame.origin
+        tPoint = tPoint.flip()
+        tPoint.y -= frame.height
+        
+        try self.setTopLeftPoint(point: tPoint)
+        try self.setFrameSize(size: frame.size)
+        
     }
     
      static func currentWindow() throws -> WindyWindow {

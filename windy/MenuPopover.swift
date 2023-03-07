@@ -10,16 +10,11 @@ import SwiftUI
 struct MenuPopover: View {
     @StateObject var windyData      : WindyData
     @State var window               : NSWindow?
-//    @State var selectedScreenHash   = NSScreen.main!.getIdString()
     
     var body: some View {
         VStack {
             Text("Windy window manager").padding()
             Picker("Screen", selection: $windyData.activeSettingScreen) {
-                    
-//                ForEach(NSScreen.screens, id: \.hash) { screen in
-//                    Text("\(screen.hash):\(screen.localizedName)").tag(screen.getIdString())
-//                }
                 ForEach(windyData.displaySettings.keys.sorted(), id: \.self) {
                     key in
                     Text(key).tag(key)

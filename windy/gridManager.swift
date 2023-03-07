@@ -21,29 +21,30 @@ struct GridView: View {
         let rects       = windyData.previewRects
         
         let path        = Path {
-            path in
-            var rects = [NSRect]()
-
-            for screen in NSScreen.screens {
-                var frame = screen.visibleFrame
-                frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame)
-                frame.origin.x = frame.origin.x / 3
-                frame.origin.y = frame.origin.y / 3
-                frame.size.width = frame.size.width / 3
-                frame.size.height  = frame.size.height / 3
-                rects.append(frame)
-                print(frame)
-            }
-            for rect in rects {
-                path.addRect(rect)
-            }
 //            path in
+//            var rects = [NSRect]()
 //
-//            for col in 0..<rects.count {
-//                for row in 0..<rects[col].count {
-//                    path.addRect(rects[col][row].insetBy(dx: 5, dy: 5))
-//                }
+//            for screen in NSScreen.screens {
+//                var frame = screen.getQuartsSafeFrame()
+//
+//                frame.origin.x = frame.origin.x / 3
+//                frame.origin.y = frame.origin.y / 3
+//                frame.size.width = frame.size.width / 3
+//                frame.size.height  = frame.size.height / 3
+//                rects.append(frame)
 //            }
+//            for rect in rects {
+//                path.addRect(rect)
+//            }
+        
+        
+            path in
+
+            for col in 0..<rects.count {
+                for row in 0..<rects[col].count {
+                    path.addRect(rects[col][row].insetBy(dx: 5, dy: 5))
+                }
+            }
         }
         ZStack {
             path.fill(Color(red: 0.2, green: 0.2, blue: 0.2, opacity: 0.8))
@@ -61,8 +62,7 @@ class GridManager: ObservableObject {
     var isShownListener         : AnyCancellable?
     var accentColorListener     : AnyCancellable?
     var activeScreenListener    : AnyCancellable?
-
-
+   
     
     init(windyData: WindyData) {
         self.windyData = windyData
@@ -74,14 +74,11 @@ class GridManager: ObservableObject {
         )
         
         window.backgroundColor      = NSColor(windyData.accentColour)
-
         gridView                    = GridView(windyData: windyData)
         //        set default preview rects
         windyData.previewRects      = windyData.rectsDict[windyData.activeSettingScreen] ?? []
-        
         window.contentView          = NSHostingView(rootView: gridView)
         window.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
-        
         
         accentColorListener         = windyData.$accentColour.sink { accentColor in
             self.window.backgroundColor = NSColor(accentColor)
@@ -102,11 +99,14 @@ class GridManager: ObservableObject {
             debugPrint("moving: ", direction)
             let screen      = try window.getScreen()
             var point       = try window.getTopLeftPoint()
+            let windowFrame = try window.getFrame()
+            let screenFrame = screen.getQuartsSafeFrame()
+            
             let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
             let columns     = settings.x
             let rows        = settings.y
-            let minWidth    = screen.frame.width / columns
-            let minHeight   = screen.frame.height / rows
+            let minWidth    = round(screenFrame.width / columns)
+            let minHeight   = round(screenFrame.height / rows)
             
             switch direction {
             case .Left:
@@ -119,40 +119,11 @@ class GridManager: ObservableObject {
                 point.y += minHeight
             }
             
-
-//            var minX = 0.0
-//            var maxX = 0.0
-//            var minY = 0.0
-//            var maxY = 0.0
-//
-//            for tScreen in NSScreen.screens {
-//                var frame = screen.frame
-//                frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(tScreen.frame)
-//                if minX > frame.minX {
-//                    minX = frame.minX
-//                }
-//                if minX < frame.maxX {
-//                    maxX = frame.maxX
-//                }
-//                if minY > frame.minY {
-//                    minY = frame.minY
-//                }
-//                if minY < frame.maxY {
-//                    maxY = frame.maxY
-//                }
-//
-//            }
-           
-            var frame = screen.visibleFrame
-//           frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame)
-            let minX = frame.minX
-            let maxX = frame.maxX
-            let minY = frame.minY
-            let maxY = frame.maxY
+            point.x = round(point.x.clamp(to: screenFrame.minX...(screenFrame.maxX-windowFrame.width)))
+            point.y = round(point.y.clamp(to: screenFrame.minY...(screenFrame.maxY-windowFrame.height)))
             
-            point.x = round(point.x.clamp(to: minX...(maxX-minWidth)))
-            point.y = round(point.y.clamp(to: minY...(maxY-minHeight)))
             
+            debugPrint("point", point)
             do {
                 try window.setTopLeftPoint(point: point)
             } catch {
@@ -170,35 +141,37 @@ class GridManager: ObservableObject {
             let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
             let columns     = settings.x
             let rows        = settings.y
-            let minWidth    = screen.frame.width / columns
-            let minHeight   = screen.frame.height / rows
-            
+            let screenFrame = screen.getQuartsSafeFrame()
+            let minWidth    = round(screenFrame.width / columns)
+            let minHeight   = round(screenFrame.height / rows)
+            let errorX       = minWidth * 0.30  // this is caused by the quarts safeFrame. workaround.
+            let errorY       = minHeight * 0.30  // this is caused by the quarts safeFrame. workaround.
 
+            print("point, size", point, size )
             // convert screen to quarts
-            var frame = screen.frame
-            frame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame)
-            
             switch direction {
             case .Left:
-                size.width  += minWidth * (size.width <= (minWidth + 1) ? columns : -1.0)
+                size.width  += minWidth * (size.width <= (minWidth + errorX) ? columns - 1.0 : -1.0)
             case .Right:
-                size.width  += minWidth * (size.width <= (minWidth + 1) ? columns : -1.0)
-                point.x = frame.maxX - (size.width)
+                size.width  += minWidth * (size.width <= (minWidth + errorX) ? columns - 1.0 : -1.0)
+                point.x     = screenFrame.maxX - (size.width)
             case .Up:
-                size.height += minHeight * (size.height <= (minHeight + 1) ? rows : -1.0)
+                size.height += minHeight * (size.height <= (minHeight + errorY) ? rows - 1.0 : -1.0)
             case .Down:
-                size.height += minHeight * (size.height <= (minHeight + 1) ? rows : -1.0)
-                point.y = frame.maxY - (size.height)
+                size.height += minHeight * (size.height <= (minHeight + errorY) ? rows - 1.0 : -1.0)
+                point.y     = screenFrame.maxY - (size.height)
 
             }
             
-            size.width  = round(size.width.clamp(to: minWidth...frame.width))
-            size.height = round(size.height.clamp(to: minHeight...frame.height))
+            print("point, size", point, size )
+            size.width  = round(size.width.clamp(to: minWidth...screenFrame.width))
+            size.height = round(size.height.clamp(to: minHeight...screenFrame.height))
+            print("point, size", point, size )
+
+            point.x     = round(point.x.clamp(to: (screenFrame.minX)...(screenFrame.maxX - size.width)))
+            point.y     = round(point.y.clamp(to: (screenFrame.minY)...(screenFrame.maxY - size.height)))
             
-            point.x     = round(point.x.clamp(to: (frame.minX)...(frame.maxX - size.width)))
-            point.y     = round(point.y.clamp(to: (frame.minY)...(frame.maxY - size.height)))
-            
-            
+            print("point, size", point, size )
             try window.setTopLeftPoint(point: point)
             try window.setFrameSize(size: size)
             debugPrint("point", try window.getTopLeftPoint())
@@ -215,8 +188,7 @@ class GridManager: ObservableObject {
                 let window              = try WindyWindow.currentWindow()
                 let windowFrame         = try window.getFrame()
                 let screen              = try window.getScreen()
-                var screenFrame         = screen.visibleFrame
-                screenFrame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(screen.frame) // adjust to quarts origin
+                var screenFrame         = screen.getQuartsSafeFrame()
                 
                 let windowCollisions    = windowFrame.collisionsInside(rect: screenFrame)
                 let canMove             = !windowCollisions.contains(direction)

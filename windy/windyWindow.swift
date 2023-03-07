@@ -98,11 +98,7 @@ class WindyWindow {
     func getScreen() throws -> NSScreen {
         // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
         // Returns the screen object containing the window with the keyboard focus.
-//        guard let screen = NSScreen.screens[0] else {
-//            throw WindyWindowError.NSError(message: "failed to get the main screen")
-//        }
         let screen = NSScreen.main!
-        
 //        let rect = try self.getFrame()
 //        guard let screen = NSPoint(x: rect.midX, y: rect.midX).getScreen() else {
 //            throw WindyWindowError.NSError(message: "failed to get the main screen")

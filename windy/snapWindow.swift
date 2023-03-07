@@ -10,7 +10,7 @@ import Foundation
 class SnapManager {
     var windyData               : WindyData
     var snapWindow              : NSWindow
-    var currentMovingWindow     : WindyWindow!
+    var currentMovingWindow     : WindyWindow?
     var initialWindyWindowPos   = NSPoint(x: 0, y: 0)
     var windowIsMoving          = false
     var shouldSnap              = true
@@ -90,7 +90,11 @@ class SnapManager {
     func globalLeftMouseDownHandler(event: NSEvent)  {
         do {
             currentMovingWindow     = try WindyWindow.currentWindow()
-            initialWindyWindowPos   = try currentMovingWindow.getTopLeftPoint()
+            guard let tempCurrentMovingWindow = currentMovingWindow else {
+                print ("error: Failed to get the current moving window")
+                return
+            }
+                initialWindyWindowPos   = try tempCurrentMovingWindow.getTopLeftPoint()
         } catch {
             print("\(error)")
         }
@@ -98,8 +102,11 @@ class SnapManager {
     
     func globalLeftMouseDragHandler(event: NSEvent)  {
         do {
-            
-            let t_windyWindowPos = try currentMovingWindow.getTopLeftPoint()
+            guard let tempCurrentMovingWindow = self.currentMovingWindow else {
+                print ("error: Failed to get the current moving window")
+                return
+            }
+            let t_windyWindowPos = try tempCurrentMovingWindow.getTopLeftPoint()
             // check to see if a window is being moved if not cancel
             if (t_windyWindowPos != initialWindyWindowPos) {
                 windowIsMoving = true
@@ -115,7 +122,11 @@ class SnapManager {
     func globalLeftMouseUpHandler(event: NSEvent)  {
         do {
             if( self.snapWindow.isVisible) {
-                try self.currentMovingWindow.setFrameBottomLeft(frame:  self.snapWindow.frame)
+                guard let tempCurrentMovingWindow = currentMovingWindow else {
+                    print ("error: Failed to get the current moving window")
+                    return
+                }
+                try tempCurrentMovingWindow.setFrameBottomLeft(frame:  self.snapWindow.frame)
                 self.snapWindow.setIsVisible(false)
             }
             self.windowIsMoving = false

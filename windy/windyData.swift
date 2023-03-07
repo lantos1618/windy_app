@@ -79,7 +79,12 @@ class WindyData: ObservableObject {
 
         }
     }
-    @Published var accentColour         = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2) {
+    @Published var accentColour         = Color(
+            red     : 0.4,
+            green   : 0.4,
+            blue    : 0.4,
+            opacity : 0.2
+    ) {
         didSet {
             UserDefaults.standard.set(self.accentColour, forKey: "accentColour")
         }
@@ -115,7 +120,7 @@ class WindyData: ObservableObject {
             let oldDisplaySettings      = self.displaySettings
             let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
             let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
-            self.displaySettings = mergedDisplaySettings
+            self.displaySettings        = mergedDisplaySettings
         }
     }
 }

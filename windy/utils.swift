@@ -147,6 +147,8 @@ extension NSWindow {
     func collisionsInside(rect: NSRect) -> [Direction] {
         return self.frame.collisionsInside(rect: rect)
     }
+    
+   
 }
 
 extension Color {
@@ -198,6 +200,23 @@ extension NSScreen {
          let key = NSDeviceDescriptionKey(rawValue: "NSScreenNumber")
          return deviceDescription[key] as! CGDirectDisplayID
      }
+    func getQuartsSafeFrame() -> NSRect {
+        debugPrint("frame", self.frame)
+        debugPrint("visableFrame", self.visibleFrame)
+        var rect    = self.visibleFrame;
+//        let edges   = self.safeAreaInsets
+      
+        // convert screen to top left from main quarts coord
+        rect.origin.y = NSScreen.screens[0].frame.maxY - rect.maxY
+
+//        rect.origin.y       += edges.top
+//        rect.size.height    -= edges.top + edges.bottom
+//        
+//        rect.origin.x       += edges.left
+//        rect.size.width     -= edges.left + edges.right
+
+        return rect
+    }
 }
 
 func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] {
@@ -225,5 +244,10 @@ func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] 
 }
 
 func moveMouseTo(point: CGPoint) {
-    CGEvent(mouseEventSource: nil, mouseType: CGEventType.mouseMoved, mouseCursorPosition: point, mouseButton: CGMouseButton.left)?.post(tap: CGEventTapLocation.cghidEventTap)
+    CGEvent(
+        mouseEventSource    : nil,
+        mouseType           : CGEventType.mouseMoved,
+        mouseCursorPosition : point,
+        mouseButton         : CGMouseButton.left
+    )?.post(tap: CGEventTapLocation.cghidEventTap)
 }

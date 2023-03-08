@@ -139,8 +139,6 @@ class GridManager: ObservableObject {
             point.x = round(point.x.clamp(to: screenFrame.minX...(screenFrame.maxX-windowFrame.width)))
             point.y = round(point.y.clamp(to: screenFrame.minY...(screenFrame.maxY-windowFrame.height)))
             
-            
-            debugPrint("point", point)
             do {
                 try window.setTopLeftPoint(point: point)
             } catch {
@@ -256,21 +254,36 @@ class GridManager: ObservableObject {
             case .Up:
                 size.height += minHeight * (size.height <= (minHeight + errorY) ? rows - 1.0 : -1.0)
             case .Down:
+                debugPrint("point, size", point, size)
                 size.height += minHeight * (size.height <= (minHeight + errorY) ? rows - 1.0 : -1.0)
                 point.y     = screenFrame.maxY - (size.height)
-
+                debugPrint("max", screenFrame.maxY , (size.height) )
+                debugPrint("point, size", point, size)
             }
             
             size.width  = round(size.width.clamp(to: minWidth...screenFrame.width))
             size.height = round(size.height.clamp(to: minHeight...screenFrame.height))
 
+            debugPrint("point, size", point, size)
             point.x     = round(point.x.clamp(to: (screenFrame.minX)...(screenFrame.maxX - size.width)))
             point.y     = round(point.y.clamp(to: (screenFrame.minY)...(screenFrame.maxY - size.height)))
             
-            
+            debugPrint("point, size", point, size)
+
             // set the window pos and size
+            
             try window.setTopLeftPoint(point: point)
+            // workaround
+            if (direction == .Down) {
+                var tSize = size
+                tSize.width  -= errorX
+                tSize.height -= errorY
+                try window.setFrameSize(size: tSize)
+            }
             try window.setFrameSize(size: size)
+            
+
+            debugPrint("final", try window.getFrame())
             // todo? set the window pos based on the final achieved size?
             
         } catch {

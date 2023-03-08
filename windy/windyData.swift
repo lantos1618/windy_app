@@ -55,13 +55,14 @@ class WindyData: ObservableObject {
     @Published var isShown              = false
     @Published var isShownTimeout       : Timer?
     @Published var rectsDict            : [String: [[NSRect]]]        = [:]
-    @Published var previewRects         : [[NSRect]] = []
+//    @Published var previewRects         : [[NSRect]] = []
     @Published var activeSettingScreen  : String            = NSScreen.main!.getIdString() {
         didSet {
             // set the preview rects when the active window settings are changed
-            previewRects = rectsDict[activeSettingScreen] ?? []
+//            previewRects = rectsDict[activeSettingScreen] ?? []
         }
     }
+    @Published var activeScreens        : [String] = []
     @Published var displaySettings      : [String: NSPoint] = [:] {
         didSet {
             // update the rects window when the displaySettings change
@@ -73,7 +74,7 @@ class WindyData: ObservableObject {
                 )
             }
             // update the preview rects window when the displaySettings change
-            previewRects = rectsDict[activeSettingScreen] ?? []
+//            previewRects = rectsDict[activeSettingScreen] ?? []
             // set the displaySettings to the local storage
             storeDisplaySettings(settings: displaySettings)
 
@@ -97,6 +98,8 @@ class WindyData: ObservableObject {
             createDefaultDisplaySettings()
             UserDefaults.standard.set(true, forKey: "defaultsSet")
         }
+        activeScreens = NSScreen.screens.map( {screen in screen.getIdString()})
+        
         // load the default display settings into the windyData
         do {
             let oldDisplaySettings      = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
@@ -121,6 +124,14 @@ class WindyData: ObservableObject {
             let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
             let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
             self.displaySettings        = mergedDisplaySettings
+            self.activeScreens          = NSScreen.screens.map({screen in screen.getIdString()})
+            // refresh preview
+            if (self.isShown) {
+                self.isShown = false
+            }
         }
+    }
+    func restSettings() {
+        self.displaySettings = generateDisplaySettingsFromActiveScreens()
     }
 }

@@ -27,9 +27,23 @@ class SnapManager {
         snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
         snapWindow?.setIsVisible(false)
     }
-    
-    func snapMouse(mousePos: NSPoint) throws {
+    func createSnapWindow() -> Bool {
         if (snapWindow == nil) {
+            snapWindow      = NSWindow(
+                contentRect     : NSRect(x: 0, y: 0, width: 500 , height: 500),
+                styleMask       : [.fullSizeContentView],
+                backing         : .buffered,
+                defer           : false
+            )
+            snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
+            snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
+            snapWindow?.setIsVisible(false)
+        }
+        return true
+    }
+    func snapMouse(mousePos: NSPoint) throws {
+        if (!createSnapWindow()) {
+            debugPrint("error: failed to get/create snap window")
             return
         }
         guard let screen = mousePos.getScreen() else {
@@ -128,8 +142,8 @@ class SnapManager {
     }
     
     func globalLeftMouseUpHandler(event: NSEvent)  {
-        if (snapWindow == nil) {
-            debugPrint("error: no snapWindow")
+        if (!createSnapWindow()) {
+            debugPrint("error: failed to get/create snap window")
             return
         }
         do {
@@ -149,8 +163,8 @@ class SnapManager {
         
     }
     func globalEscKeyDownHandler(event: NSEvent)  {
-        if (snapWindow == nil) {
-            debugPrint("error: no snapWindow")
+        if (!createSnapWindow()) {
+            debugPrint("error: failed to get/create snap window")
             return
         }
         if (event.keyCode != 53) {

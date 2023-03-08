@@ -8,17 +8,23 @@
 import Foundation
 import SwiftUI
 import Combine
+import KeyboardShortcuts
 
+
+
+struct ScreensManager {
+    
+}
 
 struct GridView: View {
     // this needs to be redrawn every time
     // activeDisplayWindow is Changed
     // display rows/cols are updated
     @ObservedObject var windyData: WindyData;
-
+    var screen: NSScreen
     
     var body: some View {
-        let rects       = windyData.previewRects
+        let rects       = windyData.rectsDict[screen.getIdString()] ?? []
         
         let path        = Path {
 //            path in
@@ -56,8 +62,8 @@ struct GridView: View {
 
 // this should be split into its own data class
 class GridManager: ObservableObject {
-    var window                  : NSWindow
-    var gridView                : GridView
+    var windows                 : [String: NSWindow] = [:]
+    var gridViews                : [String: GridView] = [:]
     var windyData               : WindyData
     var isShownListener         : AnyCancellable?
     var accentColorListener     : AnyCancellable?
@@ -66,30 +72,41 @@ class GridManager: ObservableObject {
     
     init(windyData: WindyData) {
         self.windyData = windyData
-        window = NSWindow(
-            contentRect : NSScreen.main!.frame,
-            styleMask   : [.fullSizeContentView, .resizable],
-            backing     : .buffered,
-            defer       : false
-        )
         
-        window.backgroundColor      = NSColor(windyData.accentColour)
-        gridView                    = GridView(windyData: windyData)
-        //        set default preview rects
-        windyData.previewRects      = windyData.rectsDict[windyData.activeSettingScreen] ?? []
-        window.contentView          = NSHostingView(rootView: gridView)
-        window.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
+        for screen in NSScreen.screens {
+            windows[screen.getIdString()] = NSWindow(
+                contentRect : NSScreen.main!.frame,
+                styleMask   : [.fullSizeContentView, .resizable],
+                backing     : .buffered,
+                defer       : false
+            )
+            
+            windows[screen.getIdString()]!.backgroundColor      = NSColor(windyData.accentColour)
+            gridViews[screen.getIdString()] = GridView(windyData: windyData, screen: screen)
+            //        set default preview rects
+            windows[screen.getIdString()]?.contentView          = NSHostingView(rootView: gridViews[screen.getIdString()])
+            windows[screen.getIdString()]?.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
+        }
+            
         
         accentColorListener         = windyData.$accentColour.sink { accentColor in
-            self.window.backgroundColor = NSColor(accentColor)
+            for key in self.windows.keys {
+                self.windows[key]?.backgroundColor = NSColor(accentColor)
+            }
         }
         isShownListener             = windyData.$isShown.sink { isShown in
-            let screen = NSScreen.fromIdString(str: windyData.activeSettingScreen) ?? NSScreen.main!
-            self.window.setIsVisible(isShown)
-            self.window.setFrame(screen.frame, display: true)
+            print("windows", self.windows.keys)
+            for key in self.windows.keys {
+                let screen = NSScreen.fromIdString(str: key) ?? NSScreen.main!
+                self.windows[key]?.setIsVisible(isShown)
+                self.windows[key]?.setFrame(screen.frame, display: true)
+            }
         }
         activeScreenListener        = windyData.$activeSettingScreen.sink { screenId in
-            self.window.setFrame( (NSScreen.fromIdString(str: screenId) ?? NSScreen.main!).frame, display: true)
+            for key in self.windows.keys {
+                self.windows[key]?.setFrame((NSScreen.fromIdString(str: key) ?? NSScreen.main!).frame, display: true)
+
+            }
         }
     }
 
@@ -132,20 +149,100 @@ class GridManager: ObservableObject {
         }
     }
     
+    func moveWindowNextScreen(direction: Direction) throws {
+        // this is messy but should be fine
+        let window              = try WindyWindow.currentWindow()
+        let currentScreen       = try window.getScreen()
+        let screens             = NSScreen.screens
+        let tCurrQPoint         = currentScreen.getQuartsSafeFrame().centerPoint()
+
+        // calculate the next screen
+        debugPrint("moving window to next screen", direction)
+        switch direction {
+            case .Left:
+            // I need a raycast but I'll just cheat it...
+            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+                var i = 10;
+                while i < 10_000 {
+                    let screenQFrame = screen.getQuartsSafeFrame()
+                    var testCurrQPoint = tCurrQPoint
+                    testCurrQPoint.x -= CGFloat(i)
+//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
+                    if (screenQFrame.contains(testCurrQPoint)) {
+                        try window.setTopLeftPoint(point: screenQFrame.origin)
+                        return
+
+                    }
+                    i += 100
+                }
+            }
+            case .Right:
+            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+                var i = 10;
+                while i < 10_000 {
+                    let screenQFrame = screen.getQuartsSafeFrame()
+                    var testCurrQPoint = tCurrQPoint
+                    testCurrQPoint.x += CGFloat(i)
+//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
+                    if (screenQFrame.contains(testCurrQPoint)) {
+                        try window.setTopLeftPoint(point: screenQFrame.origin)
+                        return
+
+                    }
+                    i += 100
+                }
+            }
+            case .Up:
+            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+                var i = 10;
+                while i < 10_000 {
+                    let screenQFrame = screen.getQuartsSafeFrame()
+                    var testCurrQPoint = tCurrQPoint
+                    testCurrQPoint.y -= CGFloat(i)
+//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
+                    if (screenQFrame.contains(testCurrQPoint)) {
+                        try window.setTopLeftPoint(point: screenQFrame.origin)
+                        return
+
+                    }
+                    i += 100
+                }
+            }
+            case .Down:
+            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+                var i = 10;
+                while i < 10_000 {
+                    let screenQFrame = screen.getQuartsSafeFrame()
+                    var testCurrQPoint = tCurrQPoint
+                    testCurrQPoint.y += CGFloat(i)
+//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
+                    if (screenQFrame.contains(testCurrQPoint)) {
+                        try window.setTopLeftPoint(point: screenQFrame.origin)
+                        return
+
+                    }
+                    i += 100
+                }
+            }
+        }
+        
+       
+    }
+    
     func resize(window: WindyWindow, direction: Direction) throws {
         do {
             debugPrint("resizing: ", direction)
-            let screen      = try window.getScreen()
-            var point       = try window.getTopLeftPoint()
-            var size        = try window.getSize()
-            let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
-            let columns     = settings.x
-            let rows        = settings.y
-            let screenFrame = screen.getQuartsSafeFrame()
-            let minWidth    = round(screenFrame.width / columns)
-            let minHeight   = round(screenFrame.height / rows)
-            let errorX       = minWidth * 0.30  // this is caused by the quarts safeFrame. workaround.
-            let errorY       = minHeight * 0.30  // this is caused by the quarts safeFrame. workaround.
+            let screen          = try window.getScreen()
+            var point           = try window.getTopLeftPoint()
+            var size            = try window.getSize()
+            let settings        = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
+            let columns         = settings.x
+            let rows            = settings.y
+            let screenFrame     = screen.getQuartsSafeFrame()
+            let minWidth        = round(screenFrame.width / columns)
+            let minHeight       = round(screenFrame.height / rows)
+            let errorX          = minWidth * 0.30  // this is caused by the quarts safeFrame. workaround.
+            let errorY          = minHeight * 0.30  // this is caused by the quarts safeFrame. workaround.
 
             // convert screen to quarts
             switch direction {
@@ -174,44 +271,77 @@ class GridManager: ObservableObject {
             try window.setFrameSize(size: size)
             // todo? set the window pos based on the final achieved size?
             
-            
-            
-            
         } catch {
             debugPrint("error \(error)")
         }
     }
     
-    func globalKeyEventHandler(event: NSEvent) {
+    func handleWindowMovement(direction: Direction) {
         do {
-            if (event.modifierFlags.contains([.option, .control])) {
-                guard let direction     = event.direction else { return }
                 let window              = try WindyWindow.currentWindow()
                 let windowFrame         = try window.getFrame()
                 let screen              = try window.getScreen()
-                var screenFrame         = screen.getQuartsSafeFrame()
+                let screenFrame         = screen.getQuartsSafeFrame()
                 
                 let windowCollisions    = windowFrame.collisionsInside(rect: screenFrame)
                 let canMove             = !windowCollisions.contains(direction)
                 debugPrint("windowCollisions", windowCollisions)
                 debugPrint("can move", canMove)
-//
-//                try window.setTopLeftPoint(point: screenFrame.origin)
-//                try window.setFrameSize(size: screenFrame.size)
-                
+
                 if canMove || windowCollisions.isEmpty {
                     try self.move(window: window, direction: direction)
                     return
                 }
                 try self.resize(window: window, direction: direction)
-            }
         } catch {
             debugPrint("error: \(error)")
         }
     }
+   
+    func handleWindowScreenMovement(direction: Direction) {
+        do {
+            try moveWindowNextScreen(direction: direction)
+        }
+        catch {
+            debugPrint("error: \(error)")
+        }
+    }
+    
+//    func globalKeyEventHandler(event: NSEvent) {
+//        if (event.modifierFlags.contains([.option, .control])) {
+//            guard let direction     = event.direction else { return }
+//            handleMovement(direction: direction)
+//        }
+//    }
     
 
     func registerEvents() {
-        NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: self.globalKeyEventHandler)
+//        NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: self.globalKeyEventHandler)
+        KeyboardShortcuts.onKeyDown(for: .moveWindowLeft) { [self] in
+            handleWindowMovement(direction: Direction.Left)
+        }
+        KeyboardShortcuts.onKeyDown(for: .moveWindowRight) { [self] in
+            handleWindowMovement(direction: Direction.Right)
+        }
+        KeyboardShortcuts.onKeyDown(for: .moveWindowUp) { [self] in
+            handleWindowMovement(direction: Direction.Up)
+        }
+        KeyboardShortcuts.onKeyDown(for: .moveWindowDown) { [self] in
+            handleWindowMovement(direction: Direction.Down)
+        }
+       
+        
+        KeyboardShortcuts.onKeyDown(for: .moveWindowScreenLeft) { [self] in
+            handleWindowScreenMovement(direction: Direction.Left)
+        }
+        KeyboardShortcuts.onKeyDown(for: .moveWindowScreenRight) { [self] in
+            handleWindowScreenMovement(direction: Direction.Right)
+        }
+        KeyboardShortcuts.onKeyDown(for: .moveWindowScreenUp) { [self] in
+            handleWindowScreenMovement(direction: Direction.Up)
+        }
+        KeyboardShortcuts.onKeyDown(for: .moveWindowScreenDown) { [self] in
+            handleWindowScreenMovement(direction: Direction.Down)
+        }
     }
 }

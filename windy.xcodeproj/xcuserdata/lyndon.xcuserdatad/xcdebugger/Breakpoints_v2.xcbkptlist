@@ -14,8 +14,8 @@
             filePath = "windy/gridManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "137"
-            endingLineNumber = "137"
+            startingLineNumber = "234"
+            endingLineNumber = "234"
             landmarkName = "resize(window:direction:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "windy/gridManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "169"
-            endingLineNumber = "169"
+            startingLineNumber = "266"
+            endingLineNumber = "266"
             landmarkName = "resize(window:direction:)"
             landmarkType = "7">
          </BreakpointContent>

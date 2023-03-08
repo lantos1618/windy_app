@@ -18,6 +18,8 @@
 		47165E2E298416C900BCB775 /* windyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47165E2D298416C900BCB775 /* windyData.swift */; };
 		4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B9297DAFA700DB1C5B /* snapWindow.swift */; };
 		47458FF72982FD60005B024B /* gridManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47458FF62982FD60005B024B /* gridManager.swift */; };
+		4745BC1729B8988900FFBCD0 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 4745BC1629B8988900FFBCD0 /* KeyboardShortcuts */; };
+		4745BC1929B898A800FFBCD0 /* KeyboardShortcutsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */; };
 		475590D1296C6EF200E385F5 /* windyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D0296C6EF200E385F5 /* windyManager.swift */; };
 		475590D3296C6F8300E385F5 /* privilegeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D2296C6F8300E385F5 /* privilegeManager.swift */; };
 		47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DEEBD5297456D300123E66 /* MenuPopover.swift */; };
@@ -57,6 +59,7 @@
 		47165E2D298416C900BCB775 /* windyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyData.swift; sourceTree = "<group>"; };
 		4732C0B9297DAFA700DB1C5B /* snapWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = snapWindow.swift; sourceTree = "<group>"; };
 		47458FF62982FD60005B024B /* gridManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gridManager.swift; sourceTree = "<group>"; };
+		4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsConstants.swift; sourceTree = "<group>"; };
 		475590D0296C6EF200E385F5 /* windyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyManager.swift; sourceTree = "<group>"; };
 		475590D2296C6F8300E385F5 /* privilegeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = privilegeManager.swift; sourceTree = "<group>"; };
 		47DEEBD5297456D300123E66 /* MenuPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuPopover.swift; sourceTree = "<group>"; };
@@ -67,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4745BC1729B8988900FFBCD0 /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -110,6 +114,7 @@
 		470C5762295F062E00B0DC3E /* windy */ = {
 			isa = PBXGroup;
 			children = (
+				4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */,
 				470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */,
 				4700D4382992737F00A5D8D8 /* utils.swift */,
 				470C5763295F062E00B0DC3E /* windyApp.swift */,
@@ -168,6 +173,9 @@
 			dependencies = (
 			);
 			name = windy;
+			packageProductDependencies = (
+				4745BC1629B8988900FFBCD0 /* KeyboardShortcuts */,
+			);
 			productName = windy;
 			productReference = 470C5760295F062E00B0DC3E /* windy.app */;
 			productType = "com.apple.product-type.application";
@@ -240,6 +248,9 @@
 				Base,
 			);
 			mainGroup = 470C5757295F062E00B0DC3E;
+			packageReferences = (
+				4745BC1529B8988900FFBCD0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+			);
 			productRefGroup = 470C5761295F062E00B0DC3E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -287,6 +298,7 @@
 				475590D1296C6EF200E385F5 /* windyManager.swift in Sources */,
 				470C5764295F062E00B0DC3E /* windyApp.swift in Sources */,
 				47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */,
+				4745BC1929B898A800FFBCD0 /* KeyboardShortcutsConstants.swift in Sources */,
 				47458FF72982FD60005B024B /* gridManager.swift in Sources */,
 				4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */,
 				4700D4392992737F00A5D8D8 /* utils.swift in Sources */,
@@ -607,6 +619,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4745BC1529B8988900FFBCD0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4745BC1629B8988900FFBCD0 /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4745BC1529B8988900FFBCD0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 470C5758295F062E00B0DC3E /* Project object */;
 }

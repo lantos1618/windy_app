@@ -6,17 +6,41 @@
 //
 
 import SwiftUI
+import KeyboardShortcuts
+
+
+
+struct KeyboardShortcutsSettings: View {
+    var body: some View {
+        Form {
+            Section(header: Text("Move Window in Screen")) {
+                KeyboardShortcuts.Recorder("Move window left:",     name: .moveWindowLeft)
+                KeyboardShortcuts.Recorder("Move window right:",    name: .moveWindowRight)
+                KeyboardShortcuts.Recorder("Move window up:",       name: .moveWindowUp)
+                KeyboardShortcuts.Recorder("Move window down:",     name: .moveWindowDown)
+            }
+            
+            Section(header: Text("Move Window to Screen")) {
+                KeyboardShortcuts.Recorder("Move window to left screen:",     name: .moveWindowScreenLeft)
+                KeyboardShortcuts.Recorder("Move window to right screen:",    name: .moveWindowScreenRight)
+                KeyboardShortcuts.Recorder("Move window to up screen:",       name: .moveWindowScreenUp)
+                KeyboardShortcuts.Recorder("Move window down screen:",        name: .moveWindowScreenDown)
+            }
+        }
+    }
+}
 
 struct MenuPopover: View {
     @StateObject var windyData      : WindyData
     @State var window               : NSWindow?
-    
+    @State private var isPresentingConfirm: Bool = false
+
     var body: some View {
         VStack {
             Text("Windy window manager").font(.title).padding()
             
             if (windyData.displaySettings.keys.contains(windyData.activeSettingScreen)) {
-                Text("Grid Settings").font(.title2).padding()
+                Text("Screen Settings").font(.title2).padding()
 
                 Grid {
                     GridRow {
@@ -24,7 +48,7 @@ struct MenuPopover: View {
                         Picker("", selection: $windyData.activeSettingScreen) {
                             ForEach(windyData.displaySettings.keys.sorted(), id: \.self) {
                                 key in
-                                Text(key).tag(key)
+                                Text(key + (windyData.activeScreens.contains(key) ? " (currently connected)" : "")).tag(key)
                             }
                         }.gridCellColumns(2)
                     }
@@ -65,52 +89,56 @@ struct MenuPopover: View {
                     }
                     GridRow {
                         Text("Preview Layout")
-                        Text("")
-                        HStack {
-                            Button {
-                                windyData.isShown = !windyData.isShown
-                            } label: {
-                                windyData.isShown ? Image(systemName: "eye.fill") : Image(systemName: "eye")
-                            }
-                        }
+                        Spacer()
+                                Button {
+                                    windyData.isShown = !windyData.isShown
+                                } label: {
+                                    windyData.isShown ? Image(systemName: "eye.fill") : Image(systemName: "eye")
+                                }
+                        
                     }
                     
                     GridRow {
                         Text("Accent colour:")
-                        Text("")
-                        HStack{
-                            ColorPicker("", selection: $windyData.accentColour)
-                        }
+                        Spacer()
+                        ColorPicker("", selection: $windyData.accentColour)
                     }
+                    
+                    
                   
                 }
             }
             
-            Text("Hot Key Settings").font(.title2).padding()
-            Grid {
-                GridRow {
-                    Text("Move Window Left :").gridColumnAlignment(.leading) // Align the entire first column.
-                    Button("CTRL+OPTION+←") {
-                    }.gridColumnAlignment(.trailing) // Align the entire first column.
-                }
-                GridRow {
-                    Text("Move Window Right:")
-                    Button("CTRL+OPTION+→") {
+            Text("Keyboard Shortcuts").font(.title2).padding()
+            KeyboardShortcutsSettings()
+            Text("Reset settings").font(.title2).padding()
+            HStack {
+                Button("Reset all display Settings") {
+                    isPresentingConfirm = true
+                }.confirmationDialog("Are you sure you want to reset all displaySettings", isPresented: $isPresentingConfirm) {
+                    Button("rest all display settings", role: .destructive) {
+                        windyData.restSettings()
                     }
                 }
-                GridRow {
-                    Text("Move Window Up:")
-                    Button("CTRL+OPTION+↑") {
+                Button("Reset Keyboard shortcuts") {
+                    isPresentingConfirm = true
+                }.confirmationDialog("Are you sure you want to reset all displaySettings", isPresented: $isPresentingConfirm) {
+                    Button("rest keyboard shortcuts", role: .destructive) {
+                        KeyboardShortcuts.reset([
+                            .moveWindowLeft,
+                            .moveWindowRight,
+                            .moveWindowUp,
+                            .moveWindowDown,
+                            
+                            .moveWindowScreenLeft,
+                            .moveWindowScreenRight,
+                            .moveWindowScreenUp,
+                            .moveWindowScreenDown,
+                            
+                        ])
                     }
                 }
-                GridRow {
-                    Text("Move Window Down:")
-                    Button("CTRL+OPTION+↑") {
-                    }
-                }
-            }.padding()
-            
-            
+            }
             Button("Quit Windy") {
                 NSApplication.shared.terminate(self)
             }.padding()

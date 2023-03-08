@@ -9,7 +9,7 @@ import Foundation
 
 class SnapManager {
     var windyData               : WindyData
-    var snapWindow              : NSWindow
+    var snapWindow              : NSWindow?
     var currentMovingWindow     : WindyWindow?
     var initialWindyWindowPos   = NSPoint(x: 0, y: 0)
     var windowIsMoving          = false
@@ -23,78 +23,86 @@ class SnapManager {
             backing         : .buffered,
             defer           : false
         )
-        snapWindow.backgroundColor      = NSColor(windyData.accentColour)
-        snapWindow.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
-        snapWindow.setIsVisible(false)
+        snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
+        snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
+        snapWindow?.setIsVisible(false)
     }
     
     func snapMouse(mousePos: NSPoint) throws {
+        if (snapWindow == nil) {
+            return
+        }
         guard let screen = mousePos.getScreen() else {
             throw WindyWindowError.NSError(message: "could not get screen at point")
         }
         // went out side of window don't draw anything
         let inSideScreen = NSPointInRect(mousePos, screen.frame.insetBy(dx: -1, dy: -1))
         let insideGutter = mousePos.collisionsInside(rect: (screen.frame.insetBy(dx: 100, dy: 100)))
+        
         if !inSideScreen  {
-            snapWindow.setIsVisible(false)
+            snapWindow?.setIsVisible(false)
             return
         }
         if insideGutter.isEmpty {
-            snapWindow.setIsVisible(false)
+            snapWindow?.setIsVisible(false)
             return
         }
         if !shouldSnap {
-            snapWindow.setIsVisible(false)
+            snapWindow?.setIsVisible(false)
             return
         }
         
-        var t_point = screen.frame.origin
-        var t_size = screen.frame.size
-        
-        let columns = 2.0
-        let rows = 2.0
-        
-        let minWidth = screen.frame.width / columns
-        let minHeight = screen.frame.height / rows
+        var t_point     = screen.frame.origin
+        var t_size      = screen.frame.size
+        let columns     = 2.0
+        let rows        = 2.0
+        let screenFrame = screen.frame
+        //        let screenFrame = screen.getQuartsSafeFrame()
+        let minWidth    = screenFrame.width / columns
+        let minHeight   = screenFrame.height / rows
         
         
         if insideGutter.contains(.Left) {
             t_size.width    = minWidth
-            t_point.x       = screen.frame.minX
+            t_point.x       = screenFrame.minX
         }
         if insideGutter.contains(.Right) {
             t_size.width    = minWidth
-            t_point.x       = screen.frame.maxX - t_size.width
+            t_point.x       = screenFrame.maxX - t_size.width
         }
         
         if insideGutter.contains(.Up) {
             t_size.height   = minHeight
-            t_point.y       = screen.frame.maxY - t_size.height
+            t_point.y       = screenFrame.maxY - t_size.height
             
         }
         if insideGutter.contains(.Down) {
             t_size.height   = minHeight
-            t_point.y       = screen.frame.minY
+            t_point.y       = screenFrame.minY
         }
         
-        let tFrame = NSRect(origin: t_point, size: t_size)
+        let tFrame      = NSRect(origin: t_point, size: t_size)
         drawSnapWindow(frame: tFrame)
     }
     
     func drawSnapWindow(frame: NSRect) {
-        snapWindow.setFrame(frame, display: true)
-        snapWindow.setIsVisible(true)
-        snapWindow.orderFrontRegardless()
+        if (snapWindow == nil) {
+            debugPrint("error: no snapWindow")
+            return
+        }
+        snapWindow?.setFrame(frame, display: true)
+        snapWindow?.setIsVisible(true)
+        snapWindow?.orderFrontRegardless()
     }
     
     func globalLeftMouseDownHandler(event: NSEvent)  {
         do {
-            currentMovingWindow     = try WindyWindow.currentWindow()
-            guard let tempCurrentMovingWindow = currentMovingWindow else {
+            currentMovingWindow                 = try WindyWindow.currentWindow()
+            guard let tempCurrentMovingWindow   = currentMovingWindow else {
                 print ("error: Failed to get the current moving window")
                 return
             }
-                initialWindyWindowPos   = try tempCurrentMovingWindow.getTopLeftPoint()
+            initialWindyWindowPos               = try tempCurrentMovingWindow.getTopLeftPoint()
         } catch {
             print("\(error)")
         }
@@ -120,27 +128,35 @@ class SnapManager {
     }
     
     func globalLeftMouseUpHandler(event: NSEvent)  {
+        if (snapWindow == nil) {
+            debugPrint("error: no snapWindow")
+            return
+        }
         do {
-            if( self.snapWindow.isVisible) {
+            if( self.snapWindow!.isVisible) {
                 guard let tempCurrentMovingWindow = currentMovingWindow else {
                     print ("error: Failed to get the current moving window")
                     return
                 }
-                try tempCurrentMovingWindow.setFrameBottomLeft(frame:  self.snapWindow.frame)
-                self.snapWindow.setIsVisible(false)
+                try tempCurrentMovingWindow.setFrameBottomLeft(frame:  self.snapWindow!.frame)
+                self.snapWindow?.setIsVisible(false)
             }
             self.windowIsMoving = false
         } catch {
             debugPrint("error \(error)")
         }
         
-      
+        
     }
     func globalEscKeyDownHandler(event: NSEvent)  {
+        if (snapWindow == nil) {
+            debugPrint("error: no snapWindow")
+            return
+        }
         if (event.keyCode != 53) {
             return
         }
-        self.snapWindow.setIsVisible(false)
+        self.snapWindow?.setIsVisible(false)
         shouldSnap = false
     }
     func globalEscKeyUpHandler(event: NSEvent)  {

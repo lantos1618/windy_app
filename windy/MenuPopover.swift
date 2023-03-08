@@ -13,15 +13,21 @@ struct MenuPopover: View {
     
     var body: some View {
         VStack {
-            Text("Windy window manager").padding()
-            Picker("Screen", selection: $windyData.activeSettingScreen) {
-                ForEach(windyData.displaySettings.keys.sorted(), id: \.self) {
-                    key in
-                    Text(key).tag(key)
-                }
-            }
+            Text("Windy window manager").font(.title).padding()
+            
             if (windyData.displaySettings.keys.contains(windyData.activeSettingScreen)) {
+                Text("Grid Settings").font(.title2).padding()
+
                 Grid {
+                    GridRow {
+                        Text ("Screen:").gridColumnAlignment(.trailing) // Align the entire first column.
+                        Picker("", selection: $windyData.activeSettingScreen) {
+                            ForEach(windyData.displaySettings.keys.sorted(), id: \.self) {
+                                key in
+                                Text(key).tag(key)
+                            }
+                        }.gridCellColumns(2)
+                    }
                     GridRow {
                         Text ("Columns:").gridColumnAlignment(.trailing) // Align the entire first column.
                         Text ("\(Int(windyData.displaySettings[windyData.activeSettingScreen]!.x))")
@@ -76,29 +82,33 @@ struct MenuPopover: View {
                             ColorPicker("", selection: $windyData.accentColour)
                         }
                     }
+                  
                 }
-                
-                //                GridRow {
-                //                    Text("Move Window Left :").gridColumnAlignment(.leading) // Align the entire first column.
-                //                    Button("CTRL+OPTION+←") {
-                //                    }.gridColumnAlignment(.trailing) // Align the entire first column.
-                //                }
-                //                GridRow {
-                //                    Text("Move Window Right:")
-                //                    Button("CTRL+OPTION+→") {
-                //                    }
-                //                }
-                //                GridRow {
-                //                    Text("Move Window Up:")
-                //                    Button("CTRL+OPTION+↑") {
-                //                    }
-                //                }
-                //                GridRow {
-                //                    Text("Move Window Down:")
-                //                    Button("CTRL+OPTION+↑") {
-                //                    }
-                //                }
             }
+            
+            Text("Hot Key Settings").font(.title2).padding()
+            Grid {
+                GridRow {
+                    Text("Move Window Left :").gridColumnAlignment(.leading) // Align the entire first column.
+                    Button("CTRL+OPTION+←") {
+                    }.gridColumnAlignment(.trailing) // Align the entire first column.
+                }
+                GridRow {
+                    Text("Move Window Right:")
+                    Button("CTRL+OPTION+→") {
+                    }
+                }
+                GridRow {
+                    Text("Move Window Up:")
+                    Button("CTRL+OPTION+↑") {
+                    }
+                }
+                GridRow {
+                    Text("Move Window Down:")
+                    Button("CTRL+OPTION+↑") {
+                    }
+                }
+            }.padding()
             
             
             Button("Quit Windy") {

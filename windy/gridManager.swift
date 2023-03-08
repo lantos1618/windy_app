@@ -147,7 +147,6 @@ class GridManager: ObservableObject {
             let errorX       = minWidth * 0.30  // this is caused by the quarts safeFrame. workaround.
             let errorY       = minHeight * 0.30  // this is caused by the quarts safeFrame. workaround.
 
-            print("point, size", point, size )
             // convert screen to quarts
             switch direction {
             case .Left:
@@ -163,19 +162,21 @@ class GridManager: ObservableObject {
 
             }
             
-            print("point, size", point, size )
             size.width  = round(size.width.clamp(to: minWidth...screenFrame.width))
             size.height = round(size.height.clamp(to: minHeight...screenFrame.height))
-            print("point, size", point, size )
 
             point.x     = round(point.x.clamp(to: (screenFrame.minX)...(screenFrame.maxX - size.width)))
             point.y     = round(point.y.clamp(to: (screenFrame.minY)...(screenFrame.maxY - size.height)))
             
-            print("point, size", point, size )
+            
+            // set the window pos and size
             try window.setTopLeftPoint(point: point)
             try window.setFrameSize(size: size)
-            debugPrint("point", try window.getTopLeftPoint())
-
+            // todo? set the window pos based on the final achieved size?
+            
+            
+            
+            
         } catch {
             debugPrint("error \(error)")
         }

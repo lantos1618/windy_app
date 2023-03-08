@@ -201,8 +201,6 @@ extension NSScreen {
          return deviceDescription[key] as! CGDirectDisplayID
      }
     func getQuartsSafeFrame() -> NSRect {
-        debugPrint("frame", self.frame)
-        debugPrint("visableFrame", self.visibleFrame)
         var rect    = self.visibleFrame;
 //        let edges   = self.safeAreaInsets
       
@@ -211,7 +209,7 @@ extension NSScreen {
 
 //        rect.origin.y       += edges.top
 //        rect.size.height    -= edges.top + edges.bottom
-//        
+//
 //        rect.origin.x       += edges.left
 //        rect.size.width     -= edges.left + edges.right
 

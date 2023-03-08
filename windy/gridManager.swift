@@ -154,16 +154,18 @@ class GridManager: ObservableObject {
         let window              = try WindyWindow.currentWindow()
         let currentScreen       = try window.getScreen()
         let screens             = NSScreen.screens
+        let tScreens            = screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()})
         let tCurrQPoint         = currentScreen.getQuartsSafeFrame().centerPoint()
-
+        let max_check           = 10_000
+        
         // calculate the next screen
         debugPrint("moving window to next screen", direction)
         switch direction {
             case .Left:
             // I need a raycast but I'll just cheat it...
-            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+            for screen in tScreens {
                 var i = 10;
-                while i < 10_000 {
+                while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.x -= CGFloat(i)
@@ -179,7 +181,7 @@ class GridManager: ObservableObject {
             case .Right:
             for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
                 var i = 10;
-                while i < 10_000 {
+                while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.x += CGFloat(i)
@@ -193,9 +195,9 @@ class GridManager: ObservableObject {
                 }
             }
             case .Up:
-            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+            for screen in tScreens {
                 var i = 10;
-                while i < 10_000 {
+                while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.y -= CGFloat(i)
@@ -209,9 +211,9 @@ class GridManager: ObservableObject {
                 }
             }
             case .Down:
-            for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
+            for screen in tScreens {
                 var i = 10;
-                while i < 10_000 {
+                while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.y += CGFloat(i)

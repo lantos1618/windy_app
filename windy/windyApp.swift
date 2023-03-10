@@ -59,10 +59,22 @@
 //import ApplicationServices
 //import Accessibility
 import SwiftUI
-
+import OSLog
 
 // SwiftUI Main Window
 // we have disabled it
+//
+//class LoggerManager {
+//    static let shared = LoggerManager()
+//    
+//    let logger: Logger
+//
+//    private init() {
+//        self.logger = Logger(subsystem: "dev.zug.windy", category: "Windy")
+//    }
+//
+//}
+
 @main
 struct windyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
@@ -84,6 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var windyManager        : WindyManager!
     private var privilegeManager    : PrivilegeManager!
     private var windyData           : WindyData!
+//    private var logger              : Logger = Logger(subsystem: "dev.zug.windy", category: "main")
 
     func hideMainWindow() {
         // hide the main window on launch

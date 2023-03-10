@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class SnapManager {
     var windyData               : WindyData
@@ -14,6 +15,7 @@ class SnapManager {
     var initialWindyWindowPos   = NSPoint(x: 0, y: 0)
     var windowIsMoving          = false
     var shouldSnap              = true
+    var accentColorListener     : AnyCancellable?
     
     init(windyData: WindyData) {
         self.windyData  = windyData
@@ -26,6 +28,10 @@ class SnapManager {
         snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
         snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
         snapWindow?.setIsVisible(false)
+        
+        accentColorListener = windyData.$accentColour.sink {_ in
+            self.snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
+        }
     }
     func createSnapWindow() -> Bool {
         if (snapWindow == nil) {
@@ -71,7 +77,7 @@ class SnapManager {
         let columns     = 2.0
         let rows        = 2.0
         let screenFrame = screen.frame
-        //        let screenFrame = screen.getQuartsSafeFrame()
+//      let screenFrame = screen.getQuartsSafeFrame()
         let minWidth    = screenFrame.width / columns
         let minHeight   = screenFrame.height / rows
         

@@ -7,6 +7,7 @@
 
 //import Foundation
 import SwiftUI
+import LaunchAtLogin
 
 struct AccessRequestModal: View {
     var accessWindow        : NSWindow
@@ -23,6 +24,8 @@ struct AccessRequestModal: View {
                 Text("\u{2022} Move and resize windows")
                 Text("\u{2022} Use Global HotKeys")
             }.padding()
+            
+            LaunchAtLogin.Toggle()
             HStack {
                 Button("Open Accessibility Permissions") {
                     _ = self.checkPrivilegeHandle(timer: nil, prompt: true)

@@ -17,6 +17,7 @@
 		470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C57B129642E6100B0DC3E /* windyWindow.swift */; };
 		47165E2E298416C900BCB775 /* windyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47165E2D298416C900BCB775 /* windyData.swift */; };
 		4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B9297DAFA700DB1C5B /* snapWindow.swift */; };
+		473F1E8E29BCA05D000B678B /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 473F1E8D29BCA05D000B678B /* LaunchAtLogin */; };
 		47458FF72982FD60005B024B /* gridManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47458FF62982FD60005B024B /* gridManager.swift */; };
 		4745BC1729B8988900FFBCD0 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 4745BC1629B8988900FFBCD0 /* KeyboardShortcuts */; };
 		4745BC1929B898A800FFBCD0 /* KeyboardShortcutsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */; };
@@ -70,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				473F1E8E29BCA05D000B678B /* LaunchAtLogin in Frameworks */,
 				4745BC1729B8988900FFBCD0 /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -175,6 +177,7 @@
 			name = windy;
 			packageProductDependencies = (
 				4745BC1629B8988900FFBCD0 /* KeyboardShortcuts */,
+				473F1E8D29BCA05D000B678B /* LaunchAtLogin */,
 			);
 			productName = windy;
 			productReference = 470C5760295F062E00B0DC3E /* windy.app */;
@@ -250,6 +253,7 @@
 			mainGroup = 470C5757295F062E00B0DC3E;
 			packageReferences = (
 				4745BC1529B8988900FFBCD0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+				473F1E8C29BCA05D000B678B /* XCRemoteSwiftPackageReference "LaunchAtLogin" */,
 			);
 			productRefGroup = 470C5761295F062E00B0DC3E /* Products */;
 			projectDirPath = "";
@@ -631,6 +635,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		473F1E8C29BCA05D000B678B /* XCRemoteSwiftPackageReference "LaunchAtLogin" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/LaunchAtLogin";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		4745BC1529B8988900FFBCD0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
@@ -642,6 +654,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		473F1E8D29BCA05D000B678B /* LaunchAtLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 473F1E8C29BCA05D000B678B /* XCRemoteSwiftPackageReference "LaunchAtLogin" */;
+			productName = LaunchAtLogin;
+		};
 		4745BC1629B8988900FFBCD0 /* KeyboardShortcuts */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4745BC1529B8988900FFBCD0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;

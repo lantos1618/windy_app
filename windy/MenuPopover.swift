@@ -7,6 +7,7 @@
 
 import SwiftUI
 import KeyboardShortcuts
+import LaunchAtLogin
 
 
 
@@ -139,6 +140,7 @@ struct MenuPopover: View {
                     }
                 }
             }
+            LaunchAtLogin.Toggle()
             Button("Quit Windy") {
                 NSApplication.shared.terminate(self)
             }.padding()

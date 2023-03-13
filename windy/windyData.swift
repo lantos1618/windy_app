@@ -7,6 +7,9 @@
 
 import Foundation
 import SwiftUI
+import ServiceManagement
+
+
 
 func generateDisplaySettingsFromActiveScreens() -> [String: NSPoint] {
     var result: [String: NSPoint] = [:]
@@ -54,16 +57,12 @@ func createDefaultDisplaySettings() {
 class WindyData: ObservableObject {
     @Published var isShown              = false
     @Published var isShownTimeout       : Timer?
-    @Published var rectsDict            : [String: [[NSRect]]]        = [:]
+    @Published var rectsDict            : [String: [[NSRect]]]  = [:]
 //    @Published var previewRects         : [[NSRect]] = []
-    @Published var activeSettingScreen  : String            = NSScreen.main!.getIdString() {
-        didSet {
-            // set the preview rects when the active window settings are changed
-//            previewRects = rectsDict[activeSettingScreen] ?? []
-        }
-    }
+    @Published var activeSettingScreen  : String                = NSScreen.main!.getIdString()
     @Published var activeScreens        : [String] = []
-    @Published var displaySettings      : [String: NSPoint] = [:] {
+    
+    @Published var displaySettings      : [String: NSPoint]     = [:] {
         didSet {
             // update the rects window when the displaySettings change
             for (key, val) in displaySettings {
@@ -73,9 +72,6 @@ class WindyData: ObservableObject {
                     screen  : NSScreen.fromIdString(str: key) ?? NSScreen.main!
                 )
             }
-            // update the preview rects window when the displaySettings change
-//            previewRects = rectsDict[activeSettingScreen] ?? []
-            // set the displaySettings to the local storage
             storeDisplaySettings(settings: displaySettings)
 
         }
@@ -105,13 +101,13 @@ class WindyData: ObservableObject {
             let oldDisplaySettings      = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
             let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
             let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
-
             self.displaySettings = mergedDisplaySettings
         } catch {
             debugPrint("failed to get the displaySettings")
         }
+
         // load the default access colour into the windyData
-        self.accentColour =  UserDefaults.standard.color(forKey: "accentColour")
+        self.accentColour       = UserDefaults.standard.color(forKey: "accentColour")
         
         // add listener to update the defaults when a new monitor is added
         NotificationCenter.default.addObserver(

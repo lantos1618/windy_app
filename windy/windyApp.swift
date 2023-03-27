@@ -35,7 +35,7 @@
 // [x] Make wrap around behaviour
 // [x] unwrap all ! add try/catch conditions
 // [x] icon, dark & light modes
-// [ ] check next screen if is available
+// [x] check next screen if is available
 // [x] re do move mechanic
 // [x] create a safeSetFrame()
 // [x] add check to on drag snap to see if window is still available if not hide snap

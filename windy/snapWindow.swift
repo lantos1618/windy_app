@@ -3,12 +3,12 @@
 //  test
 //
 //  Created by Lyndon Leong on 22/01/2023.
-//
+// TODO FIX SNAP WINDOW NOT SHOWING
 
 import Foundation
 import Combine
 
-class SnapManager {
+class SnapWindowManager {
     var windyData               : WindyData
     var snapWindow              : NSWindow?
     var currentMovingWindow     : WindyWindow?
@@ -28,11 +28,12 @@ class SnapManager {
         snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
         snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
         snapWindow?.setIsVisible(false)
-        
+        snapWindow?.isReleasedWhenClosed = false
         accentColorListener = windyData.$accentColour.sink {_ in
             self.snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
         }
     }
+    
     func createSnapWindow() -> Bool {
         if (snapWindow == nil) {
             snapWindow      = NSWindow(
@@ -43,15 +44,13 @@ class SnapManager {
             )
             snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
             snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
+            snapWindow?.isReleasedWhenClosed = false
             snapWindow?.setIsVisible(false)
         }
         return true
     }
-    func snapMouse(mousePos: NSPoint) throws {
-        if (!createSnapWindow()) {
-            debugPrint("error: failed to get/create snap window")
-            return
-        }
+    
+    func calculateSnapRect(mousePos: NSPoint) throws -> NSRect? {
         guard let screen = mousePos.getScreen() else {
             throw WindyWindowError.NSError(message: "could not get screen at point")
         }
@@ -61,15 +60,15 @@ class SnapManager {
         
         if !inSideScreen  {
             snapWindow?.setIsVisible(false)
-            return
+            return nil
         }
         if insideGutter.isEmpty {
             snapWindow?.setIsVisible(false)
-            return
+            return nil
         }
         if !shouldSnap {
             snapWindow?.setIsVisible(false)
-            return
+            return nil
         }
         
         var t_point     = screen.frame.origin
@@ -102,7 +101,19 @@ class SnapManager {
         }
         
         let tFrame      = NSRect(origin: t_point, size: t_size)
+        return tFrame
+    }
+    
+    func snapMouse(mousePos: NSPoint) throws {
+        if (!createSnapWindow()) {
+            debugPrint("error: failed to get/create snap window")
+            return
+        }
+        guard let tFrame = try calculateSnapRect(mousePos: mousePos) else {
+            return
+        }
         drawSnapWindow(frame: tFrame)
+        return
     }
     
     func drawSnapWindow(frame: NSRect) {
@@ -186,6 +197,12 @@ class SnapManager {
         shouldSnap = true
     }
     
+    func globalMouseMoved(event: NSEvent) {
+        if(windowIsMoving) {
+            return
+        }
+        self.snapWindow?.setIsVisible(false)
+    }
     
     func registerEvents() {
         // snapping window
@@ -194,5 +211,7 @@ class SnapManager {
         NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp,       handler: self.globalLeftMouseUpHandler)
         NSEvent.addGlobalMonitorForEvents(matching: .keyDown,           handler: self.globalEscKeyDownHandler)
         NSEvent.addGlobalMonitorForEvents(matching: .keyUp,             handler: self.globalEscKeyUpHandler)
+        NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved,        handler: self.globalMouseMoved)
+
     }
 }

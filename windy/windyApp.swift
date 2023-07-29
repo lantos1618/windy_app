@@ -86,6 +86,19 @@ struct windyApp: App {
     }
 }
 
+class ResizingPopover: NSPopover {
+    override var contentViewController: NSViewController? {
+        didSet {
+            guard let contentViewController = contentViewController else { return }
+            // Compute the new size based on the content's size
+            let newSize = contentViewController.view.fittingSize
+            // Then apply this new size to the popover
+            self.contentSize = newSize
+        }
+    }
+}
+
+
 // Application Logic
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     // the status button in the apple menu
@@ -93,10 +106,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var statusBarButton     : NSStatusBarButton!
     private var popover             : NSPopover!
     
-    private var windyManager        : WindyManager!
-    private var privilegeManager    : PrivilegeManager!
+    
+    // windy data is here as I am using it like a state Store.
+    // Any application data that is required across the application
+    // should be stored here
     private var windyData           : WindyData!
-//    private var logger              : Logger = Logger(subsystem: "dev.zug.windy", category: "main")
+    private var windyManager        : WindyManager!
+    // I have put these here as they need to exist before the Application logic, If this becomes unusable I should move it to windyManager.
+    
+    private var privilegeManager    : PrivilegeManager!
+    private var licenseManager      : LicenseManager!
+    
 
     func hideMainWindow() {
         // hide the main window on launch
@@ -112,20 +132,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         windyData           = WindyData()
         windyManager        = WindyManager(windyData: windyData)
         privilegeManager    = PrivilegeManager()
+        licenseManager      = LicenseManager(windyData: windyData)
+        
 
         // put the windy icon in the mac toolbar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusBarButton = statusItem.button!
-        statusBarButton.image = NSImage(imageLiteralResourceName : "StatusBarIcon")
+        statusBarButton             = statusItem.button!
+        statusBarButton.image       = NSImage(imageLiteralResourceName : "StatusBarIcon")
         statusBarButton.image!.size = NSSize ( width: 32 , height: 32 )
-        statusBarButton.action = #selector(togglePopover)
+        statusBarButton.action      = #selector(togglePopover)
+        
+        licenseManager.startHeartbeat()
+
 
         // open the MenuPopover when user clicks the status bar icon
-        popover                         = NSPopover()
-        popover.contentSize             = NSSize(width: 400, height: 800)
-        popover.behavior                = NSPopover.Behavior.transient;
+        popover = ResizingPopover()
+
+//        popover                         = NSPopover()
+//        popover.contentSize             = NSSize(width: 400, height: 1000)
+//        popover.behavior                = NSPopover.Behavior.transient;
+        
         popover.contentViewController   = NSHostingController(
-            rootView: MenuPopover(windyData: self.windyData)
+            rootView: MenuPopover(
+                windyData: self.windyData,
+                openLicenseWindowFunc: licenseManager.displayLicenseForm
+            )
         )
         // add listener to close the rectangle preview
         NotificationCenter.default.addObserver(forName: NSPopover.willCloseNotification, object: popover, queue: OperationQueue.main) {_ in
@@ -147,7 +178,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             )
         )
         accessRequestModalWindow.center()
+        accessRequestModalWindow.isReleasedWhenClosed = false
         accessRequestModalWindow.makeKeyAndOrderFront(nil)
+        
+
 
     }
     

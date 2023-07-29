@@ -55,6 +55,20 @@ func createDefaultDisplaySettings() {
 
 
 class WindyData: ObservableObject {
+    
+    // license details
+    @Published var email: String = UserDefaults.standard.string(forKey: "email") ?? "" {
+        didSet {
+            UserDefaults.standard.set(licenseKey, forKey: "email")
+        }
+    }
+    @Published var licenseKey: String = UserDefaults.standard.string(forKey: "licenseKey") ?? "" {
+        didSet {
+            UserDefaults.standard.set(licenseKey, forKey: "licenseKey")
+        }
+    }
+    @Published var licenseStatus: String = ""
+
     @Published var isShown              = false
     @Published var isShownTimeout       : Timer?
     @Published var rectsDict            : [String: [[NSRect]]]  = [:]

@@ -6,7 +6,7 @@
       "location" : "https://github.com/sindresorhus/KeyboardShortcuts",
       "state" : {
         "branch" : "main",
-        "revision" : "d168f629edcd687383e18c908168520b4f156324"
+        "revision" : "8b1a9ce78c2f35c8a55dcc95897573abd2cc4f6e"
       }
     },
     {
@@ -15,7 +15,7 @@
       "location" : "https://github.com/sindresorhus/LaunchAtLogin",
       "state" : {
         "branch" : "main",
-        "revision" : "7ad6331f9c38953eb1ce8737758e18f7607e984a"
+        "revision" : "8e28b5e5a9561ace33a26c55d78f74963fbce6f9"
       }
     }
   ],

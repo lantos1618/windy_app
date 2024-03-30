@@ -81,7 +81,7 @@ struct windyApp: App {
     var body: some Scene {
         WindowGroup {
             // disabled here and in the AppDelegate
-            if false {}
+          // if false {}
         }
     }
 }
@@ -115,7 +115,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     // I have put these here as they need to exist before the Application logic, If this becomes unusable I should move it to windyManager.
     
     private var privilegeManager    : PrivilegeManager!
-    private var licenseManager      : LicenseManager!
+//    private var licenseManager      : LicenseManager!
     
 
     func hideMainWindow() {
@@ -132,7 +132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         windyData           = WindyData()
         windyManager        = WindyManager(windyData: windyData)
         privilegeManager    = PrivilegeManager()
-        licenseManager      = LicenseManager(windyData: windyData)
+//        licenseManager      = LicenseManager(windyData: windyData)
         
 
         // put the windy icon in the mac toolbar
@@ -142,7 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         statusBarButton.image!.size = NSSize ( width: 32 , height: 32 )
         statusBarButton.action      = #selector(togglePopover)
         
-        licenseManager.startHeartbeat()
+//        licenseManager.startHeartbeat()
 
 
         // open the MenuPopover when user clicks the status bar icon
@@ -154,8 +154,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         
         popover.contentViewController   = NSHostingController(
             rootView: MenuPopover(
-                windyData: self.windyData,
-                openLicenseWindowFunc: licenseManager.displayLicenseForm
+                windyData: self.windyData
+//                openLicenseWindowFunc: licenseManager.displayLicenseForm
             )
         )
         // add listener to close the rectangle preview

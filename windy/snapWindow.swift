@@ -7,6 +7,27 @@
 
 import Foundation
 import Combine
+import SwiftUI
+
+
+
+struct SnapGridMessageView: View {
+    var body: some View {
+        VStack {
+            Spacer() // Pushes content to the center vertically
+            HStack {
+                Text("Hold ESC")
+                Image(systemName: "escape")
+                Text("and release window cancel snapping")
+            }
+            .padding() // Adds some padding around the HStack
+            .background() // Example background color
+            .cornerRadius(10)
+            Spacer() // Pushes content to the center vertically
+        }
+    }
+}
+
 
 class SnapWindowManager {
     var windyData               : WindyData
@@ -25,6 +46,11 @@ class SnapWindowManager {
             backing         : .buffered,
             defer           : false
         )
+        
+
+        let hostingView = NSHostingView(rootView: SnapGridMessageView().frame(maxWidth: .infinity, maxHeight: .infinity))
+        hostingView.autoresizingMask = [.width, .height]
+        snapWindow?.contentView = hostingView
         snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
         snapWindow?.collectionBehavior   = .canJoinAllSpaces // allow snap window to be shown on all virtual desktops (spaces)
         snapWindow?.setIsVisible(false)

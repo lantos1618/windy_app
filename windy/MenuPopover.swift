@@ -36,7 +36,7 @@ struct MenuPopover: View {
     @StateObject var windyData              : WindyData
     @State var window                       : NSWindow?
     @State private var isPresentingConfirm  : Bool = false
-    var openLicenseWindowFunc               : () -> ()
+//    var openLicenseWindowFunc               : () -> ()
     
     var body: some View {
         VStack {
@@ -63,7 +63,7 @@ struct MenuPopover: View {
                 }.confirmationDialog("Are you sure you want to reset all displaySettings", isPresented: $isPresentingConfirm) {
                     Button("rest keyboard shortcuts", role: .destructive, action: resetKeyboardShortcuts)
                 }
-                Button("Change License", action: openLicenseWindowFunc)
+//                Button("Change License", action: openLicenseWindowFunc)
                 LaunchAtLogin.Toggle()
                 Button("Quit Windy") {
                     NSApplication.shared.terminate(self)

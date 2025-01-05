@@ -12,9 +12,9 @@ class WindyManager {
     var snapManager : SnapWindowManager
     var gridManager : GridManager
     
-    init(windyData: WindyData) {
-        snapManager = SnapWindowManager(windyData: windyData)
-        gridManager = GridManager(windyData: windyData)
+    init(appState: AppState) {
+        snapManager = SnapWindowManager(appState: appState)
+        gridManager = GridManager(appState: appState)
     }
     
     func registerGlobalEvents() {

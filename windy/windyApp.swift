@@ -78,10 +78,10 @@ import OSLog
 @main
 struct windyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    
     var body: some Scene {
-        WindowGroup {
-            // disabled here and in the AppDelegate
-          // if false {}
+        Settings {
+            EmptyView()
         }
     }
 }
@@ -90,112 +90,94 @@ class ResizingPopover: NSPopover {
     override var contentViewController: NSViewController? {
         didSet {
             guard let contentViewController = contentViewController else { return }
-            // Compute the new size based on the content's size
             let newSize = contentViewController.view.fittingSize
-            // Then apply this new size to the popover
             self.contentSize = newSize
         }
     }
 }
 
-
 // Application Logic
-class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-    // the status button in the apple menu
-    private var statusItem          : NSStatusItem!
-    private var statusBarButton     : NSStatusBarButton!
-    private var popover             : NSPopover!
+class AppDelegate: NSObject, NSApplicationDelegate {
+    // MARK: - Properties
+    private var statusItem: NSStatusItem!
+    private var statusBarButton: NSStatusBarButton!
+    private var popover: ResizingPopover!
     
+    // MARK: - State Management
+    private let appState = AppState()
+    private var windyManager: WindyManager!
+    private var privilegeManager: PrivilegeManager!
     
-    // windy data is here as I am using it like a state Store.
-    // Any application data that is required across the application
-    // should be stored here
-    private var windyData           : WindyData!
-    private var windyManager        : WindyManager!
-    // I have put these here as they need to exist before the Application logic, If this becomes unusable I should move it to windyManager.
-    
-    private var privilegeManager    : PrivilegeManager!
-//    private var licenseManager      : LicenseManager!
-    
-
-    func hideMainWindow() {
-        // hide the main window on launch
-        if let mainWindow = NSApplication.shared.windows.first {
-            mainWindow.close()
-        }
+    // MARK: - Lifecycle
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // Hide the dock icon
+        NSApp.setActivationPolicy(.accessory)
+        
+        setupStatusBar()
+        setupPopover()
+        setupManagers()
+        registerEvents()
+        
+        // Close any existing windows
+        NSApp.windows.forEach { $0.close() }
     }
     
-    @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
-        hideMainWindow()
-       
-        // this has to be here to init window...
-        windyData           = WindyData()
-        windyManager        = WindyManager(windyData: windyData)
-        privilegeManager    = PrivilegeManager()
-//        licenseManager      = LicenseManager(windyData: windyData)
+    // MARK: - Setup Methods
+    private func setupStatusBar() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusBarButton = statusItem.button!
         
-
-        // put the windy icon in the mac toolbar
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusBarButton             = statusItem.button!
-        statusBarButton.image       = NSImage(imageLiteralResourceName : "StatusBarIcon")
-        statusBarButton.image!.size = NSSize ( width: 32 , height: 32 )
-        statusBarButton.action      = #selector(togglePopover)
+        if let image = NSImage(named: "MenuBarIcon") {
+            image.isTemplate = true
+            statusBarButton.image = image
+        }
         
-//        licenseManager.startHeartbeat()
-
-
-        // open the MenuPopover when user clicks the status bar icon
+        statusBarButton.action = #selector(togglePopover)
+        statusBarButton.target = self
+    }
+    
+    private func setupPopover() {
         popover = ResizingPopover()
-
-//        popover                         = NSPopover()
-//        popover.contentSize             = NSSize(width: 400, height: 1000)
-//        popover.behavior                = NSPopover.Behavior.transient;
+        popover.behavior = .transient
         
-        popover.contentViewController   = NSHostingController(
-            rootView: MenuPopover(
-                windyData: self.windyData
-//                openLicenseWindowFunc: licenseManager.displayLicenseForm
-            )
+        popover.contentViewController = NSHostingController(
+            rootView: MenuPopover(appState: appState)
         )
-        // add listener to close the rectangle preview
-        NotificationCenter.default.addObserver(forName: NSPopover.willCloseNotification, object: popover, queue: OperationQueue.main) {_ in
-            self.windyData.isShown = false
+        
+        NotificationCenter.default.addObserver(
+            forName: NSPopover.willCloseNotification,
+            object: popover,
+            queue: OperationQueue.main
+        ) { [weak self] _ in
+            self?.appState.isShown = false
         }
-
-        // open a request permissions modal
-        var accessRequestModalWindow    : NSWindow
-        accessRequestModalWindow        = NSWindow(
-            contentRect : NSRect(x: 0, y: 0, width: 400, height: 380),
-            styleMask   : [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing     : .buffered,
-            defer       : false
-        )
-        accessRequestModalWindow.contentView = NSHostingView(
-            rootView: AccessRequestModal(
-                accessWindow    : accessRequestModalWindow,
-                closeCallBack   : self.windyManager.registerGlobalEvents
-            )
-        )
-        accessRequestModalWindow.center()
-        accessRequestModalWindow.isReleasedWhenClosed = false
-        accessRequestModalWindow.makeKeyAndOrderFront(nil)
-        
-
-
     }
     
-    @objc func togglePopover() {
-        guard let button = statusItem.button else {
-            return
-        }
+    private func setupManagers() {
+        privilegeManager = PrivilegeManager()
+        windyManager = WindyManager(appState: appState)
+    }
+    
+    private func registerEvents() {
+        privilegeManager.requestPrivileges()
+        windyManager.registerGlobalEvents()
+    }
+    
+    // MARK: - Actions
+    @objc private func togglePopover() {
         if popover.isShown {
-            popover.performClose(nil)
+            closePopover()
         } else {
-            // fixes popover bug not closing after focus lost
-            NSApplication.shared.activate(ignoringOtherApps: true)
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+            showPopover()
         }
     }
     
+    private func showPopover() {
+        guard let button = statusItem.button else { return }
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+    }
+    
+    private func closePopover() {
+        popover.close()
+    }
 }

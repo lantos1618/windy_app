@@ -5,7 +5,8 @@
 //  Created by Lyndon Leong on 09/01/2023.
 //
 
-//import Foundation
+import Foundation
+import AppKit
 import SwiftUI
 import LaunchAtLogin
 
@@ -60,6 +61,39 @@ struct AccessRequestModal: View {
 }
 
 class PrivilegeManager {
+    private var accessRequestModalWindow: NSWindow?
+    
+    init() {
+        setupAccessRequestWindow()
+    }
+    
+    private func setupAccessRequestWindow() {
+        accessRequestModalWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 380),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        
+        accessRequestModalWindow?.isReleasedWhenClosed = false
+    }
+    
+    func requestPrivileges() {
+        guard let window = accessRequestModalWindow else { return }
+        
+        window.contentView = NSHostingView(
+            rootView: AccessRequestModal(
+                accessWindow: window,
+                closeCallBack: { [weak self] in
+                    self?.accessRequestModalWindow?.close()
+                }
+            )
+        )
+        
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+    }
+    
     func checkPrivilege(prompt: Bool) -> Bool {
         let options     = NSDictionary(
             object: prompt ? kCFBooleanTrue! : kCFBooleanFalse!, forKey: kAXTrustedCheckOptionPrompt.takeUnretainedValue() as NSString) as CFDictionary

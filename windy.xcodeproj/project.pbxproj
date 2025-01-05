@@ -18,6 +18,8 @@
 		470C5787295F062F00B0DC3E /* windyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C5786295F062F00B0DC3E /* windyUITestsLaunchTests.swift */; };
 		470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470C57B129642E6100B0DC3E /* windyWindow.swift */; };
 		47165E2E298416C900BCB775 /* windyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47165E2D298416C900BCB775 /* windyData.swift */; };
+		47312E222D2ACB62006C7573 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47312E202D2ACB62006C7573 /* AppState.swift */; };
+		47312E232D2ACB62006C7573 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47312E212D2ACB62006C7573 /* WindowManager.swift */; };
 		4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4732C0B9297DAFA700DB1C5B /* snapWindow.swift */; };
 		473F1E8E29BCA05D000B678B /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 473F1E8D29BCA05D000B678B /* LaunchAtLogin */; };
 		47458FF72982FD60005B024B /* gridManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47458FF62982FD60005B024B /* gridManager.swift */; };
@@ -62,6 +64,8 @@
 		470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "windy-Bridging-Header.h"; sourceTree = "<group>"; };
 		470C57B129642E6100B0DC3E /* windyWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyWindow.swift; sourceTree = "<group>"; };
 		47165E2D298416C900BCB775 /* windyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyData.swift; sourceTree = "<group>"; };
+		47312E202D2ACB62006C7573 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		47312E212D2ACB62006C7573 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		4732C0B9297DAFA700DB1C5B /* snapWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = snapWindow.swift; sourceTree = "<group>"; };
 		47458FF62982FD60005B024B /* gridManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gridManager.swift; sourceTree = "<group>"; };
 		4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsConstants.swift; sourceTree = "<group>"; };
@@ -120,6 +124,8 @@
 		470C5762295F062E00B0DC3E /* windy */ = {
 			isa = PBXGroup;
 			children = (
+				47312E202D2ACB62006C7573 /* AppState.swift */,
+				47312E212D2ACB62006C7573 /* WindowManager.swift */,
 				4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */,
 				470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */,
 				4700D4382992737F00A5D8D8 /* utils.swift */,
@@ -304,6 +310,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				475590D3296C6F8300E385F5 /* privilegeManager.swift in Sources */,
+				47312E222D2ACB62006C7573 /* AppState.swift in Sources */,
+				47312E232D2ACB62006C7573 /* WindowManager.swift in Sources */,
 				12870EB62A249FD00049B804 /* LicenseManager.swift in Sources */,
 				47165E2E298416C900BCB775 /* windyData.swift in Sources */,
 				120446B829E4865D00253216 /* quickWindow.swift in Sources */,

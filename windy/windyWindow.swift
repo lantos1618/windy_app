@@ -142,14 +142,4 @@ class WindyWindow {
         }
         return try WindyWindow(app: frontApp)
     }
-    
-    func getWindowId() throws -> CGWindowID {
-        var winId   = CGWindowID(0)
-        let axErr   = _AXUIElementGetWindow(self.AXWindow, &winId)
-        
-        if axErr != .success {
-            throw WindyWindowError.AXValueError(message: "Failed to get windowID, \(axErr)")
-        }
-        return winId
-    }
 }

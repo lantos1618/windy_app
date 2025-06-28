@@ -20,7 +20,4 @@ If you want to contribute to this project, you can...
 
 ## License
 
-The project is licensed under the MIT license. You can read the full license [here](LICENSE.txt).
-
-
-This project for commercial purposes or  for training AI models without permission. 
+The project is licensed under the MIT license. You can read the full license [here](licence.txt).

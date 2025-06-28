@@ -27,23 +27,6 @@ struct GridView: View {
         let rects       = windyData.rectsDict[screen.getIdString()] ?? []
         
         let path        = Path {
-//            path in
-//            var rects = [NSRect]()
-//
-//            for screen in NSScreen.screens {
-//                var frame = screen.getQuartsSafeFrame()
-//
-//                frame.origin.x = frame.origin.x / 3
-//                frame.origin.y = frame.origin.y / 3
-//                frame.size.width = frame.size.width / 3
-//                frame.size.height  = frame.size.height / 3
-//                rects.append(frame)
-//            }
-//            for rect in rects {
-//                path.addRect(rect)
-//            }
-        
-        
             path in
 
             for col in 0..<rects.count {
@@ -167,11 +150,9 @@ class GridManager: ObservableObject {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.x -= CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
                     i += 100
                 }
@@ -183,11 +164,9 @@ class GridManager: ObservableObject {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.x += CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
                     i += 100
                 }
@@ -199,11 +178,9 @@ class GridManager: ObservableObject {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.y -= CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
                     i += 100
                 }
@@ -215,11 +192,9 @@ class GridManager: ObservableObject {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.y += CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
                     i += 100
                 }

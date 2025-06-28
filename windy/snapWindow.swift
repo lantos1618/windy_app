@@ -9,8 +9,8 @@ import Foundation
 import Combine
 import SwiftUI
 
-
-
+// MARK: - Snap Grid Message View
+/// Displays instructions for canceling window snapping
 struct SnapGridMessageView: View {
     var body: some View {
         VStack {
@@ -28,7 +28,8 @@ struct SnapGridMessageView: View {
     }
 }
 
-
+// MARK: - Snap Window Manager
+/// Manages window snapping functionality using mouse drag events
 class SnapWindowManager {
     var windyData               : WindyData
     var snapWindow              : NSWindow?
@@ -60,10 +61,11 @@ class SnapWindowManager {
         }
     }
     
+    /// Creates or returns the snap window for visual feedback
     func createSnapWindow() -> Bool {
         if (snapWindow == nil) {
             snapWindow      = NSWindow(
-                contentRect     : NSRect(x: 0, y: 0, width: 500 , height: 500),
+                contentRect     : NSRect(x: 0, y: 0, width: 500, height: 500),
                 styleMask       : [.fullSizeContentView],
                 backing         : .buffered,
                 defer           : false
@@ -76,14 +78,21 @@ class SnapWindowManager {
         return true
     }
     
+    /// Calculates the snap rectangle based on mouse position and screen edges
+    /// Uses collision detection to determine which screen edge the mouse is near
     func calculateSnapRect(mousePos: NSPoint) throws -> NSRect? {
         guard let screen = mousePos.getScreen() else {
             throw WindyWindowError.NSError(message: "could not get screen at point")
         }
-        // went out side of window don't draw anything
+        
+        // Check if mouse is inside screen bounds (with 1px tolerance)
         let inSideScreen = NSPointInRect(mousePos, screen.frame.insetBy(dx: -1, dy: -1))
+        
+        // Check if mouse is in the "gutter" area near screen edges (100px from edges)
+        // This determines which edge the window should snap to
         let insideGutter = mousePos.collisionsInside(rect: (screen.frame.insetBy(dx: 100, dy: 100)))
         
+        // Hide snap window if mouse is outside screen or not in gutter area
         if !inSideScreen  {
             snapWindow?.setIsVisible(false)
             return nil
@@ -97,16 +106,20 @@ class SnapWindowManager {
             return nil
         }
         
+        // Calculate snap rectangle based on which screen edge is detected
         var t_point     = screen.frame.origin
         var t_size      = screen.frame.size
-        let columns     = 2.0
-        let rows        = 2.0
+        let columns     = 2.0  // MAGIC NUMBER: Fixed 2x2 grid for snapping
+        let rows        = 2.0  // MAGIC NUMBER: Fixed 2x2 grid for snapping
+        
+        // TODO: Use getQuartsSafeFrame() for more accurate coordinate system conversion
+        // Currently using screen.frame which may not account for system UI elements
         let screenFrame = screen.frame
 //      let screenFrame = screen.getQuartsSafeFrame()
         let minWidth    = screenFrame.width / columns
         let minHeight   = screenFrame.height / rows
         
-        
+        // Determine snap position based on which screen edge the mouse is near
         if insideGutter.contains(.Left) {
             t_size.width    = minWidth
             t_point.x       = screenFrame.minX
@@ -130,6 +143,7 @@ class SnapWindowManager {
         return tFrame
     }
     
+    /// Updates the snap window position based on current mouse position
     func snapMouse(mousePos: NSPoint) throws {
         if (!createSnapWindow()) {
             debugPrint("error: failed to get/create snap window")
@@ -142,6 +156,7 @@ class SnapWindowManager {
         return
     }
     
+    /// Displays the snap window at the specified frame
     func drawSnapWindow(frame: NSRect) {
         if (snapWindow == nil) {
             debugPrint("error: no snapWindow")
@@ -152,6 +167,9 @@ class SnapWindowManager {
         snapWindow?.orderFrontRegardless()
     }
     
+    // MARK: - Mouse Event Handlers
+    
+    /// Handles mouse down events to start window tracking
     func globalLeftMouseDownHandler(event: NSEvent)  {
         do {
             currentMovingWindow                 = try WindyWindow.currentWindow()
@@ -165,6 +183,7 @@ class SnapWindowManager {
         }
     }
     
+    /// Handles mouse drag events to update snap window position
     func globalLeftMouseDragHandler(event: NSEvent)  {
         do {
             guard let tempCurrentMovingWindow = self.currentMovingWindow else {
@@ -172,10 +191,13 @@ class SnapWindowManager {
                 return
             }
             let t_windyWindowPos = try tempCurrentMovingWindow.getTopLeftPoint()
-            // check to see if a window is being moved if not cancel
+            
+            // Check if window is actually being moved (position changed from initial)
             if (t_windyWindowPos != initialWindyWindowPos) {
                 windowIsMoving = true
             }
+            
+            // Update snap window if window is being moved
             if (windowIsMoving) {
                 try self.snapMouse(mousePos: NSEvent.mouseLocation)
             }
@@ -184,6 +206,7 @@ class SnapWindowManager {
         }
     }
     
+    /// Handles mouse up events to finalize window snapping
     func globalLeftMouseUpHandler(event: NSEvent)  {
         if (!createSnapWindow()) {
             debugPrint("error: failed to get/create snap window")
@@ -195,6 +218,8 @@ class SnapWindowManager {
                     print ("error: Failed to get the current moving window")
                     return
                 }
+                
+                // Move the window to the snap position using coordinate system conversion
                 try tempCurrentMovingWindow.setFrameBottomLeft(frame:  self.snapWindow!.frame)
                 self.snapWindow?.setIsVisible(false)
             }
@@ -202,27 +227,32 @@ class SnapWindowManager {
         } catch {
             debugPrint("error \(error)")
         }
-        
-        
     }
+    
+    /// Handles ESC key down to cancel snapping
     func globalEscKeyDownHandler(event: NSEvent)  {
         if (!createSnapWindow()) {
             debugPrint("error: failed to get/create snap window")
             return
         }
+        // MAGIC NUMBER: ESC key code is 53
         if (event.keyCode != 53) {
             return
         }
         self.snapWindow?.setIsVisible(false)
         shouldSnap = false
     }
+    
+    /// Handles ESC key up to re-enable snapping
     func globalEscKeyUpHandler(event: NSEvent)  {
+        // MAGIC NUMBER: ESC key code is 53
         if (event.keyCode != 53) {
             return
         }
         shouldSnap = true
     }
     
+    /// Handles mouse movement to hide snap window when not dragging
     func globalMouseMoved(event: NSEvent) {
         if(windowIsMoving) {
             return
@@ -230,14 +260,19 @@ class SnapWindowManager {
         self.snapWindow?.setIsVisible(false)
     }
     
+    // MARK: - Event Registration
+    /// Registers global mouse and keyboard event handlers for snapping functionality
     func registerEvents() {
-        // snapping window
+        // Register mouse event handlers for window dragging and snapping
         NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown,     handler: self.globalLeftMouseDownHandler)
         NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged,  handler: self.globalLeftMouseDragHandler)
         NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp,       handler: self.globalLeftMouseUpHandler)
+        
+        // Register keyboard event handlers for ESC key (snap cancellation)
         NSEvent.addGlobalMonitorForEvents(matching: .keyDown,           handler: self.globalEscKeyDownHandler)
         NSEvent.addGlobalMonitorForEvents(matching: .keyUp,             handler: self.globalEscKeyUpHandler)
+        
+        // Register mouse movement handler to hide snap window when not dragging
         NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved,        handler: self.globalMouseMoved)
-
     }
 }

@@ -3,6 +3,8 @@
 ## Objective
 Implement comprehensive automated testing starting with unit tests for pure functions.
 
+## Status: ⏩ IN PROGRESS
+
 ## Current Status
 - [ ] Set up testing framework
 - [ ] Write unit tests for utility functions:
@@ -16,7 +18,7 @@ Implement comprehensive automated testing starting with unit tests for pure func
 - [ ] Set up CI/CD pipeline for testing
 
 ## Files to Create/Modify
-- `windyTests/` directory (already exists)
+- `windyTests/` directory (already exists) ⏩ **NEXT UP**
 - Test files for each major component
 - Mock data for testing
 
@@ -26,7 +28,16 @@ Implement comprehensive automated testing starting with unit tests for pure func
 3. **Integration**: Full workflow testing
 4. **Automation**: CI/CD pipeline
 
+## Next Action
+- [ ] **Audit existing test files** and create comprehensive test suite:
+  - [ ] Review `windyTests/windyTests.swift`
+  - [ ] Create unit tests for utility functions in `utils.swift`
+  - [ ] Create unit tests for coordinate system conversions
+  - [ ] Create unit tests for window management logic
+  - [ ] Set up test data and mocks
+
 ## Notes
-- Focus on pure functions initially
-- Use realistic test data
-- Ensure good test coverage 
+- Focus on pure functions first (easier to test)
+- Use mocks for Accessibility framework calls
+- Test coordinate system conversions thoroughly
+- Ensure good test coverage for critical paths 

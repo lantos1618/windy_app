@@ -305,6 +305,8 @@
 				4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */,
 				4700D4392992737F00A5D8D8 /* utils.swift in Sources */,
 				470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */,
+				47165E2E298416C900BCB775 /* windyData.swift in Sources */,
+				475590D1296C6EF200E385F5 /* windyManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,6 +542,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 3QX8AT4S7W;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MARKETING_VERSION = 1.0;
@@ -558,6 +561,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 3QX8AT4S7W;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MARKETING_VERSION = 1.0;

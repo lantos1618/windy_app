@@ -45,6 +45,7 @@ class ResizingPopover: NSPopover {
 }
 
 // Application Logic
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     // the status button in the apple menu
     private var statusItem          : NSStatusItem!
@@ -67,7 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
     }
     
-    @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_ notification: Notification) {
         hideMainWindow()
        
         // this has to be here to init window...
@@ -91,8 +92,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             )
         )
         // add listener to close the rectangle preview
-        NotificationCenter.default.addObserver(forName: NSPopover.willCloseNotification, object: popover, queue: OperationQueue.main) {_ in
-            self.windyData.isShown = false
+        NotificationCenter.default.addObserver(forName: NSPopover.willCloseNotification, object: popover, queue: OperationQueue.main) { [weak self] _ in
+            Task { @MainActor in
+                self?.windyData.isShown = false
+            }
         }
 
         // open a request permissions modal

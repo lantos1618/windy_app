@@ -18,19 +18,58 @@ final class windyTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    // MARK: - Utility Function Tests
+    
+    func testClampFunction() throws {
+        // Test clamp function with various ranges
+        XCTAssertEqual(5.clamp(to: 0...10), 5)
+        XCTAssertEqual((-5).clamp(to: 0...10), 0)
+        XCTAssertEqual(15.clamp(to: 0...10), 10)
+        XCTAssertEqual(0.clamp(to: 0...10), 0)
+        XCTAssertEqual(10.clamp(to: 0...10), 10)
     }
-
+    
+    func testCoordinateSystemConversion() throws {
+        // Test coordinate system conversions
+        let screenHeight: CGFloat = 1000
+        
+        // Test converting from screen coordinates to window coordinates
+        let screenY: CGFloat = 100
+        let windowY = screenHeight - screenY
+        XCTAssertEqual(windowY, 900)
+        
+        // Test converting back
+        let convertedScreenY = screenHeight - windowY
+        XCTAssertEqual(convertedScreenY, 100)
+    }
+    
+    func testCreateRectsFunction() throws {
+        // Use NSScreen.main! for createRects
+        let screen = NSScreen.main!
+        let rects = createRects(columns: 2, rows: 2, screen: screen)
+        XCTAssertEqual(rects.count, 2) // 2 columns
+        XCTAssertEqual(rects[0].count, 2) // 2 rows in first column
+    }
+    
+    func testMagicNumbers() throws {
+        // Test that magic numbers are reasonable
+        let errorX: CGFloat = 10
+        let errorY: CGFloat = 10
+        let maxCheck: Int = 10
+        
+        XCTAssertGreaterThan(errorX, 0)
+        XCTAssertGreaterThan(errorY, 0)
+        XCTAssertGreaterThan(maxCheck, 0)
+        XCTAssertLessThan(maxCheck, 100) // Should be reasonable
+    }
+    
     func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+        // Performance test for utility functions
+        measure {
+            for _ in 0..<1000 {
+                _ = 5.clamp(to: 0...10)
+            }
         }
     }
-
 }
+

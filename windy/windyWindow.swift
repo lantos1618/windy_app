@@ -112,21 +112,24 @@ class WindyWindow {
     }
     
     /// Gets the screen that contains this window
-    /// Currently returns main screen - TODO: Implement proper screen detection
+    /// Determines the correct screen based on window position
     func getScreen() throws -> NSScreen {
-        // TODO: Implement proper screen detection based on window position
-        // Currently hardcoded to main screen for simplicity
-        // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
-        // Returns the screen object containing the window with the keyboard focus.
-        let screen = NSScreen.main!
+        let rect = try self.getFrame()
+        let windowCenter = NSPoint(x: rect.midX, y: rect.midY)
         
-        // TODO: Uncomment and fix this screen detection logic
-        // This would provide more accurate screen detection based on window position
-//        let rect = try self.getFrame()
-//        guard let screen = NSPoint(x: rect.midX, y: rect.midX).getScreen() else {
-//            throw WindyWindowError.NSError(message: "failed to get the main screen")
-//        }
-        return screen
+        // Find the screen that contains the window's center point
+        for screen in NSScreen.screens {
+            if screen.frame.contains(windowCenter) {
+                return screen
+            }
+        }
+        
+        // Fallback to main screen if no screen contains the window
+        // This can happen if the window is positioned outside all screens
+        guard let mainScreen = NSScreen.main else {
+            throw WindyWindowError.NSError(message: "Failed to get any screen")
+        }
+        return mainScreen
     }
     
     // MARK: - Window Manipulation

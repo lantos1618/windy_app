@@ -15,7 +15,10 @@ This folder contains organized todo lists for improving the Windy macOS window m
    - [Window Manipulation](todo-window-manipulation.md) - Improve robustness ✅ **AUDIT COMPLETED**
    - [Documentation](todo-documentation.md) - Better user/developer experience ✅ **COMPLETED**
 
-4. **Ongoing** ⏩ **(NEXT UP)**
+4. **High Priority - Architecture** 🚀 **(NEXT UP)**
+   - [Architectural Refactor](todo-architectural-refactor.md) - Foundation for long-term maintainability 🚀 **READY TO START**
+
+5. **Ongoing** ⏩
    - [Automated Testing](todo-testing.md) - Code quality and reliability ⏩ **IN PROGRESS**
 
 ## Quick Start
@@ -30,10 +33,11 @@ This folder contains organized todo lists for improving the Windy macOS window m
 - ✅ **Cleaned up all commented-out code**
 - ✅ **Completed comprehensive window manipulation audit** (documented all magic numbers and coordinate conversions)
 - ✅ **Created professional documentation** (README, CONTRIBUTING, CHANGELOG)
+- ✅ **Created comprehensive architectural refactoring plan** (20-25 hour roadmap to eliminate complexity)
 
 ## Next Steps
-1. **Automated Testing** - Implement comprehensive test suite ⏩ **IN PROGRESS**
-2. **Window Manipulation** - Implement improvements based on audit findings
+1. **Architectural Refactor** - Split state management, eliminate coordinate system hell, remove magic numbers 🚀 **READY TO START**
+2. **Automated Testing** - Implement comprehensive test suite ⏩ **IN PROGRESS**
 3. **App Store Preparation** - Final testing and submission
 
 ## Notes
@@ -42,4 +46,5 @@ This folder contains organized todo lists for improving the Windy macOS window m
 - ✅ Licensing decision affects commercial viability
 - ✅ **App is now App Store compliant and legally sound!**
 - ✅ **All coordinate system conversions and magic numbers are now documented!**
-- ✅ **Professional documentation is complete and ready for open source!** 
+- ✅ **Professional documentation is complete and ready for open source!**
+- 🚀 **Architectural refactor will eliminate the core complexity you identified!** 

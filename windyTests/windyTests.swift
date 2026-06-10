@@ -349,8 +349,6 @@ final class windyTests: XCTestCase {
         let windyData = WindyData()
         
         // Test property changes trigger updates
-        let initialSettingsCount = windyData.displaySettings.count
-        
         // Change active setting screen
         windyData.activeSettingScreen = "test_screen"
         XCTAssertEqual(windyData.activeSettingScreen, "test_screen")

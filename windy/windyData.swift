@@ -12,38 +12,20 @@ import ServiceManagement
 
 
 func generateDisplaySettingsFromActiveScreens() -> [String: NSPoint] {
-    var result: [String: NSPoint] = [:]
-    for screen in NSScreen.screens {
-        let screenName = screen.getIdString()
-        if !result.keys.contains(screenName) {
-            result[screenName] = NSPoint(x: 2.0, y: 2.0)
-        }
-    }
-    return result
+    WindySettingsStore.defaultDisplaySettings()
 }
 
 func mergeDisplaySettings(left: [String: NSPoint] = [:] , right: [String: NSPoint] = [:]) -> [String: NSPoint] {
-    var result: [String: NSPoint] = left
-    for (key, val) in right {
-        if !result.keys.contains(key) {
-            result[key] = val
-        }
-    }
-    return result
+    WindySettingsStore.mergeDisplaySettings(existing: left, defaults: right)
 }
 
 func storeDisplaySettings(settings: [String: NSPoint]) {
-    do {
-        try UserDefaults.standard.set(dict: settings , forKey: "displaySettings")
-    } catch {
-        debugPrint("failed to set default displaySettings")
-    }
+    WindySettingsStore.saveDisplaySettings(settings)
 }
 
 
 func createDefaultAccentColor() {
-    let defaultAccentColour = Color(red: 0.4, green: 0.4, blue: 0.4, opacity: 0.2)
-    UserDefaults.standard.set(defaultAccentColour, forKey: "accentColour")
+    WindySettingsStore.saveAccentColour(WindySettingsStore.defaultAccentColour)
 }
 
 
@@ -73,7 +55,7 @@ class WindyData: ObservableObject {
                     screen  : NSScreen.fromIdString(str: key) ?? NSScreen.main!
                 )
             }
-            storeDisplaySettings(settings: displaySettings)
+            WindySettingsStore.saveDisplaySettings(displaySettings)
 
         }
     }
@@ -84,31 +66,27 @@ class WindyData: ObservableObject {
             opacity : 0.2
     ) {
         didSet {
-            UserDefaults.standard.set(self.accentColour, forKey: "accentColour")
+            WindySettingsStore.saveAccentColour(self.accentColour)
         }
     }
     
     init() {
         // create the default settings
-        if UserDefaults.standard.bool(forKey: "defaultsSet") == false {
-            createDefaultAccentColor()
-            createDefaultDisplaySettings()
-            UserDefaults.standard.set(true, forKey: "defaultsSet")
-        }
+        WindySettingsStore.ensureDefaultsExist()
         activeScreens = NSScreen.screens.map( {screen in screen.getIdString()})
         
         // load the default display settings into the windyData
         do {
-            let oldDisplaySettings      = try UserDefaults.standard.getDictPoints(forKey: "displaySettings")
-            let newDisplaySettings      = generateDisplaySettingsFromActiveScreens()
-            let mergedDisplaySettings   = mergeDisplaySettings(left: oldDisplaySettings, right: newDisplaySettings)
+            let oldDisplaySettings      = try WindySettingsStore.loadDisplaySettings()
+            let newDisplaySettings      = WindySettingsStore.defaultDisplaySettings()
+            let mergedDisplaySettings   = WindySettingsStore.mergeDisplaySettings(existing: oldDisplaySettings, defaults: newDisplaySettings)
             self.displaySettings = mergedDisplaySettings
         } catch {
             debugPrint("failed to get the displaySettings")
         }
 
         // load the default access colour into the windyData
-        self.accentColour       = UserDefaults.standard.color(forKey: "accentColour")
+        self.accentColour       = WindySettingsStore.loadAccentColour()
         
         // add listener to update the defaults when a new monitor is added
         NotificationCenter.default.addObserver(

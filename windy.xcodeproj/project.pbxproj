@@ -24,6 +24,9 @@
 		475590D1296C6EF200E385F5 /* windyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D0296C6EF200E385F5 /* windyManager.swift */; };
 		475590D3296C6F8300E385F5 /* privilegeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475590D2296C6F8300E385F5 /* privilegeManager.swift */; };
 		47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DEEBD5297456D300123E66 /* MenuPopover.swift */; };
+		B10000000000000000000001 /* WindowLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* WindowLayoutEngine.swift */; };
+		B10000000000000000000002 /* ScreenNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* ScreenNavigator.swift */; };
+		B10000000000000000000003 /* WindySettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000013 /* WindySettingsStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +67,9 @@
 		475590D0296C6EF200E385F5 /* windyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = windyManager.swift; sourceTree = "<group>"; };
 		475590D2296C6F8300E385F5 /* privilegeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = privilegeManager.swift; sourceTree = "<group>"; };
 		47DEEBD5297456D300123E66 /* MenuPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuPopover.swift; sourceTree = "<group>"; };
+		B10000000000000000000011 /* WindowLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayoutEngine.swift; sourceTree = "<group>"; };
+		B10000000000000000000012 /* ScreenNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenNavigator.swift; sourceTree = "<group>"; };
+		B10000000000000000000013 /* WindySettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindySettingsStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +125,9 @@
 				4745BC1829B898A800FFBCD0 /* KeyboardShortcutsConstants.swift */,
 				470C57B0296199D000B0DC3E /* windy-Bridging-Header.h */,
 				4700D4382992737F00A5D8D8 /* utils.swift */,
+				B10000000000000000000011 /* WindowLayoutEngine.swift */,
+				B10000000000000000000012 /* ScreenNavigator.swift */,
+				B10000000000000000000013 /* WindySettingsStore.swift */,
 				470C5763295F062E00B0DC3E /* windyApp.swift */,
 				47165E2D298416C900BCB775 /* windyData.swift */,
 				475590D0296C6EF200E385F5 /* windyManager.swift */,
@@ -301,8 +310,11 @@
 				470C5764295F062E00B0DC3E /* windyApp.swift in Sources */,
 				47DEEBD6297456D300123E66 /* MenuPopover.swift in Sources */,
 				4745BC1929B898A800FFBCD0 /* KeyboardShortcutsConstants.swift in Sources */,
+				B10000000000000000000001 /* WindowLayoutEngine.swift in Sources */,
 				47458FF72982FD60005B024B /* gridManager.swift in Sources */,
+				B10000000000000000000002 /* ScreenNavigator.swift in Sources */,
 				4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */,
+				B10000000000000000000003 /* WindySettingsStore.swift in Sources */,
 				4700D4392992737F00A5D8D8 /* utils.swift in Sources */,
 				470C57B229642E6100B0DC3E /* windyWindow.swift in Sources */,
 				47165E2E298416C900BCB775 /* windyData.swift in Sources */,

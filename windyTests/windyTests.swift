@@ -75,18 +75,58 @@ final class windyTests: XCTestCase {
     func testGridResizeLengthsAlwaysIncludeHalf() throws {
         let totalLength: CGFloat = 900
 
-        XCTAssertEqual(gridResizeLengths(totalLength: totalLength, divisions: 3), [300, 450, 600, 900])
-        XCTAssertEqual(gridResizeLengths(totalLength: totalLength, divisions: 5), [180, 360, 450, 540, 720, 900])
-        XCTAssertEqual(gridResizeLengths(totalLength: totalLength, divisions: 2), [450, 900])
+        XCTAssertEqual(WindowLayoutEngine.resizeLengths(totalLength: totalLength, divisions: 3), [300, 450, 600, 900])
+        XCTAssertEqual(WindowLayoutEngine.resizeLengths(totalLength: totalLength, divisions: 5), [180, 360, 450, 540, 720, 900])
+        XCTAssertEqual(WindowLayoutEngine.resizeLengths(totalLength: totalLength, divisions: 2), [450, 900])
     }
 
     func testNextGridResizeLengthCyclesThroughHalfForOddDivisions() throws {
         let totalLength: CGFloat = 900
 
-        XCTAssertEqual(nextGridResizeLength(currentLength: 900, totalLength: totalLength, divisions: 3), 600)
-        XCTAssertEqual(nextGridResizeLength(currentLength: 600, totalLength: totalLength, divisions: 3), 450)
-        XCTAssertEqual(nextGridResizeLength(currentLength: 450, totalLength: totalLength, divisions: 3), 300)
-        XCTAssertEqual(nextGridResizeLength(currentLength: 300, totalLength: totalLength, divisions: 3), 900)
+        XCTAssertEqual(WindowLayoutEngine.nextResizeLength(currentLength: 900, totalLength: totalLength, divisions: 3), 600)
+        XCTAssertEqual(WindowLayoutEngine.nextResizeLength(currentLength: 600, totalLength: totalLength, divisions: 3), 450)
+        XCTAssertEqual(WindowLayoutEngine.nextResizeLength(currentLength: 450, totalLength: totalLength, divisions: 3), 300)
+        XCTAssertEqual(WindowLayoutEngine.nextResizeLength(currentLength: 300, totalLength: totalLength, divisions: 3), 900)
+    }
+
+    func testWindowLayoutEngineMovesByGridCell() throws {
+        let screenFrame = NSRect(x: 0, y: 0, width: 900, height: 600)
+        let windowFrame = NSRect(x: 300, y: 200, width: 300, height: 200)
+        let settings = GridLayoutSettings(columns: 3, rows: 3)
+
+        XCTAssertEqual(
+            WindowLayoutEngine.movedFrame(windowFrame: windowFrame, screenFrame: screenFrame, settings: settings, direction: .Left),
+            NSRect(x: 0, y: 200, width: 300, height: 200)
+        )
+        XCTAssertEqual(
+            WindowLayoutEngine.movedFrame(windowFrame: windowFrame, screenFrame: screenFrame, settings: settings, direction: .Down),
+            NSRect(x: 300, y: 400, width: 300, height: 200)
+        )
+    }
+
+    func testWindowLayoutEngineResizesTowardHalfForOddGrid() throws {
+        let screenFrame = NSRect(x: 0, y: 0, width: 900, height: 600)
+        let windowFrame = NSRect(x: 300, y: 0, width: 600, height: 600)
+        let settings = GridLayoutSettings(columns: 3, rows: 2)
+
+        XCTAssertEqual(
+            WindowLayoutEngine.resizedFrame(windowFrame: windowFrame, screenFrame: screenFrame, settings: settings, direction: .Right),
+            NSRect(x: 450, y: 0, width: 450, height: 600)
+        )
+    }
+
+    func testScreenNavigatorChoosesNearestScreenInDirection() throws {
+        let current = NSRect(x: 0, y: 0, width: 100, height: 100)
+        let candidates = [
+            ScreenCandidate(id: "far-right", frame: NSRect(x: 250, y: 0, width: 100, height: 100)),
+            ScreenCandidate(id: "near-right", frame: NSRect(x: 120, y: 20, width: 100, height: 100)),
+            ScreenCandidate(id: "left", frame: NSRect(x: -120, y: 0, width: 100, height: 100))
+        ]
+
+        XCTAssertEqual(
+            ScreenNavigator.nextFrame(from: current, candidates: candidates, direction: .Right)?.id,
+            "near-right"
+        )
     }
     
     func testMagicNumbers() throws {

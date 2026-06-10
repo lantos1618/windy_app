@@ -71,6 +71,23 @@ final class windyTests: XCTestCase {
         let zeroRects = createRects(columns: 0, rows: 0, screen: screen)
         XCTAssertEqual(zeroRects.count, 0)
     }
+
+    func testGridResizeLengthsAlwaysIncludeHalf() throws {
+        let totalLength: CGFloat = 900
+
+        XCTAssertEqual(gridResizeLengths(totalLength: totalLength, divisions: 3), [300, 450, 600, 900])
+        XCTAssertEqual(gridResizeLengths(totalLength: totalLength, divisions: 5), [180, 360, 450, 540, 720, 900])
+        XCTAssertEqual(gridResizeLengths(totalLength: totalLength, divisions: 2), [450, 900])
+    }
+
+    func testNextGridResizeLengthCyclesThroughHalfForOddDivisions() throws {
+        let totalLength: CGFloat = 900
+
+        XCTAssertEqual(nextGridResizeLength(currentLength: 900, totalLength: totalLength, divisions: 3), 600)
+        XCTAssertEqual(nextGridResizeLength(currentLength: 600, totalLength: totalLength, divisions: 3), 450)
+        XCTAssertEqual(nextGridResizeLength(currentLength: 450, totalLength: totalLength, divisions: 3), 300)
+        XCTAssertEqual(nextGridResizeLength(currentLength: 300, totalLength: totalLength, divisions: 3), 900)
+    }
     
     func testMagicNumbers() throws {
         // Test that magic numbers are reasonable
@@ -448,4 +465,3 @@ final class windyTests: XCTestCase {
         }
     }
 }
-

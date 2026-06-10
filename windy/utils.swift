@@ -276,6 +276,10 @@ extension NSScreen {
 /// @param screen: The screen to create the grid for
 /// @return: 2D array of NSRect representing grid cells
 func createRects(columns: Double, rows: Double, screen: NSScreen) -> [[NSRect]] {
+    guard columns > 0, rows > 0 else {
+        return []
+    }
+
     var rects       : [[NSRect]] = []
     let minWidth    = (screen.frame.width / CGFloat(columns))
     let minHeight   = (screen.frame.height / CGFloat(rows))

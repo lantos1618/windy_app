@@ -10,14 +10,9 @@ import SwiftUI
 import Combine
 import KeyboardShortcuts
 
-
-
-struct ScreensManager {
-    
-}
-
+// MARK: - Grid Visualization
 struct GridView: View {
-    // this needs to be redrawn every time
+    // This needs to be redrawn every time
     // activeDisplayWindow is Changed
     // display rows/cols are updated
     @ObservedObject var windyData: WindyData;
@@ -27,23 +22,6 @@ struct GridView: View {
         let rects       = windyData.rectsDict[screen.getIdString()] ?? []
         
         let path        = Path {
-//            path in
-//            var rects = [NSRect]()
-//
-//            for screen in NSScreen.screens {
-//                var frame = screen.getQuartsSafeFrame()
-//
-//                frame.origin.x = frame.origin.x / 3
-//                frame.origin.y = frame.origin.y / 3
-//                frame.size.width = frame.size.width / 3
-//                frame.size.height  = frame.size.height / 3
-//                rects.append(frame)
-//            }
-//            for rect in rects {
-//                path.addRect(rect)
-//            }
-        
-        
             path in
 
             for col in 0..<rects.count {
@@ -59,8 +37,45 @@ struct GridView: View {
     }
 }
 
+func gridResizeLengths(totalLength: CGFloat, divisions: CGFloat) -> [CGFloat] {
+    guard totalLength.isFinite, totalLength > 0, divisions.isFinite, divisions >= 1 else {
+        return []
+    }
 
-// this should be split into its own data class
+    let divisionCount = max(1, Int(divisions.rounded()))
+    let halfLength = totalLength / 2
+    let tolerance = max(1.0, totalLength * 0.001)
+    var lengths = (1...divisionCount).map { index in
+        totalLength * CGFloat(index) / CGFloat(divisionCount)
+    }
+
+    if !lengths.contains(where: { abs($0 - halfLength) <= tolerance }) {
+        lengths.append(halfLength)
+    }
+
+    return lengths.sorted()
+}
+
+func nextGridResizeLength(currentLength: CGFloat, totalLength: CGFloat, divisions: CGFloat) -> CGFloat {
+    let lengths = gridResizeLengths(totalLength: totalLength, divisions: divisions)
+    guard let smallest = lengths.first, let largest = lengths.last else {
+        return currentLength
+    }
+
+    let tolerance = max(1.0, totalLength * 0.01)
+    if currentLength <= smallest + tolerance {
+        return largest
+    }
+
+    for length in lengths.reversed() where length < currentLength - tolerance {
+        return length
+    }
+
+    return largest
+}
+
+// MARK: - Grid Manager
+// This should be split into its own data class
 class GridManager: ObservableObject {
     var windows                 : [String: NSWindow] = [:]
     var gridViews                : [String: GridView] = [:]
@@ -69,10 +84,10 @@ class GridManager: ObservableObject {
     var accentColorListener     : AnyCancellable?
     var activeScreenListener    : AnyCancellable?
    
-    
     init(windyData: WindyData) {
         self.windyData = windyData
         
+        // Initialize grid windows for each screen
         for screen in NSScreen.screens {
             windows[screen.getIdString()] = NSWindow(
                 contentRect : NSScreen.main!.frame,
@@ -88,35 +103,40 @@ class GridManager: ObservableObject {
             windows[screen.getIdString()]?.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
         }
             
-        
+        // Listen for accent color changes
         accentColorListener         = windyData.$accentColour.sink { accentColor in
             for key in self.windows.keys {
                 self.windows[key]?.backgroundColor = NSColor(accentColor)
             }
         }
+        
+        // Listen for grid visibility changes
         isShownListener             = windyData.$isShown.sink { isShown in
-            print("windows", self.windows.keys)
             for key in self.windows.keys {
                 let screen = NSScreen.fromIdString(str: key) ?? NSScreen.main!
                 self.windows[key]?.setIsVisible(isShown)
                 self.windows[key]?.setFrame(screen.frame, display: true)
             }
         }
+        
+        // Listen for active screen changes
         activeScreenListener        = windyData.$activeSettingScreen.sink { screenId in
             for key in self.windows.keys {
                 self.windows[key]?.setFrame((NSScreen.fromIdString(str: key) ?? NSScreen.main!).frame, display: true)
-
             }
         }
     }
 
-    
+    // MARK: - Window Movement
+    /// Moves a window by one grid cell in the specified direction
+    /// Uses coordinate system conversions from getQuartsSafeFrame()
     func move(window: WindyWindow, direction: Direction) throws {
         do {
-            debugPrint("moving: ", direction)
             let screen      = try window.getScreen()
             var point       = try window.getTopLeftPoint()
             let windowFrame = try window.getFrame()
+            
+            // Convert screen coordinates to Quartz coordinate system for accurate positioning
             let screenFrame = screen.getQuartsSafeFrame()
             
             let settings    = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
@@ -125,6 +145,7 @@ class GridManager: ObservableObject {
             let minWidth    = round(screenFrame.width / columns)
             let minHeight   = round(screenFrame.height / rows)
             
+            // Move window by one grid cell in the specified direction
             switch direction {
             case .Left:
                 point.x -= minWidth
@@ -136,6 +157,7 @@ class GridManager: ObservableObject {
                 point.y += minHeight
             }
             
+            // Clamp window position to screen bounds, accounting for window size
             point.x = round(point.x.clamp(to: screenFrame.minX...(screenFrame.maxX-windowFrame.width)))
             point.y = round(point.y.clamp(to: screenFrame.minY...(screenFrame.maxY-windowFrame.height)))
             
@@ -147,162 +169,148 @@ class GridManager: ObservableObject {
         }
     }
     
+    // MARK: - Cross-Screen Window Movement
+    /// Moves a window to the next screen in the specified direction
+    /// Uses raycasting-like algorithm to find the next screen
     func moveWindowNextScreen(direction: Direction) throws {
-        // this is messy but should be fine
+        // This is messy but should be fine
         let window              = try WindyWindow.currentWindow()
         let currentScreen       = try window.getScreen()
         let screens             = NSScreen.screens
         let tScreens            = screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()})
         let tCurrQPoint         = currentScreen.getQuartsSafeFrame().centerPoint()
+        
+        // MAGIC NUMBER: Maximum distance to check for next screen
+        // This is a workaround for not having proper screen adjacency detection
+        // TODO: Replace with proper screen adjacency detection
         let max_check           = 10_000
         
-        // calculate the next screen
-        debugPrint("moving window to next screen", direction)
         switch direction {
             case .Left:
             // I need a raycast but I'll just cheat it...
             for screen in tScreens {
-                var i = 10;
+                var i = 10; // MAGIC NUMBER: Starting offset for raycast
                 while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.x -= CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
-                    i += 100
+                    i += 100 // MAGIC NUMBER: Raycast step size
                 }
             }
             case .Right:
             for screen in screens.filter({ screen in screen.getIdString() != currentScreen.getIdString()}) {
-                var i = 10;
+                var i = 10; // MAGIC NUMBER: Starting offset for raycast
                 while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.x += CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
-                    i += 100
+                    i += 100 // MAGIC NUMBER: Raycast step size
                 }
             }
             case .Up:
             for screen in tScreens {
-                var i = 10;
+                var i = 10; // MAGIC NUMBER: Starting offset for raycast
                 while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.y -= CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
-                    i += 100
+                    i += 100 // MAGIC NUMBER: Raycast step size
                 }
             }
             case .Down:
             for screen in tScreens {
-                var i = 10;
+                var i = 10; // MAGIC NUMBER: Starting offset for raycast
                 while i < max_check {
                     let screenQFrame = screen.getQuartsSafeFrame()
                     var testCurrQPoint = tCurrQPoint
                     testCurrQPoint.y += CGFloat(i)
-//                    debugPrint("contains \(screen.getIdString())", testCurrQPoint, screenQFrame, screenQFrame.contains(testCurrQPoint))
                     if (screenQFrame.contains(testCurrQPoint)) {
                         try window.setTopLeftPoint(point: screenQFrame.origin)
                         return
-
                     }
-                    i += 100
+                    i += 100 // MAGIC NUMBER: Raycast step size
                 }
             }
         }
-        
-       
     }
     
+    // MARK: - Window Resizing
+    /// Resizes a window based on grid layout and direction
+    /// Contains workarounds for coordinate system conversion issues
     func resize(window: WindyWindow, direction: Direction) throws {
         do {
-            debugPrint("resizing: ", direction)
             let screen          = try window.getScreen()
             var point           = try window.getTopLeftPoint()
             var size            = try window.getSize()
             let settings        = windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
             let columns         = settings.x
             let rows            = settings.y
+            
+            // Convert screen coordinates to Quartz coordinate system
             let screenFrame     = screen.getQuartsSafeFrame()
             let minWidth        = round(screenFrame.width / columns)
             let minHeight       = round(screenFrame.height / rows)
-            let errorX          = minWidth * 0.30  // this is caused by the quarts safeFrame. workaround.
-            let errorY          = minHeight * 0.30  // this is caused by the quarts safeFrame. workaround.
+            let minResizeWidth  = gridResizeLengths(totalLength: screenFrame.width, divisions: columns).first ?? minWidth
+            let minResizeHeight = gridResizeLengths(totalLength: screenFrame.height, divisions: rows).first ?? minHeight
 
-            // convert screen to quarts
+            // Resize window based on direction and current size
             switch direction {
             case .Left:
-                size.width  += minWidth * (size.width <= (minWidth + errorX) ? columns - 1.0 : -1.0)
+                size.width = nextGridResizeLength(currentLength: size.width, totalLength: screenFrame.width, divisions: columns)
             case .Right:
-                size.width  += minWidth * (size.width <= (minWidth + errorX) ? columns - 1.0 : -1.0)
-                point.x     = screenFrame.maxX - (size.width)
+                size.width = nextGridResizeLength(currentLength: size.width, totalLength: screenFrame.width, divisions: columns)
+                point.x = screenFrame.maxX - size.width
             case .Up:
-                size.height += minHeight * (size.height <= (minHeight + errorY) ? rows - 1.0 : -1.0)
+                size.height = nextGridResizeLength(currentLength: size.height, totalLength: screenFrame.height, divisions: rows)
             case .Down:
-                debugPrint("point, size", point, size)
-                size.height += minHeight * (size.height <= (minHeight + errorY) ? rows - 1.0 : -1.0)
-                point.y     = screenFrame.maxY - (size.height)
-                debugPrint("max", screenFrame.maxY , (size.height) )
-                debugPrint("point, size", point, size)
+                size.height = nextGridResizeLength(currentLength: size.height, totalLength: screenFrame.height, divisions: rows)
+                point.y = screenFrame.maxY - size.height
             }
             
-            size.width  = round(size.width.clamp(to: minWidth...screenFrame.width))
-            size.height = round(size.height.clamp(to: minHeight...screenFrame.height))
-
-            debugPrint("point, size", point, size)
+            // Clamp window size to screen bounds
+            size.width  = round(size.width.clamp(to: minResizeWidth...screenFrame.width))
+            size.height = round(size.height.clamp(to: minResizeHeight...screenFrame.height))
+            
+            // Clamp window position to screen bounds, accounting for window size
             point.x     = round(point.x.clamp(to: (screenFrame.minX)...(screenFrame.maxX - size.width)))
             point.y     = round(point.y.clamp(to: (screenFrame.minY)...(screenFrame.maxY - size.height)))
-            
-            debugPrint("point, size", point, size)
 
-            // set the window pos and size
-            
+            // Set the window position and size
             try window.setTopLeftPoint(point: point)
-            // workaround
-            if (direction == .Down) {
-                var tSize = size
-                tSize.width  -= errorX
-                tSize.height -= errorY
-                try window.setFrameSize(size: tSize)
-            }
             try window.setFrameSize(size: size)
-            
-
-            debugPrint("final", try window.getFrame())
-            // todo? set the window pos based on the final achieved size?
-            
         } catch {
             debugPrint("error \(error)")
         }
     }
     
+    // MARK: - Window Movement Handler
+    /// Main handler for window movement - decides whether to move or resize
+    /// Uses collision detection to determine appropriate action
     func handleWindowMovement(direction: Direction) {
         do {
                 let window              = try WindyWindow.currentWindow()
                 let windowFrame         = try window.getFrame()
                 let screen              = try window.getScreen()
+                
+                // Convert screen coordinates to Quartz coordinate system for collision detection
                 let screenFrame         = screen.getQuartsSafeFrame()
                 
                 let windowCollisions    = windowFrame.collisionsInside(rect: screenFrame)
                 let canMove             = !windowCollisions.contains(direction)
-                debugPrint("windowCollisions", windowCollisions)
-                debugPrint("can move", canMove)
 
+                // If window can move in the direction, move it; otherwise resize it
                 if canMove || windowCollisions.isEmpty {
                     try self.move(window: window, direction: direction)
                     return
@@ -313,6 +321,8 @@ class GridManager: ObservableObject {
         }
     }
    
+    // MARK: - Cross-Screen Movement Handler
+    /// Handler for moving windows between screens
     func handleWindowScreenMovement(direction: Direction) {
         do {
             try moveWindowNextScreen(direction: direction)
@@ -322,16 +332,10 @@ class GridManager: ObservableObject {
         }
     }
     
-//    func globalKeyEventHandler(event: NSEvent) {
-//        if (event.modifierFlags.contains([.option, .control])) {
-//            guard let direction     = event.direction else { return }
-//            handleMovement(direction: direction)
-//        }
-//    }
-    
-
+    // MARK: - Event Registration
+    /// Registers keyboard shortcuts for window management
     func registerEvents() {
-//        NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: self.globalKeyEventHandler)
+        // Register keyboard shortcuts for window movement within screen
         KeyboardShortcuts.onKeyDown(for: .moveWindowLeft) { [self] in
             handleWindowMovement(direction: Direction.Left)
         }
@@ -345,7 +349,7 @@ class GridManager: ObservableObject {
             handleWindowMovement(direction: Direction.Down)
         }
        
-        
+        // Register keyboard shortcuts for window movement between screens
         KeyboardShortcuts.onKeyDown(for: .moveWindowScreenLeft) { [self] in
             handleWindowScreenMovement(direction: Direction.Left)
         }

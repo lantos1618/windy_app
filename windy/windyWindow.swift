@@ -7,7 +7,9 @@
 
 import Foundation
 
-
+// MARK: - Windy Window Class
+/// Wrapper class for managing windows using the Accessibility framework
+/// Provides a clean interface for window positioning, sizing, and manipulation
 class WindyWindow {
     var AXWindow: AXUIElement
     
@@ -15,6 +17,7 @@ class WindyWindow {
         AXWindow = ele
     }
     
+    /// Creates a WindyWindow from a process ID by getting the main window
     convenience init(pid: pid_t) throws {
         let AXApp   = AXUIElementCreateApplication(pid)
         var winPtr  :  CFTypeRef?
@@ -26,10 +29,12 @@ class WindyWindow {
         self.init(ele: winPtr as! AXUIElement)
     }
     
+    /// Creates a WindyWindow from a running application
     convenience init(app: NSRunningApplication) throws {
         try self.init(pid: app.processIdentifier)
     }
     
+    /// Creates a WindyWindow from a screen point by finding the window at that location
     convenience init(point: CGPoint) throws {
         var winPtr      : AXUIElement?
         let systemWide  = AXUIElementCreateSystemWide()
@@ -41,8 +46,11 @@ class WindyWindow {
         self.init(ele: winPtr!)
     }
     
+    // MARK: - Window Position and Size
+    
+    /// Gets the top-left point of the window relative to the screen
+    /// Returns coordinates in the Accessibility framework's coordinate system
     func getTopLeftPoint() throws -> CGPoint {
-        // gets the top left point of the window relative to the top left point of the screen
         var oldPointCFT :  CFTypeRef?
         let axErr       = AXUIElementCopyAttributeValue(self.AXWindow, kAXPositionAttribute as CFString, &oldPointCFT)
         
@@ -58,18 +66,24 @@ class WindyWindow {
         return currentPoint
     }
     
+    /// Gets the bottom-left point of the window relative to the screen
+    /// This is useful for coordinate system conversions
     func getBottomLeftPoint() throws -> CGPoint {
-        // gets the bottom left of window relative to the top left point of the screen
         var point   = try self.getTopLeftPoint()
         point.y     += try self.getSize().height
+        
+        // TODO: Re-evaluate coordinate system conversion
+        // This flip operation was commented out - investigate if it's needed
 //        point       = point.flip()
         return point
     }
     
+    /// Gets the complete window frame (position + size)
     func getFrame() throws -> NSRect {
         return NSRect(origin: try self.getTopLeftPoint(), size: try self.getSize())
     }
     
+    /// Gets the window size
     func getSize() throws -> CGSize {
         var oldSizeCFT  :  CFTypeRef?
         let axErr       = AXUIElementCopyAttributeValue(self.AXWindow, kAXSizeAttribute as CFString, &oldSizeCFT)
@@ -85,6 +99,8 @@ class WindyWindow {
         return currentSize
     }
     
+    /// Gets all available attribute names for this window
+    /// Useful for debugging and discovering available properties
     func getAttrNames() throws -> [String] {
         var attrNames   : CFArray?
         let axErr       =  AXUIElementCopyAttributeNames(AXWindow, &attrNames)
@@ -95,17 +111,30 @@ class WindyWindow {
         return attrNames as! [String]
     }
     
+    /// Gets the screen that contains this window
+    /// Determines the correct screen based on window position
     func getScreen() throws -> NSScreen {
-        // https://developer.apple.com/documentation/appkit/nsscreen/1388371-main
-        // Returns the screen object containing the window with the keyboard focus.
-        let screen = NSScreen.main!
-//        let rect = try self.getFrame()
-//        guard let screen = NSPoint(x: rect.midX, y: rect.midX).getScreen() else {
-//            throw WindyWindowError.NSError(message: "failed to get the main screen")
-//        }
-        return screen
+        let rect = try self.getFrame()
+        let windowCenter = NSPoint(x: rect.midX, y: rect.midY)
+        
+        // Find the screen that contains the window's center point
+        for screen in NSScreen.screens {
+            if screen.frame.contains(windowCenter) {
+                return screen
+            }
+        }
+        
+        // Fallback to main screen if no screen contains the window
+        // This can happen if the window is positioned outside all screens
+        guard let mainScreen = NSScreen.main else {
+            throw WindyWindowError.NSError(message: "Failed to get any screen")
+        }
+        return mainScreen
     }
     
+    // MARK: - Window Manipulation
+    
+    /// Sets the window size while maintaining current position
     func setFrameSize(size: CGSize) throws {
         var newSize     = size
         let cfSize      = AXValueCreate(AXValueType(rawValue: kAXValueCGSizeType)!,&newSize)!;
@@ -116,6 +145,8 @@ class WindyWindow {
         }
     }
     
+    /// Sets the window's top-left position
+    /// Uses the Accessibility framework's coordinate system
     func setTopLeftPoint(point: CGPoint) throws {
         var newPoint    = point
         let position    = AXValueCreate(AXValueType(rawValue: kAXValueCGPointType)!,&newPoint)!;
@@ -125,31 +156,28 @@ class WindyWindow {
             throw WindyWindowError.AXValueError(message: "Failed to set window point, \(axErr)")
         }
     }
+    
+    /// Sets the window frame using bottom-left positioning
+    /// This involves coordinate system conversion from bottom-left to top-left
     func setFrameBottomLeft(frame: NSRect) throws {
         var tPoint = frame.origin
+        
+        // Convert from bottom-left to top-left coordinate system
         tPoint = tPoint.flip()
         tPoint.y -= frame.height
         
         try self.setTopLeftPoint(point: tPoint)
         try self.setFrameSize(size: frame.size)
-        
     }
     
-     static func currentWindow() throws -> WindyWindow {
-        // get the most frontMostApp
+    // MARK: - Static Methods
+    
+    /// Gets the currently active window (frontmost application's main window)
+    static func currentWindow() throws -> WindyWindow {
+        // Get the most frontmost application
         guard let frontApp = NSWorkspace.shared.frontmostApplication else {
             throw WindyWindowError.NSError(message: "failed to get frontmost app")
         }
         return try WindyWindow(app: frontApp)
-    }
-    
-    func getWindowId() throws -> CGWindowID {
-        var winId   = CGWindowID(0)
-        let axErr   = _AXUIElementGetWindow(self.AXWindow, &winId)
-        
-        if axErr != .success {
-            throw WindyWindowError.AXValueError(message: "Failed to get windowID, \(axErr)")
-        }
-        return winId
     }
 }

@@ -27,6 +27,7 @@
 		B10000000000000000000001 /* WindowLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* WindowLayoutEngine.swift */; };
 		B10000000000000000000002 /* ScreenNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* ScreenNavigator.swift */; };
 		B10000000000000000000003 /* WindySettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000013 /* WindySettingsStore.swift */; };
+		B10000000000000000000004 /* ScreenGeometryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* ScreenGeometryService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 		B10000000000000000000011 /* WindowLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayoutEngine.swift; sourceTree = "<group>"; };
 		B10000000000000000000012 /* ScreenNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenNavigator.swift; sourceTree = "<group>"; };
 		B10000000000000000000013 /* WindySettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindySettingsStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000014 /* ScreenGeometryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenGeometryService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +129,7 @@
 				4700D4382992737F00A5D8D8 /* utils.swift */,
 				B10000000000000000000011 /* WindowLayoutEngine.swift */,
 				B10000000000000000000012 /* ScreenNavigator.swift */,
+				B10000000000000000000014 /* ScreenGeometryService.swift */,
 				B10000000000000000000013 /* WindySettingsStore.swift */,
 				470C5763295F062E00B0DC3E /* windyApp.swift */,
 				47165E2D298416C900BCB775 /* windyData.swift */,
@@ -313,6 +316,7 @@
 				B10000000000000000000001 /* WindowLayoutEngine.swift in Sources */,
 				47458FF72982FD60005B024B /* gridManager.swift in Sources */,
 				B10000000000000000000002 /* ScreenNavigator.swift in Sources */,
+				B10000000000000000000004 /* ScreenGeometryService.swift in Sources */,
 				4732C0BA297DAFA700DB1C5B /* snapWindow.swift in Sources */,
 				B10000000000000000000003 /* WindySettingsStore.swift in Sources */,
 				4700D4392992737F00A5D8D8 /* utils.swift in Sources */,

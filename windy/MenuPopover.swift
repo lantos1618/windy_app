@@ -83,6 +83,20 @@ struct MenuPopover: View {
         ])
     }
 
+    private var activeDisplaySetting: NSPoint {
+        windyData.displaySettings[windyData.activeSettingScreen] ?? NSPoint(x: 2.0, y: 2.0)
+    }
+
+    private func updateActiveDisplaySetting(_ update: (inout NSPoint) -> Void) {
+        guard !windyData.activeSettingScreen.isEmpty else {
+            return
+        }
+
+        var setting = activeDisplaySetting
+        update(&setting)
+        windyData.displaySettings[windyData.activeSettingScreen] = setting
+    }
+
     var screenPickerSection: some View {
         VStack {
             Text("Screen Settings").font(.title2).padding()
@@ -102,7 +116,8 @@ struct MenuPopover: View {
             Picker("", selection: $windyData.activeSettingScreen) {
                 ForEach(windyData.displaySettings.keys.sorted(), id: \.self) {
                     key in
-                    Text(key + (windyData.activeScreens.contains(key) ? " (currently connected)" : "")).tag(key)
+                    let screenName = NSScreen.fromIdString(str: key)?.localizedName ?? key
+                    Text(screenName + (windyData.activeScreens.contains(key) ? " (currently connected)" : "")).tag(key)
                 }
             }.gridCellColumns(2)
         }
@@ -111,15 +126,19 @@ struct MenuPopover: View {
     var columnPickerRow: some View {
         GridRow {
             Text ("Columns:").gridColumnAlignment(.trailing) // Align the entire first column.
-            Text ("\(Int(windyData.displaySettings[windyData.activeSettingScreen]!.x))")
+            Text ("\(Int(activeDisplaySetting.x))")
             HStack {
                 Button {
-                    windyData.displaySettings[windyData.activeSettingScreen]!.x = (windyData.displaySettings[windyData.activeSettingScreen]!.x - 1).clamp(to: 1...6)
+                    updateActiveDisplaySetting { setting in
+                        setting.x = (setting.x - 1).clamp(to: 1...6)
+                    }
                 } label: {
                     Image(systemName: "minus.circle")
                 }
                 Button {
-                    windyData.displaySettings[windyData.activeSettingScreen]!.x = (windyData.displaySettings[windyData.activeSettingScreen]!.x + 1).clamp(to: 1...6)
+                    updateActiveDisplaySetting { setting in
+                        setting.x = (setting.x + 1).clamp(to: 1...6)
+                    }
                     
                 } label: {
                     Image(systemName: "plus.circle")
@@ -130,15 +149,19 @@ struct MenuPopover: View {
     var rowPickerRow: some View {
         GridRow {
             Text ("Rows:")
-            Text(" \(Int(windyData.displaySettings[windyData.activeSettingScreen]!.y))")
+            Text(" \(Int(activeDisplaySetting.y))")
             HStack {
                 Button {
-                    windyData.displaySettings[windyData.activeSettingScreen]!.y = (windyData.displaySettings[windyData.activeSettingScreen]!.y - 1).clamp(to: 1...6)
+                    updateActiveDisplaySetting { setting in
+                        setting.y = (setting.y - 1).clamp(to: 1...6)
+                    }
                 } label: {
                     Image(systemName: "minus.circle")
                 }
                 Button {
-                    windyData.displaySettings[windyData.activeSettingScreen]!.y = (windyData.displaySettings[windyData.activeSettingScreen]!.y + 1).clamp(to: 1...6)
+                    updateActiveDisplaySetting { setting in
+                        setting.y = (setting.y + 1).clamp(to: 1...6)
+                    }
                 } label: {
                     Image(systemName: "plus.circle")
                 }

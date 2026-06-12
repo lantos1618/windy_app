@@ -128,6 +128,45 @@ final class windyTests: XCTestCase {
             "near-right"
         )
     }
+
+    func testScreenNavigatorChoosesOffsetScreenInDirection() throws {
+        let current = NSRect(x: 0, y: 0, width: 100, height: 100)
+        let candidates = [
+            ScreenCandidate(id: "offset-right", frame: NSRect(x: 80, y: 130, width: 100, height: 100))
+        ]
+
+        XCTAssertEqual(
+            ScreenNavigator.nextFrame(from: current, candidates: candidates, direction: .Right)?.id,
+            "offset-right"
+        )
+    }
+
+    func testScreenGeometryConvertsAppKitRectToAccessibilityRect() throws {
+        let appKitScreenFrame = NSRect(x: 0, y: 900, width: 1440, height: 900)
+        let accessibilityScreenFrame = NSRect(x: 0, y: -900, width: 1440, height: 900)
+        let appKitRect = NSRect(x: 20, y: 920, width: 400, height: 300)
+
+        let converted = ScreenGeometryService.accessibilityRect(
+            fromAppKitRect: appKitRect,
+            appKitScreenFrame: appKitScreenFrame,
+            accessibilityScreenFrame: accessibilityScreenFrame
+        )
+
+        XCTAssertEqual(converted, NSRect(x: 20, y: -320, width: 400, height: 300))
+    }
+
+    func testDisplaySettingsMigrationUsesStableScreenIds() throws {
+        let screen = NSScreen.main!
+        let legacyId = ScreenGeometryService.legacyId(for: screen)
+        let stableId = ScreenGeometryService.id(for: screen)
+        let migrated = WindySettingsStore.migrateDisplaySettings(
+            [legacyId: NSPoint(x: 4, y: 5)],
+            screens: [screen]
+        )
+
+        XCTAssertEqual(migrated[stableId], NSPoint(x: 4, y: 5))
+        XCTAssertNil(migrated[legacyId])
+    }
     
     func testMagicNumbers() throws {
         // Test that magic numbers are reasonable
@@ -164,6 +203,7 @@ final class windyTests: XCTestCase {
         let mainScreen = NSScreen.main!
         let screenId = mainScreen.getIdString()
         XCTAssertFalse(screenId.isEmpty, "Screen ID should not be empty")
+        XCTAssertTrue(screenId.hasPrefix(ScreenGeometryService.stableIDPrefix), "Screen ID should use stable display ID format")
         
         // Test screen lookup by ID
         let foundScreen = NSScreen.fromIdString(str: screenId)

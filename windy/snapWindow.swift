@@ -38,6 +38,7 @@ class SnapWindowManager {
     var windowIsMoving          = false
     var shouldSnap              = true
     var accentColorListener     : AnyCancellable?
+    private var eventMonitors   : [Any] = []
     
     init(windyData: WindyData) {
         self.windyData  = windyData
@@ -60,6 +61,10 @@ class SnapWindowManager {
             self.snapWindow?.backgroundColor      = NSColor(windyData.accentColour)
         }
     }
+
+    deinit {
+        unregisterEvents()
+    }
     
     /// Creates or returns the snap window for visual feedback
     func createSnapWindow() -> Bool {
@@ -81,16 +86,17 @@ class SnapWindowManager {
     /// Calculates the snap rectangle based on mouse position and screen edges
     /// Uses collision detection to determine which screen edge the mouse is near
     func calculateSnapRect(mousePos: NSPoint) throws -> NSRect? {
-        guard let screen = mousePos.getScreen() else {
+        guard let screen = ScreenGeometryService.screen(containingAppKitPoint: mousePos) else {
             throw WindyWindowError.NSError(message: "could not get screen at point")
         }
+        let screenFrame = ScreenGeometryService.appKitVisibleFrame(for: screen)
         
         // Check if mouse is inside screen bounds (with 1px tolerance)
-        let inSideScreen = NSPointInRect(mousePos, screen.frame.insetBy(dx: -1, dy: -1))
+        let inSideScreen = NSPointInRect(mousePos, screenFrame.insetBy(dx: -1, dy: -1))
         
         // Check if mouse is in the "gutter" area near screen edges (100px from edges)
         // This determines which edge the window should snap to
-        let insideGutter = mousePos.collisionsInside(rect: (screen.frame.insetBy(dx: 100, dy: 100)))
+        let insideGutter = mousePos.collisionsInside(rect: (screenFrame.insetBy(dx: 100, dy: 100)))
         
         // Hide snap window if mouse is outside screen or not in gutter area
         if !inSideScreen  {
@@ -107,15 +113,10 @@ class SnapWindowManager {
         }
         
         // Calculate snap rectangle based on which screen edge is detected
-        var t_point     = screen.frame.origin
-        var t_size      = screen.frame.size
+        var t_point     = screenFrame.origin
+        var t_size      = screenFrame.size
         let columns     = 2.0  // MAGIC NUMBER: Fixed 2x2 grid for snapping
         let rows        = 2.0  // MAGIC NUMBER: Fixed 2x2 grid for snapping
-        
-        // TODO: Use getQuartsSafeFrame() for more accurate coordinate system conversion
-        // Currently using screen.frame which may not account for system UI elements
-        let screenFrame = screen.frame
-//      let screenFrame = screen.getQuartsSafeFrame()
         let minWidth    = screenFrame.width / columns
         let minHeight   = screenFrame.height / rows
         
@@ -263,16 +264,35 @@ class SnapWindowManager {
     // MARK: - Event Registration
     /// Registers global mouse and keyboard event handlers for snapping functionality
     func registerEvents() {
+        guard eventMonitors.isEmpty else {
+            return
+        }
+
         // Register mouse event handlers for window dragging and snapping
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown,     handler: self.globalLeftMouseDownHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged,  handler: self.globalLeftMouseDragHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp,       handler: self.globalLeftMouseUpHandler)
+        addGlobalMonitor(matching: .leftMouseDown,     handler: self.globalLeftMouseDownHandler)
+        addGlobalMonitor(matching: .leftMouseDragged,  handler: self.globalLeftMouseDragHandler)
+        addGlobalMonitor(matching: .leftMouseUp,       handler: self.globalLeftMouseUpHandler)
         
         // Register keyboard event handlers for ESC key (snap cancellation)
-        NSEvent.addGlobalMonitorForEvents(matching: .keyDown,           handler: self.globalEscKeyDownHandler)
-        NSEvent.addGlobalMonitorForEvents(matching: .keyUp,             handler: self.globalEscKeyUpHandler)
+        addGlobalMonitor(matching: .keyDown,           handler: self.globalEscKeyDownHandler)
+        addGlobalMonitor(matching: .keyUp,             handler: self.globalEscKeyUpHandler)
         
         // Register mouse movement handler to hide snap window when not dragging
-        NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved,        handler: self.globalMouseMoved)
+        addGlobalMonitor(matching: .mouseMoved,        handler: self.globalMouseMoved)
+    }
+
+    func unregisterEvents() {
+        for monitor in eventMonitors {
+            NSEvent.removeMonitor(monitor)
+        }
+        eventMonitors.removeAll()
+    }
+
+    private func addGlobalMonitor(matching mask: NSEvent.EventTypeMask, handler: @escaping (NSEvent) -> Void) {
+        guard let monitor = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: handler) else {
+            return
+        }
+
+        eventMonitors.append(monitor)
     }
 }

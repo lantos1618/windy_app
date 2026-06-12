@@ -24,7 +24,7 @@ enum WindySettingsStore {
         var result: [String: NSPoint] = [:]
 
         for screen in screens {
-            result[screen.getIdString()] = NSPoint(x: 2.0, y: 2.0)
+            result[ScreenGeometryService.id(for: screen)] = NSPoint(x: 2.0, y: 2.0)
         }
 
         return result
@@ -49,7 +49,10 @@ enum WindySettingsStore {
     }
 
     static func loadDisplaySettings() throws -> [String: NSPoint] {
-        try UserDefaults.standard.getDictPoints(forKey: displaySettingsKey)
+        let settings = try UserDefaults.standard.getDictPoints(forKey: displaySettingsKey)
+        let migratedSettings = migrateDisplaySettings(settings)
+        saveDisplaySettings(migratedSettings)
+        return migratedSettings
     }
 
     static func saveDisplaySettings(_ settings: [String: NSPoint]) {
@@ -66,5 +69,26 @@ enum WindySettingsStore {
 
     static func saveAccentColour(_ colour: Color) {
         UserDefaults.standard.set(colour, forKey: accentColourKey)
+    }
+
+    static func migrateDisplaySettings(_ settings: [String: NSPoint], screens: [NSScreen] = NSScreen.screens) -> [String: NSPoint] {
+        var result: [String: NSPoint] = [:]
+
+        for screen in screens {
+            let stableId = ScreenGeometryService.id(for: screen)
+            let legacyId = ScreenGeometryService.legacyId(for: screen)
+
+            if let stableSetting = settings[stableId] {
+                result[stableId] = stableSetting
+            } else if let legacySetting = settings[legacyId] {
+                result[stableId] = legacySetting
+            }
+        }
+
+        for (key, value) in settings where ScreenGeometryService.displayID(from: key) != nil && result[key] == nil {
+            result[key] = value
+        }
+
+        return mergeDisplaySettings(existing: result, defaults: defaultDisplaySettings(for: screens))
     }
 }

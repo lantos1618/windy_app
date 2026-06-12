@@ -116,20 +116,12 @@ class WindyWindow {
     func getScreen() throws -> NSScreen {
         let rect = try self.getFrame()
         let windowCenter = NSPoint(x: rect.midX, y: rect.midY)
-        
-        // Find the screen that contains the window's center point
-        for screen in NSScreen.screens {
-            if screen.frame.contains(windowCenter) {
-                return screen
-            }
-        }
-        
-        // Fallback to main screen if no screen contains the window
-        // This can happen if the window is positioned outside all screens
-        guard let mainScreen = NSScreen.main else {
+
+        guard let screen = ScreenGeometryService.screen(containingAccessibilityPoint: windowCenter) else {
             throw WindyWindowError.NSError(message: "Failed to get any screen")
         }
-        return mainScreen
+
+        return screen
     }
     
     // MARK: - Window Manipulation
@@ -160,14 +152,10 @@ class WindyWindow {
     /// Sets the window frame using bottom-left positioning
     /// This involves coordinate system conversion from bottom-left to top-left
     func setFrameBottomLeft(frame: NSRect) throws {
-        var tPoint = frame.origin
-        
-        // Convert from bottom-left to top-left coordinate system
-        tPoint = tPoint.flip()
-        tPoint.y -= frame.height
-        
-        try self.setTopLeftPoint(point: tPoint)
-        try self.setFrameSize(size: frame.size)
+        let accessibilityFrame = ScreenGeometryService.accessibilityFrame(fromAppKitRect: frame)
+
+        try self.setTopLeftPoint(point: accessibilityFrame.origin)
+        try self.setFrameSize(size: accessibilityFrame.size)
     }
     
     // MARK: - Static Methods

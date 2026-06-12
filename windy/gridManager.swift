@@ -51,18 +51,19 @@ class GridManager: ObservableObject {
         
         // Initialize grid windows for each screen
         for screen in NSScreen.screens {
-            windows[screen.getIdString()] = NSWindow(
-                contentRect : NSScreen.main!.frame,
+            let screenId = screen.getIdString()
+            windows[screenId] = NSWindow(
+                contentRect : ScreenGeometryService.appKitFrame(for: screen),
                 styleMask   : [.fullSizeContentView, .resizable],
                 backing     : .buffered,
                 defer       : false
             )
             
-            windows[screen.getIdString()]!.backgroundColor      = NSColor(windyData.accentColour)
-            gridViews[screen.getIdString()] = GridView(windyData: windyData, screen: screen)
+            windows[screenId]?.backgroundColor      = NSColor(windyData.accentColour)
+            gridViews[screenId] = GridView(windyData: windyData, screen: screen)
             //        set default preview rects
-            windows[screen.getIdString()]?.contentView          = NSHostingView(rootView: gridViews[screen.getIdString()])
-            windows[screen.getIdString()]?.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
+            windows[screenId]?.contentView          = NSHostingView(rootView: gridViews[screenId])
+            windows[screenId]?.collectionBehavior   = .canJoinAllSpaces                     // allow window to be shown on all virtual desktops (spaces)
         }
             
         // Listen for accent color changes
@@ -75,28 +76,33 @@ class GridManager: ObservableObject {
         // Listen for grid visibility changes
         isShownListener             = windyData.$isShown.sink { isShown in
             for key in self.windows.keys {
-                let screen = NSScreen.fromIdString(str: key) ?? NSScreen.main!
+                guard let screen = NSScreen.fromIdString(str: key) else {
+                    continue
+                }
                 self.windows[key]?.setIsVisible(isShown)
-                self.windows[key]?.setFrame(screen.frame, display: true)
+                self.windows[key]?.setFrame(ScreenGeometryService.appKitFrame(for: screen), display: true)
             }
         }
         
         // Listen for active screen changes
         activeScreenListener        = windyData.$activeSettingScreen.sink { screenId in
             for key in self.windows.keys {
-                self.windows[key]?.setFrame((NSScreen.fromIdString(str: key) ?? NSScreen.main!).frame, display: true)
+                guard let screen = NSScreen.fromIdString(str: key) else {
+                    continue
+                }
+                self.windows[key]?.setFrame(ScreenGeometryService.appKitFrame(for: screen), display: true)
             }
         }
     }
 
     // MARK: - Window Movement
     /// Moves a window by one grid cell in the specified direction
-    /// Uses coordinate system conversions from getQuartsSafeFrame()
+    /// Uses accessibility-space screen frames for AX window positioning.
     func move(window: WindyWindow, direction: Direction) throws {
         do {
             let screen      = try window.getScreen()
             let windowFrame = try window.getFrame()
-            let screenFrame = screen.getQuartsSafeFrame()
+            let screenFrame = ScreenGeometryService.accessibilityVisibleFrame(for: screen)
             let settings = GridLayoutSettings(
                 point: windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
             )
@@ -125,7 +131,7 @@ class GridManager: ObservableObject {
             return
         }
 
-        try window.setTopLeftPoint(point: nextScreen.getQuartsSafeFrame().origin)
+        try window.setTopLeftPoint(point: ScreenGeometryService.accessibilityVisibleFrame(for: nextScreen).origin)
     }
     
     // MARK: - Window Resizing
@@ -135,7 +141,7 @@ class GridManager: ObservableObject {
         do {
             let screen          = try window.getScreen()
             let windowFrame     = try window.getFrame()
-            let screenFrame     = screen.getQuartsSafeFrame()
+            let screenFrame     = ScreenGeometryService.accessibilityVisibleFrame(for: screen)
             let settings = GridLayoutSettings(
                 point: windyData.displaySettings[screen.getIdString()] ?? NSPoint(x: 2.0, y: 2.0)
             )
@@ -164,7 +170,7 @@ class GridManager: ObservableObject {
                 let screen              = try window.getScreen()
                 
                 // Convert screen coordinates to Quartz coordinate system for collision detection
-                let screenFrame         = screen.getQuartsSafeFrame()
+                let screenFrame         = ScreenGeometryService.accessibilityVisibleFrame(for: screen)
 
             if WindowLayoutEngine.shouldResize(windowFrame: windowFrame, screenFrame: screenFrame, direction: direction) {
                 try self.resize(window: window, direction: direction)

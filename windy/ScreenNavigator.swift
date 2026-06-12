@@ -15,20 +15,20 @@ struct ScreenCandidate: Equatable {
 
 enum ScreenNavigator {
     static func nextScreen(from currentScreen: NSScreen, direction: Direction, screens: [NSScreen] = NSScreen.screens) -> NSScreen? {
-        let currentId = currentScreen.getIdString()
+        let currentId = ScreenGeometryService.id(for: currentScreen)
         let candidates = screens
-            .filter { $0.getIdString() != currentId }
-            .map { ScreenCandidate(id: $0.getIdString(), frame: $0.getQuartsSafeFrame()) }
+            .filter { ScreenGeometryService.id(for: $0) != currentId }
+            .map { ScreenCandidate(id: ScreenGeometryService.id(for: $0), frame: ScreenGeometryService.accessibilityFrame(for: $0)) }
 
         guard let nextCandidate = nextFrame(
-            from: currentScreen.getQuartsSafeFrame(),
+            from: ScreenGeometryService.accessibilityFrame(for: currentScreen),
             candidates: candidates,
             direction: direction
         ) else {
             return nil
         }
 
-        return screens.first { $0.getIdString() == nextCandidate.id }
+        return screens.first { ScreenGeometryService.id(for: $0) == nextCandidate.id }
     }
 
     static func nextFrame(from currentFrame: NSRect, candidates: [ScreenCandidate], direction: Direction) -> ScreenCandidate? {
@@ -45,13 +45,13 @@ enum ScreenNavigator {
     private static func isCandidate(_ candidate: NSRect, in direction: Direction, from current: NSRect) -> Bool {
         switch direction {
         case .Left:
-            return candidate.maxX <= current.minX
+            return candidate.midX < current.midX
         case .Right:
-            return candidate.minX >= current.maxX
+            return candidate.midX > current.midX
         case .Up:
-            return candidate.maxY <= current.minY
+            return candidate.midY < current.midY
         case .Down:
-            return candidate.minY >= current.maxY
+            return candidate.midY > current.midY
         }
     }
 

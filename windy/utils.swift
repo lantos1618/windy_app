@@ -66,10 +66,7 @@ extension NSPoint {
     
     /// Finds which screen contains this point, falls back to main screen
     func getScreen() -> NSScreen? {
-        let screens         = NSScreen.screens
-        let screenWithMouse = (screens.first {screen in
-            NSPointInRect(self, screen.frame)})
-        return screenWithMouse ?? NSScreen.main!
+        ScreenGeometryService.screen(containingAppKitPoint: self)
     }
     
     /// Determines which edges of a rectangle this point collides with
@@ -91,11 +88,9 @@ extension NSPoint {
         return result
     }
     
-    /// Converts AppKit coordinates (origin at bottom-left) to CoreGraphics coordinates (origin at top-left)
-    /// This is a coordinate system conversion between different macOS frameworks
+    /// Legacy vertical mirror helper. New window placement code should use ScreenGeometryService.
     func flip() -> NSPoint {
-        let screen = NSScreen.screens[0]
-        return NSPoint(x: x, y: screen.frame.maxY - self.y)
+        ScreenGeometryService.mirroredPointAcrossPrimaryDisplay(self)
     }
 }
 
@@ -221,49 +216,31 @@ extension UserDefaults {
 // MARK: - NSScreen Extensions
 extension NSScreen {
     /// Creates a unique identifier string for this screen
-    /// Format: "hash:localizedName"
+    /// Format: "display:<CGDirectDisplayID>"
     func getIdString() -> String {
-        return "\(self.hash):\(self.localizedName)"
+        ScreenGeometryService.id(for: self)
     }
     
     /// Finds a screen by its identifier string
     static func fromIdString(str: String) -> NSScreen? {
-        return NSScreen.screens.first(where: { screen in screen.getIdString() == str })
+        ScreenGeometryService.screen(for: str)
     }
     
     /// Gets the CoreGraphics display ID for this screen
     var displayID: CGDirectDisplayID {
          let key = NSDeviceDescriptionKey(rawValue: "NSScreenNumber")
-         return deviceDescription[key] as! CGDirectDisplayID
+         if let displayID = deviceDescription[key] as? CGDirectDisplayID {
+             return displayID
+         }
+         if let displayID = deviceDescription[key] as? NSNumber {
+             return CGDirectDisplayID(displayID.uint32Value)
+         }
+         return CGMainDisplayID()
      }
     
-    /// Converts screen coordinates to Quartz coordinate system
-    /// This is a critical coordinate system conversion for window positioning
-    /// 
-    /// TODO: Investigate if safeAreaInsets should be re-enabled
-    /// Currently commented out because it may cause issues with window positioning
-    /// Safe area insets account for system UI elements (menu bar, dock, etc.)
+    /// Compatibility wrapper for the visible screen frame in accessibility coordinates.
     func getQuartsSafeFrame() -> NSRect {
-        var rect    = self.visibleFrame;
-        
-        // TODO: Re-evaluate safeAreaInsets usage
-        // This was commented out due to potential coordinate system conflicts
-        // Safe area insets should account for menu bar, dock, and other system UI
-//        let edges   = self.safeAreaInsets
-      
-        // Convert screen coordinates from AppKit (bottom-left origin) to Quartz (top-left origin)
-        // This is the main coordinate system conversion for window positioning
-        rect.origin.y = NSScreen.screens[0].frame.maxY - rect.maxY
-
-        // TODO: Re-enable safe area insets if coordinate system issues are resolved
-        // This would make window positioning more accurate by accounting for system UI
-//        rect.origin.y       += edges.top
-//        rect.size.height    -= edges.top + edges.bottom
-//
-//        rect.origin.x       += edges.left
-//        rect.size.width     -= edges.left + edges.right
-
-        return rect
+        ScreenGeometryService.accessibilityVisibleFrame(for: self)
     }
 }
 

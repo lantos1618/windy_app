@@ -212,6 +212,25 @@ final class windyTests: XCTestCase {
         XCTAssertEqual(labelFrame.height, buttonFrame.height)
     }
 
+    func testMissionControlRenameBufferReplacesThenAppendsTypedText() throws {
+        var buffer = MissionControlRenameBuffer(originalText: "Windy 1")
+
+        buffer.insert("T")
+        buffer.insert("empo")
+
+        XCTAssertEqual(buffer.text, "Tempo")
+        XCTAssertTrue(buffer.hasStartedTyping)
+    }
+
+    func testMissionControlRenameBufferDeletesCharactersAndLimitsLength() throws {
+        var buffer = MissionControlRenameBuffer(originalText: "Windy 1")
+
+        buffer.insert(String(repeating: "a", count: MissionControlRenameBuffer.maximumLength + 5))
+        buffer.deleteBackward()
+
+        XCTAssertEqual(buffer.text.count, MissionControlRenameBuffer.maximumLength - 1)
+    }
+
     func testSpaceServiceParsesStableUserSpaces() throws {
         let rawDisplays: [[String: Any]] = [[
             "Display Identifier": "Main",

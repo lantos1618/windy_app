@@ -58,6 +58,36 @@ enum MissionControlOverlayLayout {
     }
 }
 
+struct MissionControlRenameBuffer: Equatable {
+    static let maximumLength = 40
+
+    private(set) var text: String
+    private(set) var hasStartedTyping = false
+
+    init(originalText: String) {
+        text = originalText
+    }
+
+    mutating func insert(_ characters: String) {
+        guard !characters.isEmpty else { return }
+
+        if !hasStartedTyping {
+            text = ""
+            hasStartedTyping = true
+        }
+
+        let remainingCount = max(0, Self.maximumLength - text.count)
+        text.append(contentsOf: characters.prefix(remainingCount))
+    }
+
+    mutating func deleteBackward() {
+        guard hasStartedTyping else { return }
+        if !text.isEmpty {
+            text.removeLast()
+        }
+    }
+}
+
 private final class MissionControlLabelView: NSView {
     private let label = NSTextField(labelWithString: "")
 
@@ -85,9 +115,14 @@ private final class MissionControlLabelView: NSView {
         label.frame = bounds.insetBy(dx: 7, dy: 2)
     }
 
-    func update(name: String, colour: NSColor) {
-        label.stringValue = name
+    func update(name: String, colour: NSColor, isHovered: Bool, isEditing: Bool) {
+        label.stringValue = isEditing ? name + "|" : name
         layer?.borderColor = colour.cgColor
+        layer?.borderWidth = isHovered ? 3 : 2
+        layer?.backgroundColor = NSColor(
+            calibratedWhite: isHovered ? 0.08 : 0.12,
+            alpha: isHovered ? 0.98 : 0.94
+        ).cgColor
     }
 }
 
@@ -105,6 +140,40 @@ final class MissionControlOverlayManager {
         }
     }
 
+    private static let keyboardEventCallback: CGEventTapCallBack = { _, type, event, context in
+        guard let context else {
+            return Unmanaged.passUnretained(event)
+        }
+
+        let manager = Unmanaged<MissionControlOverlayManager>.fromOpaque(context).takeUnretainedValue()
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            manager.enableKeyboardEventTap()
+            return Unmanaged.passUnretained(event)
+        }
+
+        let shouldConsume: Bool
+        switch type {
+        case .keyDown:
+            shouldConsume = manager.handleKeyDown(event)
+        case .keyUp:
+            shouldConsume = manager.handleKeyUp(event)
+        default:
+            shouldConsume = false
+        }
+        return shouldConsume ? nil : Unmanaged.passUnretained(event)
+    }
+
+    private struct LabelTarget {
+        let space: WindySpace?
+        let fallbackIndex: Int
+    }
+
+    private struct RenameSession {
+        let panelKey: String
+        let spaceID: String
+        var buffer: MissionControlRenameBuffer
+    }
+
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier ?? "zug.dev.windy",
         category: "MissionControl"
@@ -115,7 +184,13 @@ final class MissionControlOverlayManager {
     private var observer: AXObserver?
     private var watchdogTimer: Timer?
     private var trackingTimer: Timer?
+    private var keyboardEventTap: CFMachPort?
+    private var keyboardEventTapSource: CFRunLoopSource?
     private var panels: [String: MissionControlLabelPanel] = [:]
+    private var labelTargets: [String: LabelTarget] = [:]
+    private var hoveredPanelKey: String?
+    private var renameSession: RenameSession?
+    private var suppressedKeyCodes = Set<Int64>()
     private var observedElementHashes = Set<CFHashCode>()
     private var state: MissionControlBarState = .closed
     private var isRunning = false
@@ -134,6 +209,7 @@ final class MissionControlOverlayManager {
         isRunning = true
         dockElement = AXUIElementCreateApplication(dock.processIdentifier)
         installObserver(processIdentifier: dock.processIdentifier)
+        installKeyboardEventTap()
 
         watchdogTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 20.0, repeats: true) { [weak self] _ in
             guard self?.state == .closed else { return }
@@ -148,7 +224,9 @@ final class MissionControlOverlayManager {
         watchdogTimer?.invalidate()
         watchdogTimer = nil
         stopTrackingAnimation()
+        cancelRenaming()
         hideAllPanels()
+        removeKeyboardEventTap()
 
         if let observer {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .commonModes)
@@ -182,6 +260,7 @@ final class MissionControlOverlayManager {
         guard newState != .closed else { return }
 
         var activePanelKeys = Set<String>()
+        var currentTargets: [String: LabelTarget] = [:]
         for (displayIndex, buttons) in buttonGroups.enumerated() {
             for (desktopIndex, button) in buttons.enumerated() {
                 guard let accessibilityFrame = accessibilityFrame(for: button) else { continue }
@@ -202,19 +281,57 @@ final class MissionControlOverlayManager {
                 let fallbackIndex = desktopIndex + 1
 
                 panel.setFrame(labelFrame, display: true)
-                if let contentView = panel.contentView as? MissionControlLabelView {
-                    contentView.update(
-                        name: spaceLabelManager.name(for: space, fallbackIndex: fallbackIndex),
-                        colour: spaceLabelManager.colour(for: space, fallbackIndex: fallbackIndex).nsColor
-                    )
-                }
                 panel.orderFrontRegardless()
                 activePanelKeys.insert(panelKey)
+                currentTargets[panelKey] = LabelTarget(space: space, fallbackIndex: fallbackIndex)
             }
         }
 
         for (key, panel) in panels where !activePanelKeys.contains(key) {
             panel.orderOut(nil)
+        }
+
+        labelTargets = currentTargets
+        updateHoveredPanel(activePanelKeys: activePanelKeys)
+        updatePanelContents(activePanelKeys: activePanelKeys)
+    }
+
+    private func updateHoveredPanel(activePanelKeys: Set<String>) {
+        let mouseLocation = NSEvent.mouseLocation
+        let newHoveredPanelKey = activePanelKeys.first { key in
+            panels[key]?.frame.insetBy(dx: -3, dy: -3).contains(mouseLocation) == true
+        }
+
+        guard hoveredPanelKey != newHoveredPanelKey else { return }
+        if renameSession?.panelKey != newHoveredPanelKey {
+            commitRenaming()
+        }
+        hoveredPanelKey = newHoveredPanelKey
+    }
+
+    private func updatePanelContents(activePanelKeys: Set<String>? = nil) {
+        let keys = activePanelKeys ?? Set(labelTargets.keys)
+        for key in keys {
+            guard
+                let target = labelTargets[key],
+                let contentView = panels[key]?.contentView as? MissionControlLabelView
+            else {
+                continue
+            }
+
+            let isEditing = renameSession?.panelKey == key
+            let name = isEditing
+                ? renameSession?.buffer.text ?? ""
+                : spaceLabelManager.name(for: target.space, fallbackIndex: target.fallbackIndex)
+            contentView.update(
+                name: name,
+                colour: spaceLabelManager.colour(
+                    for: target.space,
+                    fallbackIndex: target.fallbackIndex
+                ).nsColor,
+                isHovered: hoveredPanelKey == key,
+                isEditing: isEditing
+            )
         }
     }
 
@@ -261,6 +378,10 @@ final class MissionControlOverlayManager {
         state = newState
 
         if newState == .closed {
+            commitRenaming()
+            hoveredPanelKey = nil
+            labelTargets.removeAll()
+            suppressedKeyCodes.removeAll()
             stopTrackingAnimation()
             observedElementHashes.removeAll()
             hideAllPanels()
@@ -279,6 +400,125 @@ final class MissionControlOverlayManager {
     private func stopTrackingAnimation() {
         trackingTimer?.invalidate()
         trackingTimer = nil
+    }
+
+    private func installKeyboardEventTap() {
+        guard keyboardEventTap == nil else { return }
+
+        let keyDownMask = CGEventMask(1) << CGEventType.keyDown.rawValue
+        let keyUpMask = CGEventMask(1) << CGEventType.keyUp.rawValue
+        let context = Unmanaged.passUnretained(self).toOpaque()
+        guard let eventTap = CGEvent.tapCreate(
+            tap: .cghidEventTap,
+            place: .headInsertEventTap,
+            options: .defaultTap,
+            eventsOfInterest: keyDownMask | keyUpMask,
+            callback: Self.keyboardEventCallback,
+            userInfo: context
+        ) else {
+            logger.error("Unable to install Mission Control rename keyboard event tap")
+            return
+        }
+
+        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
+        keyboardEventTap = eventTap
+        keyboardEventTapSource = source
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
+        CGEvent.tapEnable(tap: eventTap, enable: true)
+    }
+
+    private func removeKeyboardEventTap() {
+        if let source = keyboardEventTapSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+        }
+        if let eventTap = keyboardEventTap {
+            CFMachPortInvalidate(eventTap)
+        }
+        keyboardEventTapSource = nil
+        keyboardEventTap = nil
+    }
+
+    private func enableKeyboardEventTap() {
+        if let keyboardEventTap {
+            CGEvent.tapEnable(tap: keyboardEventTap, enable: true)
+        }
+    }
+
+    private func handleKeyDown(_ event: CGEvent) -> Bool {
+        guard state != .closed else { return false }
+
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        if var session = renameSession {
+            switch keyCode {
+            case 36, 76:
+                commitRenaming()
+            case 53:
+                cancelRenaming()
+            case 51, 117:
+                session.buffer.deleteBackward()
+                renameSession = session
+                updatePanelContents()
+            default:
+                guard let characters = printableCharacters(from: event) else { return false }
+                session.buffer.insert(characters)
+                renameSession = session
+                updatePanelContents()
+            }
+            suppressedKeyCodes.insert(keyCode)
+            return true
+        }
+
+        guard
+            let hoveredPanelKey,
+            let target = labelTargets[hoveredPanelKey],
+            let spaceID = target.space?.id,
+            let characters = printableCharacters(from: event)
+        else {
+            return false
+        }
+
+        var buffer = MissionControlRenameBuffer(
+            originalText: spaceLabelManager.name(
+                for: target.space,
+                fallbackIndex: target.fallbackIndex
+            )
+        )
+        buffer.insert(characters)
+        renameSession = RenameSession(panelKey: hoveredPanelKey, spaceID: spaceID, buffer: buffer)
+        updatePanelContents()
+        suppressedKeyCodes.insert(keyCode)
+        return true
+    }
+
+    private func handleKeyUp(_ event: CGEvent) -> Bool {
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        return suppressedKeyCodes.remove(keyCode) != nil
+    }
+
+    private func printableCharacters(from event: CGEvent) -> String? {
+        let disallowedFlags: CGEventFlags = [.maskCommand, .maskControl, .maskAlternate]
+        guard event.flags.intersection(disallowedFlags).isEmpty,
+              let characters = NSEvent(cgEvent: event)?.characters,
+              !characters.isEmpty,
+              characters.unicodeScalars.allSatisfy({
+                  !CharacterSet.controlCharacters.contains($0)
+              }) else {
+            return nil
+        }
+        return characters
+    }
+
+    private func commitRenaming() {
+        guard let renameSession else { return }
+        spaceLabelManager.setName(renameSession.buffer.text, for: renameSession.spaceID)
+        self.renameSession = nil
+        updatePanelContents()
+    }
+
+    private func cancelRenaming() {
+        guard renameSession != nil else { return }
+        renameSession = nil
+        updatePanelContents()
     }
 
     private func panel(for key: String) -> MissionControlLabelPanel {

@@ -133,6 +133,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             NSApplication.shared.activate(ignoringOtherApps: true)
             windyManager.spaceLabelManager.refresh()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+            DispatchQueue.main.async { [weak self] in
+                self?.popover.contentViewController?.view.window?.makeFirstResponder(nil)
+            }
         }
     }
 

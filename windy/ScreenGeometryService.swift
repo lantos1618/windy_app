@@ -96,6 +96,32 @@ enum ScreenGeometryService {
         )
     }
 
+    static func appKitRect(
+        fromAccessibilityRect rect: NSRect,
+        appKitScreenFrame: NSRect,
+        accessibilityScreenFrame: NSRect
+    ) -> NSRect {
+        NSRect(
+            x: appKitScreenFrame.minX + (rect.minX - accessibilityScreenFrame.minX),
+            y: appKitScreenFrame.maxY - (rect.minY - accessibilityScreenFrame.minY) - rect.height,
+            width: rect.width,
+            height: rect.height
+        )
+    }
+
+    static func appKitFrame(fromAccessibilityRect rect: NSRect, screens: [NSScreen] = NSScreen.screens) -> NSRect {
+        let center = rect.centerPoint()
+        guard let screen = screen(containingAccessibilityPoint: center, screens: screens) ?? NSScreen.main ?? screens.first else {
+            return rect
+        }
+
+        return appKitRect(
+            fromAccessibilityRect: rect,
+            appKitScreenFrame: screen.frame,
+            accessibilityScreenFrame: accessibilityFrame(for: screen)
+        )
+    }
+
     static func screen(containingAppKitPoint point: NSPoint, screens: [NSScreen] = NSScreen.screens) -> NSScreen? {
         screens.first { $0.frame.contains(point) } ?? NSScreen.main
     }

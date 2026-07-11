@@ -155,6 +155,54 @@ final class windyTests: XCTestCase {
         XCTAssertEqual(converted, NSRect(x: 20, y: -320, width: 400, height: 300))
     }
 
+    func testScreenGeometryConvertsAccessibilityRectToAppKitRect() throws {
+        let appKitScreenFrame = NSRect(x: 0, y: 900, width: 1440, height: 900)
+        let accessibilityScreenFrame = NSRect(x: 0, y: -900, width: 1440, height: 900)
+        let accessibilityRect = NSRect(x: 20, y: -320, width: 400, height: 300)
+
+        let converted = ScreenGeometryService.appKitRect(
+            fromAccessibilityRect: accessibilityRect,
+            appKitScreenFrame: appKitScreenFrame,
+            accessibilityScreenFrame: accessibilityScreenFrame
+        )
+
+        XCTAssertEqual(converted, NSRect(x: 20, y: 920, width: 400, height: 300))
+    }
+
+    func testMissionControlLayoutRecognizesCompactAndExpandedStates() throws {
+        XCTAssertEqual(
+            MissionControlOverlayLayout.state(for: [NSRect(x: 10, y: 10, width: 70, height: 24)]),
+            .compact
+        )
+        XCTAssertEqual(
+            MissionControlOverlayLayout.state(for: [NSRect(x: 10, y: 10, width: 140, height: 90)]),
+            .expanded
+        )
+        XCTAssertEqual(MissionControlOverlayLayout.state(for: []), .closed)
+    }
+
+    func testMissionControlExpandedLabelSitsBelowThumbnail() throws {
+        let buttonFrame = NSRect(x: 100, y: 700, width: 140, height: 90)
+        let labelFrame = MissionControlOverlayLayout.labelFrame(for: buttonFrame, state: .expanded)
+
+        XCTAssertEqual(labelFrame.maxY, buttonFrame.minY - 3)
+        XCTAssertEqual(labelFrame.midX, buttonFrame.midX)
+    }
+
+    func testMissionControlCompactButtonUsesVisibleHalfOfSpacesBar() throws {
+        let reportedButtonFrame = NSRect(x: 946, y: -32, width: 65, height: 24)
+        let spacesBarFrame = NSRect(x: 0, y: 0, width: 2056, height: 78)
+
+        let visibleFrame = MissionControlOverlayLayout.compactButtonFrame(
+            reportedButtonFrame,
+            spacesBarFrame: spacesBarFrame
+        )
+
+        XCTAssertEqual(visibleFrame.origin.x, reportedButtonFrame.origin.x)
+        XCTAssertEqual(visibleFrame.origin.y, 46.5)
+        XCTAssertEqual(visibleFrame.size, reportedButtonFrame.size)
+    }
+
     func testDisplaySettingsMigrationUsesStableScreenIds() throws {
         let screen = NSScreen.main!
         let legacyId = ScreenGeometryService.legacyId(for: screen)

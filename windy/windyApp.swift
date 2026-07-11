@@ -81,14 +81,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         statusBarButton             = statusItem.button!
         statusBarButton.image       = NSImage(imageLiteralResourceName : "StatusBarIcon")
         statusBarButton.image!.size = NSSize ( width: 32 , height: 32 )
+        statusBarButton.target      = self
         statusBarButton.action      = #selector(togglePopover)
+        statusBarButton.toolTip     = "Windy"
 
         // open the MenuPopover when user clicks the status bar icon
         popover = ResizingPopover()
+        popover.behavior = .transient
+        popover.animates = true
         
         popover.contentViewController   = NSHostingController(
             rootView: MenuPopover(
-                windyData: self.windyData
+                windyData: self.windyData,
+                spaceLabelManager: self.windyManager.spaceLabelManager
             )
         )
         // add listener to close the rectangle preview
@@ -126,7 +131,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         } else {
             // fixes popover bug not closing after focus lost
             NSApplication.shared.activate(ignoringOtherApps: true)
+            windyManager.spaceLabelManager.refresh()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+        }
+    }
+
+    func applicationDidResignActive(_ notification: Notification) {
+        if popover?.isShown == true {
+            popover.performClose(nil)
         }
     }
 }

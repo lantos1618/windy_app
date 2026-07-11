@@ -212,6 +212,38 @@ final class windyTests: XCTestCase {
         XCTAssertEqual(labelFrame.height, buttonFrame.height)
     }
 
+    func testSpaceServiceParsesStableUserSpaces() throws {
+        let rawDisplays: [[String: Any]] = [[
+            "Display Identifier": "Main",
+            "Current Space": ["id64": NSNumber(value: 20)],
+            "Spaces": [
+                ["id64": NSNumber(value: 10), "uuid": "space-a", "type": NSNumber(value: 0)],
+                ["id64": NSNumber(value: 20), "uuid": "space-b", "type": NSNumber(value: 0)],
+                ["id64": NSNumber(value: 30), "uuid": "fullscreen", "type": NSNumber(value: 4)]
+            ]
+        ]]
+
+        let displays = SpaceService.parseManagedDisplays(rawDisplays)
+
+        XCTAssertEqual(displays.count, 1)
+        XCTAssertEqual(displays[0].spaces.map(\.id), ["space-a", "space-b"])
+        XCTAssertEqual(displays[0].spaces.map(\.index), [1, 2])
+        XCTAssertFalse(displays[0].spaces[0].isCurrent)
+        XCTAssertTrue(displays[0].spaces[1].isCurrent)
+    }
+
+    func testSpaceLabelStoreRoundTripsStructuredLabels() throws {
+        let suiteName = "windyTests.spaceLabels.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = SpaceLabelStore(defaults: defaults)
+        let labels = ["space-a": StoredSpaceLabel(name: "Tempo", colour: .orange)]
+
+        store.save(labels)
+
+        XCTAssertEqual(store.load(), labels)
+    }
+
     func testDisplaySettingsMigrationUsesStableScreenIds() throws {
         let screen = NSScreen.main!
         let legacyId = ScreenGeometryService.legacyId(for: screen)

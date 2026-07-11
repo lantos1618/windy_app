@@ -109,14 +109,7 @@ final class MissionControlOverlayManager {
         subsystem: Bundle.main.bundleIdentifier ?? "zug.dev.windy",
         category: "MissionControl"
     )
-    private let colours: [NSColor] = [
-        .systemTeal,
-        .systemPink,
-        .systemGreen,
-        .systemOrange,
-        .systemBlue,
-        .systemYellow
-    ]
+    private let spaceLabelManager: SpaceLabelManager
 
     private var dockElement: AXUIElement?
     private var observer: AXObserver?
@@ -126,6 +119,10 @@ final class MissionControlOverlayManager {
     private var observedElementHashes = Set<CFHashCode>()
     private var state: MissionControlBarState = .closed
     private var isRunning = false
+
+    init(spaceLabelManager: SpaceLabelManager) {
+        self.spaceLabelManager = spaceLabelManager
+    }
 
     func start() {
         guard !isRunning, AXIsProcessTrusted() else { return }
@@ -177,6 +174,9 @@ final class MissionControlOverlayManager {
         let allButtons = buttonGroups.flatMap { $0 }
         let accessibilityFrames = allButtons.compactMap(accessibilityFrame(for:))
         let newState = MissionControlOverlayLayout.state(for: accessibilityFrames)
+        if state == .closed, newState != .closed {
+            spaceLabelManager.refresh()
+        }
         transition(to: newState)
 
         guard newState != .closed else { return }
@@ -198,12 +198,14 @@ final class MissionControlOverlayManager {
                 let panelKey = "\(displayIndex):\(desktopIndex)"
                 let panel = panel(for: panelKey)
                 let labelFrame = MissionControlOverlayLayout.labelFrame(for: buttonFrame, state: newState)
+                let space = spaceLabelManager.space(displayIndex: displayIndex, desktopIndex: desktopIndex)
+                let fallbackIndex = desktopIndex + 1
 
                 panel.setFrame(labelFrame, display: true)
                 if let contentView = panel.contentView as? MissionControlLabelView {
                     contentView.update(
-                        name: "Windy \(desktopIndex + 1)",
-                        colour: colours[desktopIndex % colours.count]
+                        name: spaceLabelManager.name(for: space, fallbackIndex: fallbackIndex),
+                        colour: spaceLabelManager.colour(for: space, fallbackIndex: fallbackIndex).nsColor
                     )
                 }
                 panel.orderFrontRegardless()

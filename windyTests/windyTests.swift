@@ -203,6 +203,15 @@ final class windyTests: XCTestCase {
         XCTAssertEqual(visibleFrame.size, reportedButtonFrame.size)
     }
 
+    func testMissionControlCompactLabelHasReadableWidth() throws {
+        let buttonFrame = NSRect(x: 946, y: 46.5, width: 65, height: 24)
+        let labelFrame = MissionControlOverlayLayout.labelFrame(for: buttonFrame, state: .compact)
+
+        XCTAssertEqual(labelFrame.width, 86)
+        XCTAssertEqual(labelFrame.midX, buttonFrame.midX)
+        XCTAssertEqual(labelFrame.height, buttonFrame.height)
+    }
+
     func testDisplaySettingsMigrationUsesStableScreenIds() throws {
         let screen = NSScreen.main!
         let legacyId = ScreenGeometryService.legacyId(for: screen)

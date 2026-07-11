@@ -31,7 +31,13 @@ enum MissionControlOverlayLayout {
         case .closed:
             return .zero
         case .compact:
-            return buttonFrame
+            let width = max(buttonFrame.width, 86)
+            return NSRect(
+                x: buttonFrame.midX - width / 2,
+                y: buttonFrame.minY,
+                width: width,
+                height: buttonFrame.height
+            )
         case .expanded:
             let width = min(max(buttonFrame.width - 20, 88), 150)
             let height: CGFloat = 23
@@ -132,7 +138,8 @@ final class MissionControlOverlayManager {
         dockElement = AXUIElementCreateApplication(dock.processIdentifier)
         installObserver(processIdentifier: dock.processIdentifier)
 
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 20.0, repeats: true) { [weak self] _ in
+            guard self?.state == .closed else { return }
             self?.refresh()
         }
         refresh()
@@ -158,7 +165,7 @@ final class MissionControlOverlayManager {
     func refresh() {
         guard isRunning, let dockElement else { return }
 
-        let spacesLists = elements(withIdentifier: "mc.spaces.list", in: dockElement)
+        let spacesLists = missionControlSpacesLists(in: dockElement)
         guard !spacesLists.isEmpty else {
             transition(to: .closed)
             return
@@ -332,6 +339,16 @@ final class MissionControlOverlayManager {
 
         visit(root, depth: 0)
         return matches
+    }
+
+    private func missionControlSpacesLists(in dockElement: AXUIElement) -> [AXUIElement] {
+        guard let missionControl = children(of: dockElement).first(where: {
+            stringAttribute(kAXIdentifierAttribute as CFString, from: $0) == "mc"
+        }) else {
+            return []
+        }
+
+        return elements(withIdentifier: "mc.spaces.list", in: missionControl)
     }
 
     private func accessibilityFrame(for element: AXUIElement) -> NSRect? {

@@ -282,13 +282,13 @@ struct MenuPopover: View {
                 countControl(value: rowsBinding, range: 1...6, name: "rows")
             }
 
-            settingRow("Preview") {
-                Toggle("Preview layout", isOn: $windyData.isShown)
+            settingRow("Grid preview") {
+                Toggle("Grid preview", isOn: $windyData.isShown)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)
-                    .help(windyData.isShown ? "Hide layout preview" : "Show layout preview")
-                    .accessibilityLabel("Preview layout")
+                    .help(windyData.isShown ? "Hide grid preview" : "Show grid preview")
+                    .accessibilityLabel("Grid preview")
             }
 
             settingRow("Accent colour") {

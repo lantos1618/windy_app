@@ -128,7 +128,9 @@ struct MenuPopover: View {
                         generalSettings
                     }
                 }
-                .padding(16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(width: 400, height: 620)
@@ -264,12 +266,12 @@ struct MenuPopover: View {
                 Picker("Display", selection: $windyData.activeSettingScreen) {
                     ForEach(windyData.displaySettings.keys.sorted(), id: \.self) { key in
                         let screenName = NSScreen.fromIdString(str: key)?.localizedName ?? key
-                        let status = windyData.activeScreens.contains(key) ? " - Connected" : ""
+                        let status = windyData.activeScreens.contains(key) ? "" : " - Disconnected"
                         Text(screenName + status).tag(key)
                     }
                 }
                 .labelsHidden()
-                .frame(width: 252)
+                .frame(maxWidth: 236)
             }
 
             settingRow("Columns") {

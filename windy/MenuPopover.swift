@@ -287,35 +287,39 @@ struct MenuPopover: View {
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)
-                .help(windyData.isShown ? "Hide layout preview" : "Show layout preview")
+                    .help(windyData.isShown ? "Hide layout preview" : "Show layout preview")
                     .accessibilityLabel("Preview layout")
             }
 
             settingRow("Accent colour") {
-                HStack(spacing: 7) {
+                HStack(spacing: 6) {
                     ForEach(Array(Self.accentPalette.enumerated()), id: \.offset) { _, colour in
                         Button {
                             windyData.accentColour = Color(nsColor: colour)
                         } label: {
                             Circle()
                                 .fill(Color(nsColor: colour))
-                                .frame(width: 15, height: 15)
+                                .frame(width: 14, height: 14)
                                 .overlay {
                                     if isSelectedAccent(colour) {
                                         Circle()
                                             .stroke(.primary, lineWidth: 2)
-                                            .padding(-3)
+                                            .padding(-2)
                                     }
                                 }
                         }
                         .buttonStyle(.plain)
-                        .frame(width: 22, height: 26)
+                        .frame(width: 20, height: 26)
                         .help("Use \(accentName(colour))")
                         .accessibilityLabel("Use \(accentName(colour))")
                     }
 
+                    Divider()
+                        .frame(height: 18)
+                        .padding(.horizontal, 2)
+
                     CompactColorWell(colour: $windyData.accentColour)
-                        .frame(width: 26, height: 26)
+                        .frame(width: 46, height: 26)
                         .accessibilityLabel("Choose a custom accent colour")
                 }
             }

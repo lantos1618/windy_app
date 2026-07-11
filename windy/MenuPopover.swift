@@ -9,6 +9,40 @@ import SwiftUI
 import KeyboardShortcuts
 import LaunchAtLogin
 
+private struct CompactColorWell: NSViewRepresentable {
+    @Binding var colour: Color
+
+    final class Coordinator: NSObject {
+        var colour: Binding<Color>
+
+        init(colour: Binding<Color>) {
+            self.colour = colour
+        }
+
+        @objc func colourChanged(_ sender: NSColorWell) {
+            colour.wrappedValue = Color(nsColor: sender.color)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(colour: $colour)
+    }
+
+    func makeNSView(context: Context) -> NSColorWell {
+        let colorWell = NSColorWell(frame: NSRect(x: 0, y: 0, width: 26, height: 26))
+        colorWell.colorWellStyle = .minimal
+        colorWell.target = context.coordinator
+        colorWell.action = #selector(Coordinator.colourChanged(_:))
+        colorWell.toolTip = "Choose a custom accent colour"
+        return colorWell
+    }
+
+    func updateNSView(_ colorWell: NSColorWell, context: Context) {
+        context.coordinator.colour = $colour
+        colorWell.color = NSColor(colour)
+    }
+}
+
 struct KeyboardShortcutsSettings: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -55,6 +89,15 @@ struct KeyboardShortcutsSettings: View {
 }
 
 struct MenuPopover: View {
+    private static let accentPalette: [NSColor] = [
+        .systemBlue,
+        .systemTeal,
+        .systemGreen,
+        .systemOrange,
+        .systemPink,
+        .systemPurple,
+    ]
+
     @StateObject var windyData: WindyData
     @ObservedObject var spaceLabelManager: SpaceLabelManager
     @State private var isConfirmingDisplayReset = false
@@ -216,9 +259,8 @@ struct MenuPopover: View {
     }
 
     private var screenPickerSection: some View {
-        Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 10) {
-            GridRow {
-                settingLabel("Display")
+        VStack(spacing: 8) {
+            settingRow("Display") {
                 Picker("Display", selection: $windyData.activeSettingScreen) {
                     ForEach(windyData.displaySettings.keys.sorted(), id: \.self) { key in
                         let screenName = NSScreen.fromIdString(str: key)?.localizedName ?? key
@@ -227,41 +269,143 @@ struct MenuPopover: View {
                     }
                 }
                 .labelsHidden()
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(width: 252)
             }
 
-            GridRow {
-                settingLabel("Columns")
-                Stepper(value: columnsBinding, in: 1...6) {
-                    Text("\(columnsBinding.wrappedValue)")
-                        .monospacedDigit()
-                }
+            settingRow("Columns") {
+                countControl(value: columnsBinding, range: 1...6, name: "columns")
             }
 
-            GridRow {
-                settingLabel("Rows")
-                Stepper(value: rowsBinding, in: 1...6) {
-                    Text("\(rowsBinding.wrappedValue)")
-                        .monospacedDigit()
-                }
+            settingRow("Rows") {
+                countControl(value: rowsBinding, range: 1...6, name: "rows")
             }
 
-            GridRow {
-                settingLabel("Preview")
-                Button {
-                    windyData.isShown.toggle()
-                } label: {
-                    Image(systemName: windyData.isShown ? "eye.fill" : "eye")
-                }
-                .help(windyData.isShown ? "Hide layout preview" : "Show layout preview")
-                .accessibilityLabel(windyData.isShown ? "Hide layout preview" : "Show layout preview")
-            }
-
-            GridRow {
-                settingLabel("Accent color")
-                ColorPicker("Accent color", selection: $windyData.accentColour)
+            settingRow("Preview") {
+                Toggle("Preview layout", isOn: $windyData.isShown)
                     .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                .help(windyData.isShown ? "Hide layout preview" : "Show layout preview")
+                    .accessibilityLabel("Preview layout")
             }
+
+            settingRow("Accent colour") {
+                HStack(spacing: 7) {
+                    ForEach(Array(Self.accentPalette.enumerated()), id: \.offset) { _, colour in
+                        Button {
+                            windyData.accentColour = Color(nsColor: colour)
+                        } label: {
+                            Circle()
+                                .fill(Color(nsColor: colour))
+                                .frame(width: 15, height: 15)
+                                .overlay {
+                                    if isSelectedAccent(colour) {
+                                        Circle()
+                                            .stroke(.primary, lineWidth: 2)
+                                            .padding(-3)
+                                    }
+                                }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: 22, height: 26)
+                        .help("Use \(accentName(colour))")
+                        .accessibilityLabel("Use \(accentName(colour))")
+                    }
+
+                    CompactColorWell(colour: $windyData.accentColour)
+                        .frame(width: 26, height: 26)
+                        .accessibilityLabel("Choose a custom accent colour")
+                }
+            }
+        }
+    }
+
+    private func settingRow<Content: View>(
+        _ title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: 12) {
+            settingLabel(title)
+            Spacer(minLength: 8)
+            content()
+        }
+        .frame(height: 30)
+    }
+
+    private func countControl(
+        value: Binding<Int>,
+        range: ClosedRange<Int>,
+        name: String
+    ) -> some View {
+        HStack(spacing: 0) {
+            countButton(
+                systemImage: "minus",
+                help: "Decrease \(name)",
+                isDisabled: value.wrappedValue == range.lowerBound
+            ) {
+                value.wrappedValue -= 1
+            }
+
+            Text("\(value.wrappedValue)")
+                .font(.callout.monospacedDigit())
+                .frame(width: 34)
+
+            countButton(
+                systemImage: "plus",
+                help: "Increase \(name)",
+                isDisabled: value.wrappedValue == range.upperBound
+            ) {
+                value.wrappedValue += 1
+            }
+        }
+        .frame(height: 26)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+        }
+    }
+
+    private func countButton(
+        systemImage: String,
+        help: String,
+        isDisabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.semibold))
+                .frame(width: 28, height: 26)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .help(help)
+        .accessibilityLabel(help)
+    }
+
+    private func isSelectedAccent(_ colour: NSColor) -> Bool {
+        guard
+            let selected = NSColor(windyData.accentColour).usingColorSpace(.deviceRGB),
+            let candidate = colour.usingColorSpace(.deviceRGB)
+        else {
+            return false
+        }
+
+        return abs(selected.redComponent - candidate.redComponent) < 0.01
+            && abs(selected.greenComponent - candidate.greenComponent) < 0.01
+            && abs(selected.blueComponent - candidate.blueComponent) < 0.01
+    }
+
+    private func accentName(_ colour: NSColor) -> String {
+        switch colour {
+        case NSColor.systemBlue: return "blue"
+        case NSColor.systemTeal: return "teal"
+        case NSColor.systemGreen: return "green"
+        case NSColor.systemOrange: return "orange"
+        case NSColor.systemPink: return "pink"
+        default: return "purple"
         }
     }
 
@@ -356,6 +500,6 @@ struct MenuPopover: View {
         Text(title)
             .font(.callout)
             .foregroundStyle(.secondary)
-            .frame(width: 88, alignment: .leading)
+            .frame(width: 94, alignment: .leading)
     }
 }

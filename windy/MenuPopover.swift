@@ -102,6 +102,7 @@ struct MenuPopover: View {
     @ObservedObject var spaceLabelManager: SpaceLabelManager
     @State private var isConfirmingDisplayReset = false
     @State private var isConfirmingShortcutReset = false
+    @State private var colourPickerSpaceID: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -439,49 +440,92 @@ struct MenuPopover: View {
     }
 
     private func spaceLabelRow(_ space: WindySpace) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: space.isCurrent ? "circle.inset.filled" : "circle")
-                .font(.caption)
-                .foregroundStyle(space.isCurrent ? .primary : .tertiary)
-                .frame(width: 14)
-                .help(space.isCurrent ? "Current Space" : "Space \(space.index)")
+        VStack(spacing: 6) {
+            HStack(spacing: 10) {
+                Image(systemName: space.isCurrent ? "circle.inset.filled" : "circle")
+                    .font(.caption)
+                    .foregroundStyle(space.isCurrent ? .primary : .tertiary)
+                    .frame(width: 14)
+                    .help(space.isCurrent ? "Current Space" : "Space \(space.index)")
 
-            TextField(
-                "Space name",
-                text: spaceNameBinding(for: space),
-                prompt: Text("Windy \(space.index)")
-            )
-            .textFieldStyle(.roundedBorder)
+                TextField(
+                    "Space name",
+                    text: spaceNameBinding(for: space),
+                    prompt: Text("Windy \(space.index)")
+                )
+                .textFieldStyle(.roundedBorder)
 
-            HStack(spacing: 3) {
-                Circle()
-                    .fill(selectedColour(for: space).color)
-                    .frame(width: 14, height: 14)
-
-                Menu {
-                    ForEach(SpaceLabelColour.allCases) { colour in
-                        Button {
-                            spaceLabelManager.setColour(colour, for: space.id)
-                        } label: {
-                            Text(colour.displayName)
-                            if colour == selectedColour(for: space) {
-                                Image(systemName: "checkmark")
-                            }
-                        }
+                Button {
+                    withAnimation(.easeOut(duration: 0.14)) {
+                        colourPickerSpaceID = colourPickerSpaceID == space.id ? nil : space.id
                     }
                 } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(selectedColour(for: space).color)
+                            .frame(width: 14, height: 14)
+
+                        Image(systemName: colourPickerSpaceID == space.id ? "chevron.up" : "chevron.down")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(width: 34, height: 24)
+                    .contentShape(Rectangle())
                 }
-                .menuStyle(.borderlessButton)
-                .menuIndicator(.hidden)
-                .frame(width: 16, height: 22)
+                .buttonStyle(.plain)
+                .help("Label colour")
+                .accessibilityLabel("Label colour for Space \(space.index)")
             }
-            .help("Label colour")
-            .accessibilityLabel("Label colour for Space \(space.index)")
+
+            if colourPickerSpaceID == space.id {
+                HStack {
+                    Spacer(minLength: 24)
+                    spaceColourPalette(for: space)
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .frame(minHeight: 26)
+    }
+
+    private func spaceColourPalette(for space: WindySpace) -> some View {
+        HStack(spacing: 6) {
+            ForEach(SpaceLabelColour.allCases) { colour in
+                Button {
+                    spaceLabelManager.setColour(colour, for: space.id)
+                    withAnimation(.easeOut(duration: 0.14)) {
+                        colourPickerSpaceID = nil
+                    }
+                } label: {
+                    Circle()
+                        .fill(colour.color)
+                        .frame(width: 20, height: 20)
+                        .overlay {
+                            if colour == selectedColour(for: space) {
+                                Image(systemName: "checkmark")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(colour == .yellow ? Color.black : Color.white)
+                            }
+                        }
+                        .overlay {
+                            Circle()
+                                .stroke(.primary.opacity(0.16), lineWidth: 1)
+                        }
+                }
+                .buttonStyle(.plain)
+                .frame(width: 28, height: 28)
+                .help(colour.displayName)
+                .accessibilityLabel(colour.displayName)
+            }
+        }
+        .padding(.horizontal, 7)
+        .padding(.vertical, 5)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+        }
     }
 
     private func spaceNameBinding(for space: WindySpace) -> Binding<String> {
